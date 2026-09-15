@@ -159,10 +159,10 @@ const ROLES = [
 ];
 
 const PRIZES = [
-  { track: "Giải Nhất Toàn cuộc thi", amount: "10.000.000 VNĐ + Cúp & Giấy chứng nhận" },
-  { track: "Giải Nhì Toàn cuộc thi", amount: "5.000.000 VNĐ + Kỷ niệm chương" },
-  { track: "Giải Ba Toàn cuộc thi", amount: "3.000.000 VNĐ + Kỷ niệm chương" },
-  { track: "Giải Đội thi được Yêu thích nhất (Khán giả bình chọn)", amount: "2.000.000 VNĐ" },
+  { medal: "🥇", track: "Giải Nhất Toàn cuộc thi", amount: "10.000.000 VNĐ", reward: "Cúp Vô Địch & Giấy chứng nhận" },
+  { medal: "🥈", track: "Giải Nhì Toàn cuộc thi", amount: "5.000.000 VNĐ", reward: "Kỷ niệm chương danh giá" },
+  { medal: "🥉", track: "Giải Ba Toàn cuộc thi", amount: "3.000.000 VNĐ", reward: "Kỷ niệm chương danh giá" },
+  { medal: "💖", track: "Giải Đội thi được Yêu thích nhất", amount: "2.000.000 VNĐ", reward: "Khán giả bình chọn trực tuyến" },
 ];
 
 const SPONSORS = [
@@ -400,8 +400,8 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Prizes Section */}
-      <section className="l-section" id="prizes">
+      {/* Prizes Section - Soft Platinum Canvas with Prestigious Gold/Amber Championship Banner */}
+      <section className="l-section l-section-prizes" id="prizes">
         <div className="l-container">
           <Reveal>
             <div className="l-eyebrow">Cơ cấu giải thưởng</div>
@@ -413,27 +413,39 @@ export function LandingPage() {
 
           <Reveal className="l-prize-banner">
             <div className="l-prize-amount-col">
+              <div className="l-prize-trophy-badge">
+                <IconTechTrophy width={38} height={38} />
+              </div>
               <div className="l-prize-amount">
                 <CountUp target={20} suffix=" triệu+" duration={1.6} />
-                <small>Tổng giá trị giải thưởng tiền mặt &amp; hiện vật</small>
+                <small>Tổng giá trị giải thưởng tiền mặt, cúp &amp; quà tặng hiện vật</small>
+              </div>
+              <div className="l-prize-guarantee">
+                <span className="l-prize-guarantee-dot" /> Trao thưởng vinh danh tại Đêm Chung kết
               </div>
             </div>
             <div className="l-prize-list">
-              {PRIZES.map((p) => (
-                <div className="l-prize-row" key={p.track}>
-                  <span className="track-name">{p.track}</span>
+              {PRIZES.map((p, idx) => (
+                <div className={`l-prize-row ${idx === 0 ? "first-prize" : ""}`} key={p.track}>
+                  <div className="l-prize-row-left">
+                    <span className="l-prize-medal">{p.medal}</span>
+                    <div>
+                      <span className="track-name">{p.track}</span>
+                      <small className="reward-detail">{p.reward}</small>
+                    </div>
+                  </div>
                   <span className="amount">{p.amount}</span>
                 </div>
               ))}
             </div>
           </Reveal>
 
-          <div style={{ marginTop: 40 }}>
-            <div className="l-eyebrow">Đơn vị tài trợ &amp; Hỗ trợ chuyên môn</div>
+          <div className="l-sponsors-wrap">
+            <div className="l-eyebrow center">Đơn vị tài trợ &amp; Hỗ trợ chuyên môn</div>
             <div className="l-sponsors">
               {SPONSORS.map((s) => (
                 <span className="l-sponsor-chip" key={s}>
-                  <IconGift width={15} height={15} />
+                  <IconGift width={16} height={16} />
                   {s}
                 </span>
               ))}
@@ -442,16 +454,71 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Call to Action */}
-      <section className="l-cta">
-        <div className="l-container l-cta-inner">
-          <h2>Sẵn sàng kiến tạo giải pháp công nghệ?</h2>
-          <p>Tạo tài khoản sinh viên, đăng ký đội thi và gia nhập cuộc đua hackathon ngay hôm nay.</p>
-          <div className="l-hero-actions center">
-            <Link className="l-btn-primary" to={user ? "/app" : "/register"}>
-              {user ? "Vào bảng điều khiển" : "Đăng ký tài khoản mới"}{" "}
-              <IconArrowRight width={16} height={16} />
-            </Link>
+      {/* Call to Action - Grand Cyber Arena Deck with 3D Cyber Seal Mascot in Flight */}
+      <section className="l-cta" id="cta">
+        <div className="l-container">
+          <div className="l-cta-shell">
+            <div className="l-cta-content">
+              <div className="l-cta-badge">
+                <span className="l-cta-live-dot" />
+                MÙA THI ĐẤU 2026 • ĐANG MỞ ĐĂNG KÝ
+              </div>
+              <h2 className="l-cta-title">
+                Sẵn sàng kiến tạo <br />
+                <span className="l-cta-title-accent">giải pháp công nghệ</span> đột phá?
+              </h2>
+              <p className="l-cta-desc">
+                Tạo tài khoản sinh viên, thành lập đội thi 3–5 thành viên và gia nhập cuộc đua hackathon lập trình chuyên nghiệp ngay hôm nay.
+              </p>
+
+              <div className="l-cta-perks">
+                <div className="l-cta-perk">
+                  <span className="l-cta-perk-check">✓</span>
+                  <span>Miễn phí 100% lệ phí tham dự cho mọi thí sinh</span>
+                </div>
+                <div className="l-cta-perk">
+                  <span className="l-cta-perk-check">✓</span>
+                  <span>Trực tiếp thuyết trình trước hội đồng chuyên gia &amp; nhà tuyển dụng</span>
+                </div>
+                <div className="l-cta-perk">
+                  <span className="l-cta-perk-check">✓</span>
+                  <span>Cấp giấy chứng nhận kỹ năng phần mềm chính thức</span>
+                </div>
+              </div>
+
+              <div className="l-cta-actions">
+                <Link className="l-btn-primary l-cta-btn-glow" to={user ? "/app" : "/register"}>
+                  {user ? "Vào bảng điều khiển" : "Đăng ký tài khoản mới"}{" "}
+                  <IconArrowRight width={16} height={16} />
+                </Link>
+                <Link className="l-btn-ghost l-cta-btn-ghost" to="/vote">
+                  <IconHeart width={16} height={16} /> Bình chọn khán giả
+                </Link>
+              </div>
+            </div>
+
+            <div className="l-cta-mascot-col">
+              <div className="l-cta-mascot-stage">
+                <div className="l-cta-mascot-halo" />
+                <div className="l-cta-mascot-radar-ring" />
+                <img
+                  src="/seal-mascot-hero.png"
+                  alt="SEAL Hackathon 3D Cyber Mascot"
+                  className="l-cta-mascot-img"
+                  loading="lazy"
+                />
+                <div className="l-cta-mascot-shadow" />
+
+                <div className="l-cta-chip l-cta-chip-top">
+                  <span className="l-cta-chip-icon">⚡</span>
+                  <span className="l-cta-chip-text">50+ Đội thi tranh tài</span>
+                </div>
+                <div className="l-cta-chip l-cta-chip-bottom">
+                  <span className="l-cta-chip-icon">🏆</span>
+                  <span className="l-cta-chip-text">Tổng thưởng 20Tr+</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
