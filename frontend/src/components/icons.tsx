@@ -141,3 +141,73 @@ export function IconMessageCircle(props: IconProps) {
     </svg>
   );
 }
+
+export function IconTechBracket(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <rect x="3" y="3" width="6" height="5" rx="1.5" />
+      <rect x="3" y="16" width="6" height="5" rx="1.5" />
+      <rect x="15" y="9.5" width="6" height="5" rx="1.5" />
+      <path d="M9 5.5h3a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H9" />
+      <path d="M14 12h1" />
+    </svg>
+  );
+}
+
+export function IconTechScoring(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <line x1="4" y1="21" x2="4" y2="14" />
+      <line x1="4" y1="10" x2="4" y2="3" />
+      <line x1="12" y1="21" x2="12" y2="12" />
+      <line x1="12" y1="8" x2="12" y2="3" />
+      <line x1="20" y1="21" x2="20" y2="16" />
+      <line x1="20" y1="12" x2="20" y2="3" />
+      <circle cx="4" cy="12" r="2.2" fill="currentColor" />
+      <circle cx="12" cy="10" r="2.2" fill="currentColor" />
+      <circle cx="20" cy="14" r="2.2" fill="currentColor" />
+    </svg>
+  );
+}
+
+export function IconTechPulseVote(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+      <polyline points="7 11 9.5 11 11 8.5 13 13.5 14.5 11 17 11" />
+    </svg>
+  );
+}
+
+export function IconTechTrophy(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M6 9H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2" />
+      <path d="M18 9h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2" />
+      <path d="M6 3h12v7a6 6 0 0 1-12 0V3z" />
+      <path d="M12 16v3" />
+      <path d="M8 21h8" />
+      <circle cx="12" cy="8" r="1.5" fill="currentColor" />
+    </svg>
+  );
+}
+
+export function IconTechAudit(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M12 2 4 5.5v6.2c0 5.4 3.4 10.4 8 11.8 4.6-1.4 8-6.4 8-11.8V5.5L12 2z" />
+      <path d="m9 12 2 2 4-4" />
+    </svg>
+  );
+}
+
+export function IconTechRadar(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <circle cx="12" cy="12" r="5" />
+      <circle cx="12" cy="12" r="1.5" fill="currentColor" />
+      <path d="M12 3v3M12 18v3M3 12h3M18 12h3" />
+    </svg>
+  );
+}

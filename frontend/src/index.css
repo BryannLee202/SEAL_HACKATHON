@@ -1507,19 +1507,34 @@ th {
 
 .l-feature-icon-badge {
   position: absolute;
-  bottom: 12px;
-  right: 12px;
-  width: 36px;
-  height: 36px;
+  bottom: 14px;
+  right: 14px;
+  width: 38px;
+  height: 38px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #bc7155 0%, #d48265 100%);
-  color: #ffffff;
+  background: rgba(11, 19, 31, 0.65);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1.5px solid rgba(229, 169, 103, 0.45);
+  color: #e5a967;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(188, 113, 85, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45), 
+              inset 0 1px 1px rgba(255, 255, 255, 0.18), 
+              0 0 10px rgba(229, 169, 103, 0.2);
   z-index: 2;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.l-feature-card:hover .l-feature-icon-badge {
+  background: rgba(11, 19, 31, 0.88);
+  border-color: #e5a967;
+  color: #ffffff;
+  transform: scale(1.1);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.6), 
+              0 0 16px rgba(229, 169, 103, 0.55),
+              inset 0 0 8px rgba(229, 169, 103, 0.25);
 }
 
 .l-feature-body {

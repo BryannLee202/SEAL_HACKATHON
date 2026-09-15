@@ -5,7 +5,6 @@ import { MascotBot } from "../components/MascotBot";
 import { SealLogo } from "../components/SealLogo";
 import { CountUp } from "../components/CountUp";
 import {
-  IconCalendar,
   IconGavel,
   IconTrophy,
   IconShieldCheck,
@@ -14,6 +13,12 @@ import {
   IconUsers,
   IconGift,
   IconHeart,
+  IconTechBracket,
+  IconTechScoring,
+  IconTechPulseVote,
+  IconTechTrophy,
+  IconTechAudit,
+  IconTechRadar,
 } from "../components/icons";
 
 interface RevealProps {
@@ -60,42 +65,42 @@ const CRITERIA = [
 const FEATURES = [
   {
     image: "/images/feat-rounds.jpg",
-    icon: <IconCalendar width={18} height={18} />,
+    icon: <IconTechBracket width={19} height={19} />,
     tag: "Lộ trình & Bảng đấu",
     title: "Quản lý Đa vòng & Hạng mục",
     desc: "Cấu hình linh hoạt vòng loại, chung kết, các bảng thi đấu chuyên đề và luật thăng hạng Top N tự động.",
   },
   {
     image: "/images/feat-scoring.jpg",
-    icon: <IconGavel width={18} height={18} />,
+    icon: <IconTechScoring width={19} height={19} />,
     tag: "Hội đồng Giám khảo",
     title: "Chấm điểm Tiêu chí có Trọng số",
     desc: "Giám khảo chấm độc lập theo từng tiêu chí, tính điểm trực tiếp và ghi nhận nhận xét chi tiết từng bài thi.",
   },
   {
     image: "/images/feat-voting.jpg",
-    icon: <IconHeart width={18} height={18} />,
+    icon: <IconTechPulseVote width={19} height={19} />,
     tag: "Tương tác Cộng đồng",
     title: "Bình chọn Khán giả Công khai",
     desc: "Cổng bình chọn trực tuyến cho khán giả theo dõi đội thi yêu thích và cập nhật lượt vote tức thì thời gian thực.",
   },
   {
     image: "/images/feat-ranking.jpg",
-    icon: <IconTrophy width={18} height={18} />,
+    icon: <IconTechTrophy width={19} height={19} />,
     tag: "Vinh danh & Báo cáo",
     title: "Xếp hạng & Xuất kết quả Excel",
     desc: "Tự động xếp hạng theo bảng và toàn cuộc thi, hỗ trợ xuất báo cáo xếp hạng chuẩn định dạng Excel/CSV.",
   },
   {
     image: "/images/feat-audit.jpg",
-    icon: <IconShieldCheck width={18} height={18} />,
+    icon: <IconTechAudit width={19} height={19} />,
     tag: "Minh bạch Tuyệt đối",
     title: "Nhật ký Kiểm toán (Audit Log)",
     desc: "Mọi hành động phê duyệt, chấm điểm, loại đội đều được ghi log bất biến, đảm bảo tính công bằng cao nhất.",
   },
   {
     image: "/images/feat-research.jpg",
-    icon: <IconSparkles width={18} height={18} />,
+    icon: <IconTechRadar width={19} height={19} />,
     tag: "Độ tin cậy Khoa học",
     title: "Hiệu chuẩn & Nghiên cứu RBL",
     desc: "Thu thập phân phối điểm số của giám khảo nội bộ và chuyên gia khách mời phục vụ phân tích độ tin cậy ICC.",
