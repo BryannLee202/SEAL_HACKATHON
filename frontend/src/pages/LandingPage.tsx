@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { MascotBot } from "../components/MascotBot";
@@ -57,19 +58,49 @@ const CRITERIA = [
 
 const ROLES = [
   {
+    id: "team",
     icon: <IconUsers width={24} height={24} />,
     name: "Thành viên & Đội trưởng",
+    tag: "Thí sinh tranh tài",
+    color: "#38bdf8",
+    bgAlpha: "rgba(56, 189, 248, 0.12)",
+    borderAlpha: "rgba(56, 189, 248, 0.35)",
     desc: "Tạo đội thi từ 3–5 thành viên, nộp bài dự thi qua link Git repo, theo dõi tiến độ và nhận phản hồi từ Mentor.",
+    highlights: [
+      "Nộp repo Git & tài liệu kỹ thuật",
+      "Theo dõi điểm số & phản hồi trực tiếp",
+      "Kêu gọi bình chọn cộng đồng",
+    ],
   },
   {
+    id: "judge",
     icon: <IconGavel width={24} height={24} />,
-    name: "Ban Giám khảo",
+    name: "Hội đồng Giám khảo",
+    tag: "Đánh giá chuyên môn",
+    color: "#bc7155",
+    bgAlpha: "rgba(188, 113, 85, 0.15)",
+    borderAlpha: "rgba(188, 113, 85, 0.38)",
     desc: "Chấm điểm từng tiêu chí với trọng số rõ ràng, tham gia vòng hiệu chuẩn (Calibration) nâng cao tính đồng thuận đánh giá.",
+    highlights: [
+      "Chấm điểm tiêu chuẩn hoá đa tiêu chí",
+      "Góp ý & nhận xét chuyên sâu",
+      "Phân tích độ tin cậy liên đánh giá (RBL)",
+    ],
   },
   {
+    id: "coord",
     icon: <IconShieldCheck width={24} height={24} />,
     name: "Ban Điều phối (Coordinator)",
+    tag: "Vận hành sự kiện",
+    color: "#10b981",
+    bgAlpha: "rgba(16, 185, 129, 0.12)",
+    borderAlpha: "rgba(16, 185, 129, 0.35)",
     desc: "Cấu hình toàn diện sự kiện, vòng thi, bộ tiêu chí, phê duyệt tài khoản thí sinh và giám sát nhật ký kiểm toán minh bạch.",
+    highlights: [
+      "Cấu hình đa vòng thi & luật thăng hạng",
+      "Kiểm soát tài khoản & phân quyền chặt chẽ",
+      "Nhật ký kiểm toán minh bạch không thể xoá",
+    ],
   },
 ];
 
@@ -89,6 +120,7 @@ const SPONSORS = [
 
 export function LandingPage() {
   const { user } = useAuth();
+  const [selectedRoleTab, setSelectedRoleTab] = useState(0);
 
   return (
     <div className="landing">
@@ -97,34 +129,36 @@ export function LandingPage() {
       {/* Hero Section */}
       <section className="l-hero" id="hero">
         <div className="l-container l-hero-inner">
-          <div className="l-badge">
-            <IconSparkles width={14} height={14} />
-            SEAL Hackathon 2026 — Ngành Kỹ thuật Phần mềm
-          </div>
-          <h1 className="l-hero-title">
-            Đấu trường Công nghệ.
-            <br />
-            <span className="l-title-accent">Kiến tạo &amp; Đánh giá</span> Phần mềm.
-          </h1>
-          <p className="l-hero-subtitle">
-            Hệ thống số hóa toàn diện quy trình SEAL Hackathon: quản lý vòng thi, chấm điểm đa tiêu chí độc lập, bình chọn khán giả công khai và phân tích độ tin cậy liên đánh giá viên (RBL).
-          </p>
+          <div className="l-hero-left">
+            <div className="l-badge">
+              <IconSparkles width={14} height={14} />
+              SEAL Hackathon 2026 — Ngành Kỹ thuật Phần mềm
+            </div>
+            <h1 className="l-hero-title">
+              Đấu trường Công nghệ.
+              <br />
+              <span className="l-title-accent">Kiến tạo &amp; Đánh giá</span> Phần mềm.
+            </h1>
+            <p className="l-hero-subtitle">
+              Hệ thống số hóa toàn diện quy trình SEAL Hackathon: quản lý vòng thi, chấm điểm đa tiêu chí độc lập, bình chọn khán giả công khai và phân tích độ tin cậy liên đánh giá viên (RBL).
+            </p>
 
-          <div className="l-hero-actions">
-            <Link className="l-btn-primary" to={user ? "/app" : "/register"}>
-              {user ? "Vào trang quản trị" : "Đăng ký tham gia ngay"}{" "}
-              <IconArrowRight width={16} height={16} />
-            </Link>
-            <Link className="l-btn-ghost" to="/vote">
-              <IconHeart width={16} height={16} /> Bình chọn khán giả
-            </Link>
-            <Link className="l-btn-ghost" to="/rankings">
-              <IconTrophy width={16} height={16} /> Bảng xếp hạng
-            </Link>
+            <div className="l-hero-actions">
+              <Link className="l-btn-primary" to={user ? "/app" : "/register"}>
+                {user ? "Vào trang quản trị" : "Đăng ký tham gia ngay"}{" "}
+                <IconArrowRight width={16} height={16} />
+              </Link>
+              <Link className="l-btn-ghost" to="/vote">
+                <IconHeart width={16} height={16} /> Bình chọn khán giả
+              </Link>
+              <Link className="l-btn-ghost" to="/rankings">
+                <IconTrophy width={16} height={16} /> Bảng xếp hạng
+              </Link>
+            </div>
           </div>
 
-          <div className="l-hero-mascot">
-            <MascotBot size={340} variant="hero" />
+          <div className="l-hero-right">
+            <MascotBot size={360} variant="hero" />
           </div>
         </div>
       </section>
@@ -257,15 +291,77 @@ export function LandingPage() {
           <Reveal>
             <div className="l-eyebrow">Phân quyền chuyên biệt</div>
             <h2 className="l-section-title light">Một nền tảng — Đầy đủ mọi vai trò</h2>
+            <p className="l-section-desc" style={{ color: "#94a3b8" }}>
+              Trải nghiệm tùy biến chuyên sâu cho từng chủ thể tham gia với giao diện và phân quyền riêng biệt.
+            </p>
           </Reveal>
-          <div className="l-roles-grid">
-            {ROLES.map((r) => (
-              <Reveal className="l-role-card" key={r.name}>
-                <div className="l-role-icon">{r.icon}</div>
-                <h3>{r.name}</h3>
-                <p>{r.desc}</p>
-              </Reveal>
+
+          {/* Interactive Role Tab Strip */}
+          <div className="l-role-tabs-strip">
+            {ROLES.map((r, idx) => (
+              <button
+                key={r.id}
+                type="button"
+                className={`l-role-tab-btn ${selectedRoleTab === idx ? "active" : ""}`}
+                onClick={() => setSelectedRoleTab(idx)}
+                style={{
+                  borderColor: selectedRoleTab === idx ? r.color : "transparent",
+                  color: selectedRoleTab === idx ? "#ffffff" : "#94a3b8",
+                }}
+              >
+                <span className="l-role-tab-dot" style={{ backgroundColor: r.color }} />
+                {r.name}
+              </button>
             ))}
+          </div>
+
+          <div className="l-roles-grid">
+            {ROLES.map((r, idx) => {
+              const isSelected = selectedRoleTab === idx;
+              return (
+                <div
+                  className={`l-role-card ${isSelected ? "l-role-card-highlighted" : ""}`}
+                  key={r.name}
+                  onClick={() => setSelectedRoleTab(idx)}
+                  style={{
+                    borderColor: isSelected ? r.color : undefined,
+                    boxShadow: isSelected ? `0 14px 34px -4px ${r.bgAlpha}` : undefined,
+                  }}
+                >
+                  <div className="l-role-header">
+                    <div
+                      className="l-role-icon"
+                      style={{
+                        background: r.bgAlpha,
+                        color: r.color,
+                        borderColor: r.borderAlpha,
+                      }}
+                    >
+                      {r.icon}
+                    </div>
+                    <span
+                      className="l-role-tag"
+                      style={{
+                        color: r.color,
+                        background: r.bgAlpha,
+                        borderColor: r.borderAlpha,
+                      }}
+                    >
+                      {r.tag}
+                    </span>
+                  </div>
+                  <h3>{r.name}</h3>
+                  <p>{r.desc}</p>
+                  <ul className="l-role-highlights">
+                    {r.highlights.map((h) => (
+                      <li key={h}>
+                        <span className="l-role-check" style={{ color: r.color }}>✓</span> {h}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>

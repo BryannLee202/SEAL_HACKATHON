@@ -1,3 +1,5 @@
+import { useState, useEffect } from "react";
+
 interface MascotBotProps {
   size?: number;
   className?: string;
@@ -17,17 +19,64 @@ export function MascotBot({
 }: MascotBotProps) {
   const isHero = variant === "hero" || (variant === "auto" && size >= 150);
   const src = isHero ? "/seal-mascot-hero.jpg" : "/seal-mascot-avatar.jpg";
+  const [returned, setReturned] = useState(false);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        setReturned(true);
+        const timer = setTimeout(() => setReturned(false), 1400);
+        return () => clearTimeout(timer);
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, []);
+
+  if (isHero) {
+    return (
+      <div
+        className={`mascot-hero-stage ${returned ? "mascot-tab-return" : ""} ${className}`.trim()}
+        style={{
+          position: "relative",
+          display: "inline-flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          width: size,
+          maxWidth: "100%",
+        }}
+        role="img"
+        aria-label="Mascot SEAL Hackathon"
+      >
+        <img
+          src={src}
+          alt="SEAL Hackathon Robotic Companion"
+          className="mascot-hero-seamless"
+          style={{
+            width: "100%",
+            height: "auto",
+            maxHeight: size,
+            objectFit: "contain",
+            userSelect: "none",
+            pointerEvents: "auto",
+          }}
+        />
+        <div className="l-flight-shadow" />
+      </div>
+    );
+  }
 
   return (
     <div
-      className={`mascot-bot-container ${className}`.trim()}
+      className={`mascot-avatar-container ${className}`.trim()}
       style={{
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
         width: size,
         height: size,
-        borderRadius: isHero ? "4px" : "50%",
+        borderRadius: "50%",
         overflow: "hidden",
       }}
       role="img"
@@ -39,11 +88,7 @@ export function MascotBot({
         style={{
           width: "100%",
           height: "100%",
-          objectFit: "contain",
-          filter: isHero
-            ? "drop-shadow(0 12px 24px rgba(0, 13, 16, 0.08))"
-            : "none",
-          transition: "transform 0.25s ease",
+          objectFit: "cover",
         }}
       />
     </div>
