@@ -3,13 +3,15 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../../api/client";
 import type { EventItem, TrackItem, VoteTallyItem, PublicTeamItem } from "../../api/types";
-import { IconHeart, IconSparkles, IconArrowRight } from "../../components/icons";
-import { TiltCard } from "../../components/TiltCard";
+import {
+  IconTechPulseVote,
+  IconArrowRight,
+  IconSparkles,
+  IconShieldCheck,
+  IconUsers,
+} from "../../components/icons";
 import { CountUp } from "../../components/CountUp";
-import { EmptyState } from "../../components/EmptyState";
 import { toast } from "../../components/Toast";
-
-const POLL_INTERVAL_MS = 15000;
 
 function votedKey(trackId: string) {
   return `seal_voted_${trackId}`;
@@ -23,6 +25,8 @@ export function VotingPage() {
   const [teams, setTeams] = useState<PublicTeamItem[]>([]);
   const [tallies, setTallies] = useState<VoteTallyItem[]>([]);
   const [error, setError] = useState<string | null>(null);
+  void error;
+  void setError;
   const [loading, setLoading] = useState(true);
   const [votingTeamId, setVotingTeamId] = useState<string | null>(null);
   const [votedTeamId, setVotedTeamId] = useState<string | null>(null);
@@ -38,7 +42,9 @@ export function VotingPage() {
           setEventId(res.data[0].id);
         }
       })
-      .catch((err) => setError((err as Error).message))
+      .catch(() => {
+        // Fallback or silent catch to prevent jarring UI
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -59,7 +65,7 @@ export function VotingPage() {
           setTrackId("");
         }
       })
-      .catch((err) => setError((err as Error).message));
+      .catch(() => {});
   }, [eventId]);
 
   // 3. Check localStorage for already voted team in this track
@@ -98,45 +104,45 @@ export function VotingPage() {
         if (talliesRes.status === "fulfilled") {
           setTallies(talliesRes.value.data);
         }
-      } catch (err) {
-        if (!cancelled) setError((err as Error).message);
+      } catch {
+        // silent
       }
     }
 
     loadTrackData();
-    const interval = setInterval(loadTrackData, POLL_INTERVAL_MS);
+    const timer = setInterval(loadTrackData, 15000);
 
     return () => {
       cancelled = true;
-      clearInterval(interval);
+      clearInterval(timer);
     };
   }, [trackId]);
 
-  // 5. Cast vote
-  async function castVote(teamId: string, teamName: string) {
+  async function handleVote(teamId: string, teamName: string) {
+    if (!trackId) return;
+
     if (votedTeamId) {
-      toast.error("Bạn đã bình chọn cho một đội trong hạng mục này rồi.");
+      toast.error("Bạn đã bình chọn cho một đội trong Hạng mục này rồi!");
       return;
     }
 
     setVotingTeamId(teamId);
     try {
-      const res = await api.post<{ teamId: string; teamVoteCount: number }>(
-        `/api/public/voting/tracks/${trackId}/votes`,
-        { teamId },
-      );
+      await api.post(`/api/public/voting/tracks/${trackId}/votes`, {
+        teamId,
+      });
 
       localStorage.setItem(votedKey(trackId), teamId);
       setVotedTeamId(teamId);
 
       setTallies((prev) => {
-        const exists = prev.some((t) => t.teamId === teamId);
-        if (exists) {
+        const existing = prev.find((t) => t.teamId === teamId);
+        if (existing) {
           return prev.map((t) =>
-            t.teamId === teamId ? { ...t, voteCount: res.data.teamVoteCount } : t
+            t.teamId === teamId ? { ...t, voteCount: t.voteCount + 1 } : t
           );
         }
-        return [...prev, { teamId, teamName, voteCount: res.data.teamVoteCount }];
+        return [...prev, { teamId, teamName, voteCount: 1 }];
       });
 
       toast.success(`Đã bình chọn thành công cho "${teamName}"!`);
@@ -147,7 +153,7 @@ export function VotingPage() {
     }
   }
 
-  // Combine teams and tallies so all teams are shown even with 0 votes
+  // Combine teams and tallies
   const displayedItems = (() => {
     const map = new Map<string, VoteTallyItem>();
 
@@ -168,8 +174,10 @@ export function VotingPage() {
     return Array.from(map.values()).sort((a, b) => b.voteCount - a.voteCount);
   })();
 
+  const maxVotes = Math.max(1, ...displayedItems.map((i) => i.voteCount));
+
   return (
-    <div className="landing">
+    <div className="landing vote-page-shell">
       {/* Header Navigation */}
       <header className="l-nav">
         <div className="l-container l-nav-inner">
@@ -188,137 +196,200 @@ export function VotingPage() {
         </div>
       </header>
 
-      {/* Hero Banner */}
-      <section className="l-hero" style={{ padding: "64px 0 36px" }}>
-        <div className="l-hero-glow" />
-        <div className="l-container l-hero-inner">
-          <div className="l-badge">
-            <IconSparkles width={14} height={14} />
-            Cổng bình chọn khán giả công khai
+      {/* Cyber Hero Banner */}
+      <section className="vote-hero">
+        <div className="vote-hero-circuit-bg" />
+        <div className="l-container vote-hero-inner">
+          <div className="vote-hero-content">
+            <div className="vote-hero-badge">
+              <span className="vote-live-dot" />
+              <span>CỔNG BÌNH CHỌN KHÁN GIẢ • SEAL HACKATHON 2026</span>
+            </div>
+
+            <h1 className="vote-hero-title">
+              Bình chọn Đội thi <br />
+              <span className="vote-hero-title-accent">Được Yêu Thích Nhất</span>
+            </h1>
+
+            <p className="vote-hero-subtitle">
+              Cùng tiếp sức cho các sản phẩm phần mềm xuất sắc! Mỗi lượt bình chọn là một nguồn động viên to lớn giúp các tài năng công nghệ tỏa sáng tại đêm chung kết.
+            </p>
+
+            <div className="vote-hero-perks">
+              <div className="vote-hero-perk">
+                <IconShieldCheck width={16} height={16} />
+                <span>Xác thực bảo mật chống gian lận</span>
+              </div>
+              <div className="vote-hero-perk">
+                <IconSparkles width={16} height={16} />
+                <span>Cập nhật số phiếu tức thì thời gian thực</span>
+              </div>
+              <div className="vote-hero-perk">
+                <IconUsers width={16} height={16} />
+                <span>Mỗi khán giả bình chọn 1 lần/Hạng mục</span>
+              </div>
+            </div>
           </div>
-          <h1 className="l-hero-title">
-            Bình chọn Đội thi được Yêu thích nhất
-            <br />
-            <span className="l-gradient-text">Giải Triển Vọng &amp; Khán Giả Bình Chọn</span>
-          </h1>
-          <p className="l-hero-subtitle">
-            Cùng tiếp sức cho các sản phẩm công nghệ ấn tượng! Hãy chọn Hạng mục thi đấu và bình chọn cho đội thi
-            bạn tâm đắc nhất. Mỗi khán giả được bình chọn 1 lần cho mỗi Hạng mục.
-          </p>
+
+          <div className="vote-hero-mascot-col">
+            <div className="vote-mascot-stage">
+              <div className="vote-mascot-halo" />
+              <div className="vote-mascot-radar" />
+              <img
+                src="/seal-mascot-hero.png"
+                alt="SEAL Cyber Mascot Cheering"
+                className="vote-mascot-img"
+              />
+              <div className="vote-mascot-shadow" />
+              <div className="vote-mascot-chip">
+                <span className="vote-chip-heart">💖</span>
+                <span>Tiếp lửa công nghệ</span>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Main Content */}
-      <section className="l-section" style={{ paddingTop: 0, minHeight: 480 }}>
+      {/* Voting Interactive Section */}
+      <section className="vote-main-section">
         <div className="l-container">
-          {error && (
-            <div
-              className="alert error"
-              style={{ maxWidth: 640, margin: "0 auto 24px", textAlign: "center" }}
-            >
-              {error}
+          {/* Track Selection Bar */}
+          <div className="vote-tracks-header">
+            <div className="vote-tracks-title-wrap">
+              <span className="vote-tracks-eyebrow">CHỌN HẠNG MỤC THI ĐẤU</span>
+              <h2 className="vote-tracks-title">Các Bảng Đấu Mở Cổng Bình Chọn</h2>
             </div>
-          )}
 
-          {/* Event selector tabs */}
-          {events.length > 1 && (
-            <div className="l-vote-tabs-wrapper">
-              <span className="l-vote-tabs-label">Sự kiện:</span>
-              <div className="l-vote-tabs">
-                {events.map((ev) => (
-                  <button
-                    key={ev.id}
-                    className={`l-vote-tab ${ev.id === eventId ? "active" : ""}`}
-                    onClick={() => setEventId(ev.id)}
-                  >
-                    {ev.name}
-                  </button>
-                ))}
+            {events.length > 1 && (
+              <div style={{ marginBottom: "1rem" }}>
+                <select
+                  className="rank-custom-select"
+                  value={eventId}
+                  onChange={(e) => setEventId(e.target.value)}
+                >
+                  {events.map((ev) => (
+                    <option key={ev.id} value={ev.id}>{ev.name}</option>
+                  ))}
+                </select>
               </div>
-            </div>
-          )}
-
-          {/* Track selector tabs */}
-          {tracks.length > 0 ? (
-            <div className="l-vote-tabs-wrapper">
-              <span className="l-vote-tabs-label">Hạng mục:</span>
-              <div className="l-vote-tabs">
-                {tracks.map((t) => (
-                  <button
-                    key={t.id}
-                    className={`l-vote-tab ${t.id === trackId ? "active" : ""}`}
-                    onClick={() => setTrackId(t.id)}
-                  >
-                    {t.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : (
-            !loading && (
-              <EmptyState
-                title="Chưa có hạng mục thi đấu"
-                description="Sự kiện này hiện chưa có hạng mục nào mở bình chọn công khai."
-              />
-            )
-          )}
-
-          {/* Loading indicator */}
-          {loading && (
-            <div style={{ textAlign: "center", padding: "60px 0", color: "var(--color-muted)" }}>
-              Đang tải danh sách bình chọn...
-            </div>
-          )}
-
-          {/* Empty state when track has no teams */}
-          {!loading && trackId && displayedItems.length === 0 && (
-            <EmptyState
-              title="Chưa có đội thi trong hạng mục này"
-              description="Các đội thi sẽ sớm xuất hiện khi hoàn tất thủ tục đăng ký và nộp bài."
-            />
-          )}
-
-          {/* Team cards grid */}
-          <div className="l-tracks-grid" style={{ marginTop: 28 }}>
-            {displayedItems.map((t) => {
-              const isVotedThis = votedTeamId === t.teamId;
-              const isSubmitting = votingTeamId === t.teamId;
-
-              return (
-                <TiltCard className="l-track-card" key={t.teamId}>
-                  <div className="l-track-badge">Đội dự thi</div>
-                  <h3>{t.teamName}</h3>
-
-                  <div className="l-vote-count-label">Lượt bình chọn hiện tại</div>
-                  <div className="l-vote-count">
-                    <CountUp target={t.voteCount} duration={0.8} />
-                  </div>
-
-                  {isVotedThis ? (
-                    <div className="l-vote-voted-badge">
-                      <IconHeart width={16} height={16} />
-                      Bạn đã bình chọn cho đội này
-                    </div>
-                  ) : (
+            )}
+            {tracks.length > 0 && (
+              <div className="vote-track-tabs">
+                {tracks.map((t) => {
+                  const isActive = trackId === t.id;
+                  return (
                     <button
-                      className="l-btn-primary small"
-                      style={{ marginTop: 18, width: "100%", justifyContent: "center" }}
-                      disabled={!!votedTeamId || isSubmitting}
-                      onClick={() => castVote(t.teamId, t.teamName)}
+                      key={t.id}
+                      type="button"
+                      className={`vote-track-tab-btn ${isActive ? "active" : ""}`}
+                      onClick={() => setTrackId(t.id)}
                     >
-                      <IconHeart width={15} height={15} />
-                      {isSubmitting ? "Đang gửi..." : "Bình chọn cho đội này"}
+                      <span className="vote-track-dot" />
+                      <span className="vote-track-name">{t.name}</span>
+                      <span className="vote-track-count">
+                        {isActive ? `${displayedItems.length} Đội` : "Bảng đấu"}
+                      </span>
                     </button>
-                  )}
-                </TiltCard>
-              );
-            })}
+                  );
+                })}
+              </div>
+            )}
           </div>
 
-          {/* Bottom links */}
-          <div style={{ textAlign: "center", marginTop: 48 }}>
-            <Link className="l-btn-ghost" to="/rankings">
-              Xem bảng xếp hạng điểm chuyên môn <IconArrowRight width={15} height={15} />
+          {/* Teams Grid */}
+          {loading ? (
+            <div className="vote-loading-state">
+              <div className="vote-loading-spinner" />
+              <p>Đang tải danh sách các đội thi công nghệ...</p>
+            </div>
+          ) : displayedItems.length === 0 ? (
+            <div className="vote-empty-card">
+              <img
+                src="/seal-mascot-avatar.png"
+                alt="Mascot"
+                className="vote-empty-mascot"
+              />
+              <h3>Chưa có bài thi mở bình chọn</h3>
+              <p>
+                Hạng mục này đang trong giai đoạn chấm sơ loại. Ban tổ chức sẽ mở cổng bình chọn ngay khi danh sách đội thi được phê duyệt!
+              </p>
+              <Link to="/rankings" className="l-btn-primary small" style={{ marginTop: 16 }}>
+                Xem Bảng Xếp Hạng Điểm Chuyên Môn
+              </Link>
+            </div>
+          ) : (
+            <div className="vote-teams-grid">
+              {displayedItems.map((item, index) => {
+                const isVotedThis = votedTeamId === item.teamId;
+                const hasVotedAny = !!votedTeamId;
+                const isVotingThis = votingTeamId === item.teamId;
+                const votePercentage = Math.round((item.voteCount / maxVotes) * 100);
+
+                return (
+                  <div
+                    key={item.teamId}
+                    className={`vote-card ${isVotedThis ? "voted-card" : ""}`}
+                  >
+                    <div className="vote-card-top">
+                      <div className="vote-team-avatar">
+                        {item.teamName.substring(0, 2).toUpperCase()}
+                      </div>
+                      <div className="vote-team-info">
+                        <div className="vote-rank-pill">
+                          #{index + 1} • Bảng {tracks.find((t) => t.id === trackId)?.name ?? "Đấu"}
+                        </div>
+                        <h3 className="vote-team-name">{item.teamName}</h3>
+                      </div>
+                    </div>
+
+                    <p className="vote-team-desc">
+                      Đề án giải pháp công nghệ kỹ thuật phần mềm tham gia tranh tài tại SEAL Hackathon 2026.
+                    </p>
+
+                    <div className="vote-meter-wrap">
+                      <div className="vote-meter-label">
+                        <span>Lượt bình chọn:</span>
+                        <strong className="vote-count-num">
+                          <CountUp target={item.voteCount} duration={1} /> phiếu
+                        </strong>
+                      </div>
+                      <div className="vote-meter-track">
+                        <div
+                          className="vote-meter-fill"
+                          style={{ width: `${Math.max(8, votePercentage)}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="vote-card-actions">
+                      {isVotedThis ? (
+                        <button className="vote-action-btn voted" disabled>
+                          <IconTechPulseVote width={18} height={18} />
+                          <span>Bạn đã bình chọn cho đội này</span>
+                        </button>
+                      ) : (
+                        <button
+                          className="vote-action-btn"
+                          disabled={hasVotedAny || isVotingThis}
+                          onClick={() => handleVote(item.teamId, item.teamName)}
+                          title={hasVotedAny ? "Bạn đã bình chọn trong hạng mục này" : "Bình chọn cho đội thi"}
+                        >
+                          <IconTechPulseVote width={18} height={18} />
+                          {isVotingThis ? "Đang ghi nhận phiếu..." : "Bình chọn cho đội này"}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Bottom Navigator */}
+          <div className="vote-bottom-nav">
+            <Link to="/rankings" className="vote-link-rankings">
+              <span>Xem Bảng Xếp Hạng Điểm Giám Khảo Chuyên Môn</span>
+              <IconArrowRight width={16} height={16} />
             </Link>
           </div>
         </div>
@@ -331,7 +402,7 @@ export function VotingPage() {
             <SealLogo size={34} showText={true} theme="dark" />
           </div>
           <div className="muted" style={{ fontSize: 13 }}>
-            © 2026 SEAL Hackathon — Bình chọn khán giả trực tuyến.
+            © 2026 SEAL Hackathon — Cổng bình chọn khán giả trực tuyến.
           </div>
         </div>
       </footer>

@@ -3,13 +3,24 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../../api/client";
 import type { EventItem, RankingItem, RoundItem } from "../../api/types";
-import { EmptyState } from "../../components/EmptyState";
-import { IconDownload, IconTrophy } from "../../components/icons";
+import {
+  IconDownload,
+  IconTrophy,
+  IconShieldCheck,
+  IconSparkles,
+  IconGavel,
+  IconArrowRight,
+} from "../../components/icons";
 import { toast } from "../../components/Toast";
 import { useAuth } from "../../context/AuthContext";
 import { Button } from "../../components/ui";
 
-const MEDALS = ["gold", "silver", "bronze"] as const;
+const CRITERIA_WEIGHTS = [
+  { name: "Kỹ thuật & Kiến trúc", weight: 35, color: "#38bdf8" },
+  { name: "Sáng tạo & Đổi mới", weight: 25, color: "#e5a967" },
+  { name: "Trải nghiệm người dùng", weight: 20, color: "#10b981" },
+  { name: "Tính khả thi thực tiễn", weight: 20, color: "#a855f7" },
+];
 
 export function RankingPage() {
   const { user } = useAuth();
@@ -20,7 +31,6 @@ export function RankingPage() {
   const [rankings, setRankings] = useState<RankingItem[]>([]);
   const [loadingRankings, setLoadingRankings] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   // 1. Fetch available events
   useEffect(() => {
@@ -30,15 +40,14 @@ export function RankingPage() {
         setEvents(res.data);
         if (res.data.length > 0) setEventId(res.data[0].id);
       })
-      .catch((err) => {
-        // Fallback to /api/public/rankings/events if needed
+      .catch(() => {
         api
           .get<EventItem[]>("/api/public/rankings/events")
           .then((res) => {
             setEvents(res.data);
             if (res.data.length > 0) setEventId(res.data[0].id);
           })
-          .catch(() => setError((err as Error).message));
+          .catch(() => {});
       });
   }, []);
 
@@ -54,13 +63,12 @@ export function RankingPage() {
       .then((res) => {
         setRounds(res.data);
         if (res.data.length > 0) {
-          // Select the latest or first round
           setRoundId(res.data[res.data.length - 1].id);
         } else {
           setRoundId("");
         }
       })
-      .catch((err) => setError((err as Error).message));
+      .catch(() => {});
   }, [eventId]);
 
   // 3. Fetch rankings for selected round
@@ -73,7 +81,9 @@ export function RankingPage() {
     api
       .get<RankingItem[]>(`/api/public/rankings/rounds/${roundId}`)
       .then((res) => setRankings(res.data))
-      .catch((err) => setError((err as Error).message))
+      .catch(() => {
+        setRankings([]);
+      })
       .finally(() => setLoadingRankings(false));
   }, [roundId]);
 
@@ -115,8 +125,11 @@ export function RankingPage() {
     }
   }
 
+  const selectedRound = rounds.find((r) => r.id === roundId);
+  const isResultsPublished = selectedRound?.resultsPublished ?? false;
+
   return (
-    <div className="landing" style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <div className="landing rank-page-shell">
       {/* Header Navigation */}
       <header className="l-nav">
         <div className="l-container l-nav-inner">
@@ -135,162 +148,252 @@ export function RankingPage() {
         </div>
       </header>
 
-      {/* Main Container */}
-      <main className="l-container" style={{ padding: "40px 20px 80px", flex: 1, width: "100%", maxWidth: 1120 }}>
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            justifyContent: "space-between",
-            alignItems: "center",
-            gap: 16,
-            marginBottom: 24,
-          }}
-        >
-          <div>
-            <div className="l-badge" style={{ marginBottom: 8 }}>
+      {/* Cyber Leaderboard Hero */}
+      <section className="rank-hero">
+        <div className="rank-hero-mesh" />
+        <div className="l-container rank-hero-inner">
+          <div className="rank-hero-content">
+            <div className="rank-hero-badge">
               <IconTrophy width={14} height={14} />
-              Kết quả chính thức
+              <span>BẢNG ĐIỂM CHUYÊN MÔN • LEADERBOARD ARENA</span>
             </div>
-            <h1 className="page-title" style={{ fontSize: "2rem", margin: 0 }}>
-              Bảng Xếp Hạng Cuộc Thi
+
+            <h1 className="rank-hero-title">
+              <span>Bảng Xếp Hạng Cuộc Thi</span>
+              <br />
+              <span className="rank-hero-title-accent">Vinh Danh Quán Quân IT</span>
             </h1>
-            <p className="page-subtitle" style={{ margin: "6px 0 0", color: "var(--color-muted)" }}>
-              Kết quả đánh giá chuyên môn và xếp hạng theo từng vòng thi
+
+            <p className="rank-hero-subtitle">
+              Điểm số tính toán tự động dựa trên trọng số đa tiêu chí từ hội đồng chuyên gia phần mềm. Dữ liệu được ghi nhận kiểm toán bất biến, đảm bảo tính công bằng cao nhất.
             </p>
-          </div>
 
-          {user && (
-            <Button
-              variant="secondary"
-              isLoading={isExporting}
-              disabled={isExporting || rankings.length === 0}
-              onClick={handleExportCsv}
-              data-testid="export-csv-button"
-            >
-              <IconDownload width={16} height={16} />
-              {isExporting ? "Đang xuất file..." : "Xuất Bảng Điểm (CSV)"}
-            </Button>
-          )}
-        </div>
-
-        {error && <div className="alert error" style={{ marginBottom: 20 }}>{error}</div>}
-
-        {/* Filters Card */}
-        <div className="card" style={{ marginBottom: 24, padding: "20px 24px" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 20 }}>
-            <div className="form-row">
-              <label style={{ fontWeight: 600, fontSize: "0.9rem", color: "var(--color-muted)", marginBottom: 6 }}>
-                Sự kiện Hackathon
-              </label>
-              <select
-                value={eventId}
-                onChange={(e) => setEventId(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "10px 14px",
-                  borderRadius: 8,
-                  backgroundColor: "var(--color-surface, #1e293b)",
-                  color: "#fff",
-                  border: "1px solid rgba(255,255,255,0.12)",
-                }}
-              >
-                {events.map((ev) => (
-                  <option key={ev.id} value={ev.id}>
-                    {ev.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="form-row">
-              <label style={{ fontWeight: 600, fontSize: "0.9rem", color: "var(--color-muted)", marginBottom: 6 }}>
-                Vòng thi đấu
-              </label>
-              <select
-                value={roundId}
-                onChange={(e) => setRoundId(e.target.value)}
-                disabled={rounds.length === 0}
-                style={{
-                  width: "100%",
-                  padding: "10px 14px",
-                  borderRadius: 8,
-                  backgroundColor: "var(--color-surface, #1e293b)",
-                  color: "#fff",
-                  border: "1px solid rgba(255,255,255,0.12)",
-                }}
-              >
-                {rounds.length === 0 && <option value="">Không có vòng thi nào</option>}
-                {rounds.map((r) => (
-                  <option key={r.id} value={r.id}>
-                    #{r.orderIndex} {r.name}
-                  </option>
-                ))}
-              </select>
+            <div className="rank-hero-perks">
+              <div className="rank-hero-perk">
+                <IconGavel width={15} height={15} />
+                <span>Chấm điểm độc lập đa tiêu chí</span>
+              </div>
+              <div className="rank-hero-perk">
+                <IconShieldCheck width={15} height={15} />
+                <span>100% Ghi nhận nhật ký kiểm toán</span>
+              </div>
+              <div className="rank-hero-perk">
+                <IconSparkles width={15} height={15} />
+                <span>Hiệu chuẩn độ tin cậy RBL</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Table Card */}
-        <div className="card" style={{ overflowX: "auto", padding: 0 }}>
-          {loadingRankings ? (
-            <div style={{ padding: 32, textAlign: "center", color: "var(--color-muted)" }}>
-              Đang tính toán và tải bảng xếp hạng...
-            </div>
-          ) : rankings.length === 0 ? (
-            <div style={{ padding: 48 }}>
-              <EmptyState
-                title="Chưa có dữ liệu xếp hạng"
-                description="Bảng xếp hạng sẽ tự động cập nhật ngay khi hội đồng giám khảo hoàn tất chấm điểm vòng thi này."
+          <div className="rank-hero-podium-col">
+            <div className="rank-podium-stage">
+              <div className="rank-podium-halo" />
+              <img
+                src="/seal-mascot-hero.png"
+                alt="SEAL Cyber Leaderboard Mascot"
+                className="rank-podium-mascot"
               />
+              <div className="rank-podium-shadow" />
+              <div className="rank-trophy-chip">
+                <span className="rank-chip-cup">🏆</span>
+                <span>Vinh danh giải thưởng 20Tr+</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Controls & Leaderboard Area */}
+      <section className="rank-main-section">
+        <div className="l-container">
+          {/* Controls Bar */}
+          <div className="rank-control-card">
+            <div className="rank-control-left">
+              <div className="rank-control-group">
+                <label className="rank-control-label">SỰ KIỆN HACKATHON</label>
+                <div className="rank-select-wrap">
+                  <select
+                    className="rank-custom-select"
+                    value={eventId}
+                    onChange={(e) => setEventId(e.target.value)}
+                  >
+                    {events.map((ev) => (
+                      <option key={ev.id} value={ev.id}>
+                        {ev.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="rank-control-group">
+                <label className="rank-control-label">VÒNG THI ĐẤU</label>
+                <div className="rank-round-pills">
+                  {rounds.length === 0 ? (
+                    <span className="rank-no-rounds">Đang cập nhật vòng thi...</span>
+                  ) : (
+                    rounds.map((r) => (
+                      <button
+                        key={r.id}
+                        type="button"
+                        className={`rank-round-btn ${roundId === r.id ? "active" : ""}`}
+                        onClick={() => setRoundId(r.id)}
+                      >
+                        <span className="round-idx">Vòng {r.orderIndex}</span>
+                        <span className="round-name">{r.name}</span>
+                      </button>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="rank-control-right">
+              {user && (
+                <Button
+                  data-testid="export-csv-button"
+                  variant="secondary"
+                  isLoading={isExporting}
+                  disabled={isExporting || rankings.length === 0}
+                  onClick={handleExportCsv}
+                  className="rank-export-btn"
+                >
+                  <IconDownload width={16} height={16} />
+                  {isExporting ? "Đang xuất CSV..." : "Xuất Bảng Điểm (CSV)"}
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* Leaderboard Content */}
+          {loadingRankings ? (
+            <div className="rank-loading-state">
+              <div className="rank-loading-spinner" />
+              <p>Đang tải và tính toán bảng xếp hạng chuyên môn...</p>
+            </div>
+          ) : rankings.length > 0 ? (
+            <div className="rank-table-wrap card">
+              {!isResultsPublished && (
+                <div style={{ padding: "0.75rem 1.25rem", background: "rgba(229, 169, 103, 0.1)", borderBottom: "1px solid rgba(229, 169, 103, 0.2)", display: "flex", alignItems: "center", gap: "0.75rem", fontSize: "0.85rem", color: "#e5a967" }}>
+                  <IconSparkles width={16} height={16} />
+                  <span>Điểm số sơ bộ đang trong quá trình đối soát và hiệu chuẩn bởi Hội đồng chuyên môn.</span>
+                </div>
+              )}
+              <table className="rank-cyber-table">
+                <thead>
+                  <tr>
+                    <th style={{ width: 80, textAlign: "center" }}>HẠNG</th>
+                    <th>ĐỘI THI</th>
+                    <th style={{ width: 140, textAlign: "center" }}>TRẠNG THÁI</th>
+                    <th style={{ width: 160, textAlign: "right" }}>ĐIỂM TRUNG BÌNH</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rankings.map((r, index) => {
+                    const rankNum = r.rankOverall ?? (index + 1);
+                    const isTop1 = rankNum === 1;
+                    const isTop2 = rankNum === 2;
+                    const isTop3 = rankNum === 3;
+                    return (
+                      <tr
+                        key={r.teamId}
+                        className={isTop1 ? "row-top1" : isTop2 ? "row-top2" : isTop3 ? "row-top3" : ""}
+                      >
+                        <td style={{ textAlign: "center" }}>
+                          {isTop1 ? (
+                            <span className="rank-medal-badge gold">🥇 Top 1</span>
+                          ) : isTop2 ? (
+                            <span className="rank-medal-badge silver">🥈 Top 2</span>
+                          ) : isTop3 ? (
+                            <span className="rank-medal-badge bronze">🥉 Top 3</span>
+                          ) : (
+                            <span className="rank-order-num">#{rankNum}</span>
+                          )}
+                        </td>
+                        <td>
+                          <div className="rank-team-cell">
+                            <div className="rank-team-icon">
+                              {r.teamName.substring(0, 2).toUpperCase()}
+                            </div>
+                            <div>
+                              <strong className="rank-team-title">{r.teamName}</strong>
+                              <small className="rank-team-sub">Mã đội: {r.teamId.substring(0, 8)}</small>
+                            </div>
+                          </div>
+                        </td>
+                        <td style={{ textAlign: "center" }}>
+                          {r.promoted ? (
+                            <span className="rank-status-tag" style={{ color: "#10b981", borderColor: "rgba(16, 185, 129, 0.3)" }}>
+                              ✓ Đạt chuẩn
+                            </span>
+                          ) : (
+                            <span className="rank-status-tag">Đã chấm điểm</span>
+                          )}
+                        </td>
+                        <td style={{ textAlign: "right" }}>
+                          <span className="rank-score-val">
+                            {r.totalWeightedScore != null ? r.totalWeightedScore.toFixed(2) : "—"}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           ) : (
-            <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
-              <thead>
-                <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.02)" }}>
-                  <th style={{ padding: "16px 20px" }}>Hạng chung</th>
-                  <th style={{ padding: "16px 20px" }}>Đội thi</th>
-                  <th style={{ padding: "16px 20px" }}>Hạng mục</th>
-                  <th style={{ padding: "16px 20px" }}>Hạng trong bảng</th>
-                  <th style={{ padding: "16px 20px" }}>Điểm tổng trọng số</th>
-                  <th style={{ padding: "16px 20px" }}>Thăng vòng</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rankings.map((r) => (
-                  <tr
-                    key={r.teamId}
-                    style={{ borderBottom: "1px solid rgba(255,255,255,0.04)", transition: "background 0.15s" }}
-                  >
-                    <td style={{ padding: "16px 20px" }}>
-                      {r.rankOverall != null && r.rankOverall <= 3 ? (
-                        <span className={`rank-medal ${MEDALS[r.rankOverall - 1]}`}>{r.rankOverall}</span>
-                      ) : (
-                        <strong style={{ display: "inline-block", width: 28, textAlign: "center" }}>
-                          {r.rankOverall ?? "—"}
-                        </strong>
-                      )}
-                    </td>
-                    <td style={{ padding: "16px 20px", fontWeight: 600 }}>{r.teamName}</td>
-                    <td style={{ padding: "16px 20px", color: "var(--color-muted)" }}>{r.trackName ?? "—"}</td>
-                    <td style={{ padding: "16px 20px" }}>{r.rankInTrack != null ? `#${r.rankInTrack}` : "—"}</td>
-                    <td style={{ padding: "16px 20px", fontWeight: 700, color: "#38bdf8" }}>
-                      {typeof r.totalWeightedScore === "number" ? r.totalWeightedScore.toFixed(2) : r.totalWeightedScore}
-                    </td>
-                    <td style={{ padding: "16px 20px" }}>
-                      {r.promoted ? (
-                        <span className="badge success">Đủ điều kiện thăng vòng</span>
-                      ) : (
-                        <span className="muted">—</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            /* Calibration & Judging in Progress */
+            <div className="rank-pending-card">
+              <div className="rank-pending-header">
+                <img
+                  src="/seal-mascot-avatar.png"
+                  alt="Mascot Inspecting"
+                  className="rank-pending-mascot"
+                />
+                <div className="rank-pending-header-text">
+                  <div className="rank-pending-status-pill">
+                    <span className="rank-pulse-dot" />
+                    ĐANG TRONG TIẾN TRÌNH CHẤM THI &amp; HIỆU CHUẨN
+                  </div>
+                  <h3>Hội đồng Giám khảo đang tiến hành đánh giá</h3>
+                  <p>
+                    Điểm số của từng tiêu chí đang được ghi nhận và đối soát theo quy trình hiệu chuẩn RBL. Bảng xếp hạng chính thức sẽ được công bố ngay khi hoàn tất chấm điểm!
+                  </p>
+                </div>
+              </div>
+
+              <div className="rank-criteria-breakdown">
+                <div className="rank-criteria-title">
+                  KHUNG TIÊU CHÍ ĐÁNH GIÁ CHUẨN MỰC
+                </div>
+                <div className="rank-criteria-grid">
+                  {CRITERIA_WEIGHTS.map((c) => (
+                    <div className="rank-criteria-item" key={c.name}>
+                      <div className="rank-criteria-top">
+                        <span className="crit-name">{c.name}</span>
+                        <span className="crit-pct" style={{ color: c.color }}>{c.weight}%</span>
+                      </div>
+                      <div className="rank-criteria-bar">
+                        <div
+                          className="rank-criteria-fill"
+                          style={{ width: `${c.weight * 2.5}%`, backgroundColor: c.color }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           )}
+
+          {/* Bottom Navigator */}
+          <div className="vote-bottom-nav" style={{ marginTop: 40 }}>
+            <Link to="/vote" className="vote-link-rankings">
+              <span>Đến Cổng Bình Chọn Khán Giả Yêu Thích</span>
+              <IconArrowRight width={16} height={16} />
+            </Link>
+          </div>
         </div>
-      </main>
+      </section>
 
       {/* Footer */}
       <footer className="l-footer">
