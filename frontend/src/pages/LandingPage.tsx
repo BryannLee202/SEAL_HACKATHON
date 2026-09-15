@@ -124,7 +124,7 @@ export function LandingPage() {
           </div>
 
           <div className="l-hero-mascot">
-            <MascotBot size={220} />
+            <MascotBot size={340} variant="hero" />
           </div>
         </div>
       </section>
