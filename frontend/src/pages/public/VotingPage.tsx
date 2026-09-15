@@ -1,3 +1,4 @@
+import { SealLogo } from "../../components/SealLogo";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../../api/client";
@@ -172,9 +173,8 @@ export function VotingPage() {
       {/* Header Navigation */}
       <header className="l-nav">
         <div className="l-container l-nav-inner">
-          <Link className="l-nav-brand" to="/">
-            <div className="l-nav-mark">SH</div>
-            SEAL Hackathon
+          <Link className="l-nav-brand" to="/" style={{ textDecoration: "none" }}>
+            <SealLogo size={36} showText={true} />
           </Link>
           <div className="l-nav-links">
             <Link to="/">Trang chủ</Link>
@@ -328,8 +328,7 @@ export function VotingPage() {
       <footer className="l-footer">
         <div className="l-container l-footer-inner">
           <div className="l-footer-brand">
-            <div className="l-nav-mark">SH</div>
-            SEAL Hackathon Management System
+            <SealLogo size={34} showText={true} theme="dark" />
           </div>
           <div className="muted" style={{ fontSize: 13 }}>
             © 2026 SEAL Hackathon — Bình chọn khán giả trực tuyến.

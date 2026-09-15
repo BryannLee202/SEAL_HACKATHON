@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { MascotBot } from "../components/MascotBot";
+import { SealLogo } from "../components/SealLogo";
 import { CountUp } from "../components/CountUp";
 import {
   IconCalendar,
@@ -56,10 +57,56 @@ const CRITERIA = [
   { weight: 20, name: "Tính khả thi & Tiềm năng ứng dụng", desc: "Khả năng thương mại hóa, giải quyết nhu cầu xã hội và mô hình triển khai bền vững." },
 ];
 
+const FEATURES = [
+  {
+    image: "/images/feat-rounds.jpg",
+    icon: <IconCalendar width={18} height={18} />,
+    tag: "Lộ trình & Bảng đấu",
+    title: "Quản lý Đa vòng & Hạng mục",
+    desc: "Cấu hình linh hoạt vòng loại, chung kết, các bảng thi đấu chuyên đề và luật thăng hạng Top N tự động.",
+  },
+  {
+    image: "/images/feat-scoring.jpg",
+    icon: <IconGavel width={18} height={18} />,
+    tag: "Hội đồng Giám khảo",
+    title: "Chấm điểm Tiêu chí có Trọng số",
+    desc: "Giám khảo chấm độc lập theo từng tiêu chí, tính điểm trực tiếp và ghi nhận nhận xét chi tiết từng bài thi.",
+  },
+  {
+    image: "/images/feat-voting.jpg",
+    icon: <IconHeart width={18} height={18} />,
+    tag: "Tương tác Cộng đồng",
+    title: "Bình chọn Khán giả Công khai",
+    desc: "Cổng bình chọn trực tuyến cho khán giả theo dõi đội thi yêu thích và cập nhật lượt vote tức thì thời gian thực.",
+  },
+  {
+    image: "/images/feat-ranking.jpg",
+    icon: <IconTrophy width={18} height={18} />,
+    tag: "Vinh danh & Báo cáo",
+    title: "Xếp hạng & Xuất kết quả Excel",
+    desc: "Tự động xếp hạng theo bảng và toàn cuộc thi, hỗ trợ xuất báo cáo xếp hạng chuẩn định dạng Excel/CSV.",
+  },
+  {
+    image: "/images/feat-audit.jpg",
+    icon: <IconShieldCheck width={18} height={18} />,
+    tag: "Minh bạch Tuyệt đối",
+    title: "Nhật ký Kiểm toán (Audit Log)",
+    desc: "Mọi hành động phê duyệt, chấm điểm, loại đội đều được ghi log bất biến, đảm bảo tính công bằng cao nhất.",
+  },
+  {
+    image: "/images/feat-research.jpg",
+    icon: <IconSparkles width={18} height={18} />,
+    tag: "Độ tin cậy Khoa học",
+    title: "Hiệu chuẩn & Nghiên cứu RBL",
+    desc: "Thu thập phân phối điểm số của giám khảo nội bộ và chuyên gia khách mời phục vụ phân tích độ tin cậy ICC.",
+  },
+];
+
 const ROLES = [
   {
     id: "team",
-    icon: <IconUsers width={24} height={24} />,
+    image: "/images/role-team.jpg",
+    icon: <IconUsers width={22} height={22} />,
     name: "Thành viên & Đội trưởng",
     tag: "Thí sinh tranh tài",
     color: "#38bdf8",
@@ -74,7 +121,8 @@ const ROLES = [
   },
   {
     id: "judge",
-    icon: <IconGavel width={24} height={24} />,
+    image: "/images/role-judge.jpg",
+    icon: <IconGavel width={22} height={22} />,
     name: "Hội đồng Giám khảo",
     tag: "Đánh giá chuyên môn",
     color: "#bc7155",
@@ -89,7 +137,8 @@ const ROLES = [
   },
   {
     id: "coord",
-    icon: <IconShieldCheck width={24} height={24} />,
+    image: "/images/role-coord.jpg",
+    icon: <IconShieldCheck width={22} height={22} />,
     name: "Ban Điều phối (Coordinator)",
     tag: "Vận hành sự kiện",
     color: "#10b981",
@@ -192,53 +241,25 @@ export function LandingPage() {
           </Reveal>
 
           <div className="l-feature-grid">
-            <Reveal className="l-feature-card">
-              <div className="l-feature-icon">
-                <IconCalendar />
-              </div>
-              <h3>Quản lý Đa vòng &amp; Hạng mục</h3>
-              <p>Cấu hình linh hoạt vòng loại, chung kết, các bảng thi đấu chuyên đề và luật thăng hạng Top N.</p>
-            </Reveal>
-
-            <Reveal className="l-feature-card">
-              <div className="l-feature-icon">
-                <IconGavel />
-              </div>
-              <h3>Chấm điểm Tiêu chí có Trọng số</h3>
-              <p>Giám khảo chấm độc lập theo từng tiêu chí, tính điểm trực tiếp và ghi nhận nhận xét chi tiết.</p>
-            </Reveal>
-
-            <Reveal className="l-feature-card">
-              <div className="l-feature-icon">
-                <IconHeart />
-              </div>
-              <h3>Bình chọn Khán giả Công khai</h3>
-              <p>Cổng bình chọn trực tuyến cho khán giả theo dõi đội thi yêu thích và cập nhật lượt vote tức thì.</p>
-            </Reveal>
-
-            <Reveal className="l-feature-card">
-              <div className="l-feature-icon">
-                <IconTrophy />
-              </div>
-              <h3>Xếp hạng &amp; Xuất kết quả Excel</h3>
-              <p>Tự động xếp hạng theo bảng và toàn cuộc thi, hỗ trợ xuất báo cáo xếp hạng định dạng Excel/CSV.</p>
-            </Reveal>
-
-            <Reveal className="l-feature-card">
-              <div className="l-feature-icon">
-                <IconShieldCheck />
-              </div>
-              <h3>Nhật ký Kiểm toán (Audit Log)</h3>
-              <p>Mọi hành động phê duyệt, chấm điểm, loại đội đều được ghi log bất biến, đảm bảo tính công bằng.</p>
-            </Reveal>
-
-            <Reveal className="l-feature-card">
-              <div className="l-feature-icon">
-                <IconSparkles />
-              </div>
-              <h3>Hiệu chuẩn &amp; Nghiên cứu RBL</h3>
-              <p>Thu thập phân phối điểm số của giám khảo nội bộ và giám khảo khách mời phục vụ phân tích ICC.</p>
-            </Reveal>
+            {FEATURES.map((f) => (
+              <Reveal className="l-feature-card" key={f.title}>
+                <div className="l-feature-img-wrap">
+                  <img
+                    src={f.image}
+                    alt={f.title}
+                    className="l-feature-img"
+                    loading="lazy"
+                  />
+                  <div className="l-feature-img-overlay" />
+                  <span className="l-feature-tag">{f.tag}</span>
+                  <div className="l-feature-icon-badge">{f.icon}</div>
+                </div>
+                <div className="l-feature-body">
+                  <h3>{f.title}</h3>
+                  <p>{f.desc}</p>
+                </div>
+              </Reveal>
+            ))}
           </div>
         </div>
       </section>
@@ -328,7 +349,23 @@ export function LandingPage() {
                     boxShadow: isSelected ? `0 14px 34px -4px ${r.bgAlpha}` : undefined,
                   }}
                 >
-                  <div className="l-role-header">
+                  <div className="l-role-img-wrap">
+                    <img
+                      src={r.image}
+                      alt={r.name}
+                      className="l-role-img"
+                      loading="lazy"
+                    />
+                    <div className="l-role-img-overlay" />
+                    <span
+                      className="l-role-tag"
+                      style={{
+                        color: r.color,
+                        borderColor: r.borderAlpha,
+                      }}
+                    >
+                      {r.tag}
+                    </span>
                     <div
                       className="l-role-icon"
                       style={{
@@ -339,26 +376,18 @@ export function LandingPage() {
                     >
                       {r.icon}
                     </div>
-                    <span
-                      className="l-role-tag"
-                      style={{
-                        color: r.color,
-                        background: r.bgAlpha,
-                        borderColor: r.borderAlpha,
-                      }}
-                    >
-                      {r.tag}
-                    </span>
                   </div>
-                  <h3>{r.name}</h3>
-                  <p>{r.desc}</p>
-                  <ul className="l-role-highlights">
-                    {r.highlights.map((h) => (
-                      <li key={h}>
-                        <span className="l-role-check" style={{ color: r.color }}>✓</span> {h}
-                      </li>
-                    ))}
-                  </ul>
+                  <div className="l-role-body">
+                    <h3>{r.name}</h3>
+                    <p>{r.desc}</p>
+                    <ul className="l-role-highlights">
+                      {r.highlights.map((h) => (
+                        <li key={h}>
+                          <span className="l-role-check" style={{ color: r.color }}>✓</span> {h}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               );
             })}
@@ -426,8 +455,7 @@ export function LandingPage() {
       <footer className="l-footer">
         <div className="l-container l-footer-inner">
           <div className="l-footer-brand">
-            <div className="l-nav-mark">SH</div>
-            SEAL Hackathon Management System
+            <SealLogo size={34} showText={true} theme="dark" />
           </div>
           <div className="muted" style={{ fontSize: 13 }}>
             © 2026 SEAL Hackathon — Ngành Kỹ thuật Phần mềm (SE Department).
@@ -442,9 +470,8 @@ function LandingNav({ loggedIn }: { loggedIn: boolean }) {
   return (
     <header className="l-nav">
       <div className="l-container l-nav-inner">
-        <Link className="l-nav-brand" to="/">
-          <div className="l-nav-mark">SH</div>
-          SEAL Hackathon
+        <Link className="l-nav-brand" to="/" style={{ textDecoration: "none" }}>
+          <SealLogo size={36} showText={true} />
         </Link>
         <nav className="l-nav-links">
           <a href="#about">Về cuộc thi</a>

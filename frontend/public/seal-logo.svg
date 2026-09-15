@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" width="240" height="60" fill="none">
+  <defs>
+    <linearGradient id="sealBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0B131F"/>
+      <stop offset="100%" stop-color="#192434"/>
+    </linearGradient>
+    <linearGradient id="sealBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#BC7155"/>
+      <stop offset="50%" stop-color="#E5A967"/>
+      <stop offset="100%" stop-color="#BC7155"/>
+    </linearGradient>
+    <linearGradient id="sealBody" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="70%" stop-color="#DDE4ED"/>
+      <stop offset="100%" stop-color="#B8C4D4"/>
+    </linearGradient>
+    <linearGradient id="sealGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E5A967"/>
+      <stop offset="100%" stop-color="#BC7155"/>
+    </linearGradient>
+    <filter id="amberGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1.5" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Brand Emblem Box -->
+  <rect x="2" y="6" width="48" height="48" rx="14" fill="url(#sealBg)" stroke="url(#sealBorder)" stroke-width="1.8"/>
+
+  <!-- Background subtle tech grid lines inside emblem -->
+  <path d="M12 18 L38 44 M12 30 L26 44 M24 14 L40 30" stroke="rgba(229,169,103,0.12)" stroke-width="1" stroke-dasharray="2 2"/>
+
+  <!-- Stylized Aerodynamic Cyber-Seal -->
+  <!-- Tail flukes -->
+  <path d="M13 36 C10 39, 9 41, 11 42 C13 41, 15 38, 16 35 C17 38, 19 40, 21 40 C21 39, 19 36, 17 33 Z" fill="url(#sealGold)"/>
+
+  <!-- Main seal body (swimming upward dynamically) -->
+  <path d="M16 34 C19 30, 24 25, 29 22 C34 19, 39 18, 41 21 C42 22, 42 24, 40 26 C37 28, 32 30, 27 33 C23 35, 19 36, 16 34 Z" fill="url(#sealBody)"/>
+
+  <!-- Visor / Head dome -->
+  <path d="M37 20 C39 18, 41 19, 42 21 C42 23, 40 25, 38 25 C36 24, 35 22, 37 20 Z" fill="#0B131F" stroke="url(#sealGold)" stroke-width="1"/>
+
+  <!-- Cyber eye glowing amber -->
+  <circle cx="39" cy="21.5" r="1.5" fill="#F3B259" filter="url(#amberGlow)"/>
+
+  <!-- Front Flipper wing -->
+  <path d="M28 27 C29 31, 31 35, 33 37 C34 37, 34 35, 33 33 C32 30, 31 27, 28 27 Z" fill="url(#sealGold)"/>
+
+  <!-- Dynamic swoop ring accent -->
+  <path d="M10 26 C16 15, 32 12, 42 16" stroke="url(#sealGold)" stroke-width="1.2" stroke-linecap="round" fill="none" opacity="0.85"/>
+
+  <!-- Brand Typography -->
+  <g transform="translate(62, 0)">
+    <!-- SEAL Title -->
+    <text x="0" y="32" font-family="-apple-system, BlinkMacSystemFont, 'Plus Jakarta Sans', 'Lexend', 'Segoe UI', sans-serif" font-size="22" font-weight="900" letter-spacing="-0.8" fill="#000D10">
+      SEAL
+    </text>
+    <!-- Copper Tech Accent Dot -->
+    <circle cx="68" cy="28" r="3.2" fill="url(#sealGold)"/>
+
+    <!-- HACKATHON Subtitle -->
+    <text x="0" y="47" font-family="-apple-system, BlinkMacSystemFont, 'Plus Jakarta Sans', 'Lexend', 'Segoe UI', sans-serif" font-size="10.5" font-weight="800" letter-spacing="2.8" fill="#BC7155">
+      HACKATHON
+    </text>
+  </g>
+</svg>
