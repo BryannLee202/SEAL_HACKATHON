@@ -104,7 +104,7 @@ export function LandingPage() {
           <h1 className="l-hero-title">
             Đấu trường Công nghệ.
             <br />
-            Kiến tạo &amp; Đánh giá Phần mềm.
+            <span className="l-title-accent">Kiến tạo &amp; Đánh giá</span> Phần mềm.
           </h1>
           <p className="l-hero-subtitle">
             Hệ thống số hóa toàn diện quy trình SEAL Hackathon: quản lý vòng thi, chấm điểm đa tiêu chí độc lập, bình chọn khán giả công khai và phân tích độ tin cậy liên đánh giá viên (RBL).
@@ -146,7 +146,7 @@ export function LandingPage() {
       </section>
 
       {/* About Section */}
-      <section className="l-section" id="about">
+      <section className="l-section l-section-alt" id="about">
         <div className="l-container">
           <Reveal>
             <div className="l-eyebrow">Giới thiệu nền tảng</div>
@@ -228,7 +228,7 @@ export function LandingPage() {
       </section>
 
       {/* Criteria Section */}
-      <section className="l-section" id="criteria">
+      <section className="l-section l-section-alt" id="criteria">
         <div className="l-container">
           <Reveal>
             <div className="l-eyebrow">Tiêu chí đánh giá</div>
