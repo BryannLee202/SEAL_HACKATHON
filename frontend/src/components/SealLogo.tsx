@@ -72,7 +72,7 @@ export const SealLogo: FC<SealLogoProps> = ({
                 fontWeight: 900,
                 fontSize: Math.round(size * 0.44),
                 letterSpacing: "-0.6px",
-                color: isDark ? "#FFFFFF" : "var(--color-deep-ink, #000D10)",
+                color: isDark ? "#FFFFFF" : "var(--color-text, var(--color-deep-ink, #000D10))",
               }}
             >
               SEAL

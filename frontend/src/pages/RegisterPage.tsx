@@ -2,7 +2,8 @@ import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { authApi } from "@/api/authApi";
 import type { UserCategory } from "@/api/types";
-import { IconArrowRight, IconGavel } from "@/components/icons";
+import { IconArrowRight } from "@/components/icons";
+import { AuthHero } from "@/components/AuthHero";
 
 export function RegisterPage() {
   const [form, setForm] = useState({
@@ -31,7 +32,7 @@ export function RegisterPage() {
   if (success) {
     return (
       <div className="auth-shell">
-        <AuthHero />
+        <AuthHero title="Gia nhập cộng đồng SEAL Hackathon." subtitle="Nền tảng thi đấu công bằng, minh bạch và chuyên nghiệp." />
         <div className="auth-form-side">
           <div className="auth-card">
             <h1>Đăng ký thành công</h1>
@@ -45,7 +46,7 @@ export function RegisterPage() {
 
   return (
     <div className="auth-shell">
-      <AuthHero />
+      <AuthHero title="Gia nhập cộng đồng SEAL Hackathon." subtitle="Đăng ký tài khoản để tham gia các bảng đấu hoặc đồng hành cùng ban giám khảo." />
       <div className="auth-form-side">
         <div className="auth-card">
           <h1>Tạo tài khoản</h1>
@@ -93,21 +94,6 @@ export function RegisterPage() {
             </p>
           </form>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function AuthHero() {
-  return (
-    <div className="auth-hero">
-      <div className="auth-hero-content">
-        <div className="auth-hero-brand"><div className="auth-hero-mark">🏆</div>SEAL Hackathon</div>
-        <div className="auth-hero-title">Tham gia cộng đồng sáng tạo công nghệ.</div>
-        <div className="auth-hero-subtitle">Nền tảng thi đấu minh bạch, đánh giá công bằng từ hội đồng chuyên môn.</div>
-      </div>
-      <div className="auth-hero-features">
-        <div className="auth-hero-feature"><span className="dot"><IconGavel width={14} height={14} /></span>Môi trường thi đấu chuyên nghiệp</div>
       </div>
     </div>
   );

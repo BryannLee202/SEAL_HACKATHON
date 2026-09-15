@@ -1,6 +1,7 @@
 import { MascotChatDrawer } from "./MascotChatDrawer";
 import type { ReactNode } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { SealLogo } from "./SealLogo";
 import { useAuth } from "../context/AuthContext";
 import { useLanguage } from "../context/LanguageContext";
 import { ThemeToggle } from "./ThemeToggle";
@@ -110,14 +111,9 @@ export function Layout({ children }: { children: ReactNode }) {
   return (
     <div className="app-shell">
       <aside className="sidebar">
-        <div className="sidebar-brand">
-          <div className="sidebar-brand-mark">SH</div>
-
-          <div className="sidebar-brand-text">
-            SEAL Hackathon
-            <small>Chấm điểm</small>
-          </div>
-        </div>
+        <Link to="/app" className="sidebar-brand" style={{ textDecoration: "none" }}>
+          <SealLogo size={34} showText={true} />
+        </Link>
 
         <div className="nav-section-label">
           {isEn ? "Navigation" : "Điều hướng"}
