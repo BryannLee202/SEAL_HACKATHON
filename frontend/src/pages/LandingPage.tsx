@@ -96,23 +96,18 @@ export function LandingPage() {
 
       {/* Hero Section */}
       <section className="l-hero" id="hero">
-        <div className="l-hero-glow" />
-        <div className="l-orb l-orb-1" />
-        <div className="l-orb l-orb-2" />
-
         <div className="l-container l-hero-inner">
           <div className="l-badge">
             <IconSparkles width={14} height={14} />
             SEAL Hackathon 2026 — Ngành Kỹ thuật Phần mềm
           </div>
           <h1 className="l-hero-title">
-            Nền tảng Quản lý Cuộc thi &amp;
+            Đấu trường Công nghệ.
             <br />
-            <span className="l-gradient-text">Đánh giá Nghiên cứu Kỹ thuật Phần mềm</span>
+            Kiến tạo &amp; Đánh giá Phần mềm.
           </h1>
           <p className="l-hero-subtitle">
-            Hệ thống số hóa toàn diện quy trình hackathon: quản lý vòng thi, chấm điểm đa tiêu chí,
-            bình chọn khán giả công khai, và phân tích độ tin cậy liên đánh giá viên (RBL).
+            Hệ thống số hóa toàn diện quy trình SEAL Hackathon: quản lý vòng thi, chấm điểm đa tiêu chí độc lập, bình chọn khán giả công khai và phân tích độ tin cậy liên đánh giá viên (RBL).
           </p>
 
           <div className="l-hero-actions">
