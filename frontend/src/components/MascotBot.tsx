@@ -18,7 +18,7 @@ export function MascotBot({
   variant = "auto",
 }: MascotBotProps) {
   const isHero = variant === "hero" || (variant === "auto" && size >= 150);
-  const src = isHero ? "/seal-mascot-hero.jpg" : "/seal-mascot-avatar.jpg";
+  const src = isHero ? "/seal-mascot-hero.png" : "/seal-mascot-avatar.jpg";
   const [returned, setReturned] = useState(false);
 
   useEffect(() => {
@@ -56,7 +56,6 @@ export function MascotBot({
           style={{
             width: "100%",
             height: "auto",
-            maxHeight: size,
             objectFit: "contain",
             userSelect: "none",
             pointerEvents: "auto",

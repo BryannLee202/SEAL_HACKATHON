@@ -976,13 +976,14 @@ th {
 /* Hero Section (Hyer Aviation Inspired Editorial Architecture) */
 
 .l-hero {
-  padding: 88px 0 80px;
+  padding: 96px 0 92px;
   background: 
-    radial-gradient(ellipse 65% 55% at 75% 42%, rgba(188, 113, 85, 0.14) 0%, rgba(229, 169, 103, 0.07) 40%, transparent 72%),
-    radial-gradient(circle at 18% 22%, rgba(11, 19, 31, 0.03) 0%, transparent 50%),
-    linear-gradient(180deg, #f4f6fa 0%, #ffffff 100%);
+    radial-gradient(ellipse 70% 60% at 75% 45%, rgba(188, 113, 85, 0.22) 0%, rgba(229, 169, 103, 0.12) 36%, transparent 72%),
+    radial-gradient(circle at 18% 25%, rgba(11, 19, 31, 0.06) 0%, transparent 55%),
+    linear-gradient(180deg, #e4e9f2 0%, #ebf0f7 50%, #f0f4fa 100%);
   position: relative;
   overflow: hidden;
+  border-bottom: 1px solid #d0d7e5;
 }
 
 .l-hero::before {
@@ -992,7 +993,7 @@ th {
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(188, 113, 85, 0.3), transparent);
+  background: linear-gradient(90deg, transparent, rgba(188, 113, 85, 0.35), transparent);
 }
 
 .l-hero-inner {
@@ -1000,18 +1001,18 @@ th {
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  gap: 48px;
+  gap: 40px;
   position: relative;
   z-index: 2;
 }
 
 .l-hero-left {
-  flex: 1 1 56%;
-  max-width: 660px;
+  flex: 1 1 52%;
+  max-width: 640px;
 }
 
 .l-hero-right {
-  flex: 1 1 44%;
+  flex: 1 1 48%;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -1021,10 +1022,10 @@ th {
 .l-hero-right::before {
   content: "";
   position: absolute;
-  width: 360px;
-  height: 360px;
+  width: 480px;
+  height: 480px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(188, 113, 85, 0.14) 0%, rgba(229, 169, 103, 0.08) 40%, transparent 70%);
+  background: radial-gradient(circle, rgba(188, 113, 85, 0.24) 0%, rgba(229, 169, 103, 0.12) 42%, transparent 72%);
   pointer-events: none;
   z-index: 0;
 }
@@ -1161,11 +1162,8 @@ th {
   width: 100%;
   height: auto;
   object-fit: contain;
-  /* Seamless blending: dissolves rectangular photo background into ambient canvas */
-  mix-blend-mode: multiply;
-  -webkit-mask-image: radial-gradient(ellipse 82% 82% at 50% 50%, black 64%, rgba(0, 0, 0, 0.5) 82%, transparent 98%);
-  mask-image: radial-gradient(ellipse 82% 82% at 50% 50%, black 64%, rgba(0, 0, 0, 0.5) 82%, transparent 98%);
-  filter: drop-shadow(0 16px 28px rgba(188, 113, 85, 0.18)) drop-shadow(0 6px 12px rgba(11, 19, 31, 0.08));
+  /* 100% transparent PNG: zero box, zero rectangular edges, bright crisp ceramic luster */
+  filter: drop-shadow(0 24px 38px rgba(188, 113, 85, 0.24)) drop-shadow(0 8px 16px rgba(11, 19, 31, 0.12));
   transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), filter 0.45s ease;
   user-select: none;
   pointer-events: auto;
@@ -1173,8 +1171,8 @@ th {
 }
 
 .mascot-hero-stage:hover .mascot-hero-seamless {
-  transform: scale(1.05) translateY(-8px) rotate(-1.5deg);
-  filter: drop-shadow(0 26px 40px rgba(188, 113, 85, 0.32)) drop-shadow(0 10px 20px rgba(11, 19, 31, 0.14));
+  transform: scale(1.06) translateY(-10px) rotate(-1.8deg);
+  filter: drop-shadow(0 32px 48px rgba(188, 113, 85, 0.36)) drop-shadow(0 12px 24px rgba(11, 19, 31, 0.16));
 }
 
 /* Aerodynamic Airplane Flight Motion (pitch, roll, climb, dip) */
@@ -1183,13 +1181,13 @@ th {
     transform: translateY(0px) rotate(0deg) rotateY(0deg);
   }
   25% {
-    transform: translateY(-16px) rotate(-2.2deg) rotateY(-3deg);
+    transform: translateY(-18px) rotate(-2.4deg) rotateY(-3.5deg);
   }
   50% {
-    transform: translateY(-4px) rotate(0.6deg) rotateY(1deg);
+    transform: translateY(-5px) rotate(0.6deg) rotateY(1.2deg);
   }
   75% {
-    transform: translateY(12px) rotate(2.4deg) rotateY(3deg);
+    transform: translateY(14px) rotate(2.5deg) rotateY(3.2deg);
   }
   100% {
     transform: translateY(0px) rotate(0deg) rotateY(0deg);
@@ -1198,12 +1196,12 @@ th {
 
 /* Ground shadow responds dynamically to flight altitude */
 .l-flight-shadow {
-  width: 68%;
-  height: 22px;
-  margin-top: -10px;
+  width: 74%;
+  height: 26px;
+  margin-top: -14px;
   border-radius: 50%;
-  background: radial-gradient(ellipse at center, rgba(188, 113, 85, 0.35) 0%, rgba(11, 19, 31, 0.14) 42%, transparent 74%);
-  filter: blur(5px);
+  background: radial-gradient(ellipse at center, rgba(188, 113, 85, 0.42) 0%, rgba(11, 19, 31, 0.18) 42%, transparent 75%);
+  filter: blur(6px);
   animation: flightShadow 6.5s cubic-bezier(0.42, 0, 0.58, 1) infinite;
   pointer-events: none;
   transform-origin: center center;
@@ -1215,19 +1213,19 @@ th {
     opacity: 0.65;
   }
   25% {
-    transform: scale(0.78);
-    opacity: 0.35;
-    filter: blur(8px);
+    transform: scale(0.76);
+    opacity: 0.32;
+    filter: blur(9px);
   }
   50% {
-    transform: scale(0.92);
+    transform: scale(0.90);
     opacity: 0.55;
-    filter: blur(5.5px);
+    filter: blur(6px);
   }
   75% {
-    transform: scale(1.18);
-    opacity: 0.85;
-    filter: blur(3.5px);
+    transform: scale(1.20);
+    opacity: 0.88;
+    filter: blur(4px);
   }
   100% {
     transform: scale(1);
@@ -1242,7 +1240,7 @@ th {
 
 @keyframes mascotTabReturn {
   0% {
-    transform: translateY(-44px) scale(0.88) rotate(-5deg);
+    transform: translateY(-48px) scale(0.88) rotate(-5deg);
     opacity: 0.45;
   }
   60% {
@@ -1255,11 +1253,17 @@ th {
   }
 }
 
+@media (max-width: 1100px) {
+  .mascot-hero-stage {
+    width: 440px !important;
+  }
+}
+
 @media (max-width: 992px) {
   .l-hero-inner {
     flex-direction: column-reverse;
     text-align: center;
-    gap: 36px;
+    gap: 40px;
   }
   .l-hero-left {
     max-width: 100%;
@@ -1268,27 +1272,27 @@ th {
     align-items: center;
   }
   .l-hero-title {
-    font-size: 46px;
-    letter-spacing: -1.8px;
+    font-size: 48px;
+    letter-spacing: -2px;
   }
   .l-hero-actions {
     justify-content: center;
   }
   .mascot-hero-stage {
-    width: 290px !important;
+    width: 380px !important;
   }
 }
 
 @media (max-width: 600px) {
   .l-hero {
-    padding: 56px 0 48px;
+    padding: 60px 0 52px;
   }
   .l-hero-title {
     font-size: 36px;
     letter-spacing: -1.2px;
   }
   .mascot-hero-stage {
-    width: 240px !important;
+    width: 290px !important;
   }
 }
 
