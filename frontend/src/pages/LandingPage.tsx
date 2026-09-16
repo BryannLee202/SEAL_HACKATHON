@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { ThemeToggle } from "../components/ThemeToggle";
+import { LanguageSwitcher } from "../components/LanguageSwitcher";
+import { useLanguage } from "../context/LanguageContext";
 import { useAuth } from "../context/AuthContext";
 import { MascotBot } from "../components/MascotBot";
 import { SealLogo } from "../components/SealLogo";
@@ -539,6 +542,9 @@ export function LandingPage() {
 }
 
 function LandingNav({ loggedIn }: { loggedIn: boolean }) {
+  const { language } = useLanguage();
+  const isEn = language === "en";
+
   return (
     <header className="l-nav">
       <div className="l-container l-nav-inner">
@@ -546,25 +552,27 @@ function LandingNav({ loggedIn }: { loggedIn: boolean }) {
           <SealLogo size={36} showText={true} />
         </Link>
         <nav className="l-nav-links">
-          <a href="#about">Về cuộc thi</a>
-          <a href="#timeline">Lộ trình</a>
-          <a href="#criteria">Tiêu chí</a>
-          <a href="#roles">Vai trò</a>
-          <Link to="/vote">Bình chọn</Link>
-          <Link to="/rankings">Bảng xếp hạng</Link>
+          <a href="#about">{isEn ? "About" : "Về cuộc thi"}</a>
+          <a href="#timeline">{isEn ? "Timeline" : "Lộ trình"}</a>
+          <a href="#criteria">{isEn ? "Criteria" : "Tiêu chí"}</a>
+          <a href="#roles">{isEn ? "Roles" : "Vai trò"}</a>
+          <Link to="/vote">{isEn ? "Voting" : "Bình chọn"}</Link>
+          <Link to="/rankings">{isEn ? "Leaderboard" : "Bảng xếp hạng"}</Link>
         </nav>
-        <div className="l-nav-actions">
+        <div className="l-nav-actions" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <ThemeToggle />
+          <LanguageSwitcher />
           {loggedIn ? (
             <Link className="l-btn-primary small" to="/app">
-              Vào hệ thống
+              {isEn ? "Console" : "Vào hệ thống"}
             </Link>
           ) : (
             <>
               <Link className="l-btn-ghost small" to="/login">
-                Đăng nhập
+                {isEn ? "Log in" : "Đăng nhập"}
               </Link>
               <Link className="l-btn-primary small" to="/register">
-                Đăng ký
+                {isEn ? "Register" : "Đăng ký"}
               </Link>
             </>
           )}

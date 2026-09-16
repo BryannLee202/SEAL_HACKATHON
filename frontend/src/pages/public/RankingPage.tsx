@@ -1,4 +1,6 @@
 import { SealLogo } from "../../components/SealLogo";
+import { ThemeToggle } from "../../components/ThemeToggle";
+import { LanguageSwitcher } from "../../components/LanguageSwitcher";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../../api/client";
@@ -140,7 +142,9 @@ export function RankingPage() {
             <Link to="/">Trang chủ</Link>
             <Link to="/vote">Bình chọn</Link>
           </div>
-          <div className="l-nav-actions">
+          <div className="l-nav-actions" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <ThemeToggle />
+            <LanguageSwitcher />
             <Link className="l-btn-ghost small" to="/">
               Quay lại trang chủ
             </Link>

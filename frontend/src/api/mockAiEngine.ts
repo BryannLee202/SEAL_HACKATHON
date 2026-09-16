@@ -138,41 +138,59 @@ export const mockAiEngine = {
     };
   },
 
-  answerMascotFaq(question: string): string {
+  answerMascotFaq(question: string, isEn: boolean = false): string {
     const q = question.toLowerCase().trim();
 
-    if (q.includes("thành viên") || q.includes("quy mô") || q.includes("mấy người") || q.includes("bao nhiêu người") || q.includes("br-01") || q.includes("br01")) {
-      return "Theo quy chế cuộc thi (Quy tắc BR-01): Mỗi đội thi phải có tối thiểu 3 thành viên và tối đa 5 thành viên chính thức mới đủ điều kiện nộp bài và tranh tài trên bảng xếp hạng.";
+    if (q.includes("thành viên") || q.includes("quy mô") || q.includes("mấy người") || q.includes("bao nhiêu người") || q.includes("team size") || q.includes("member") || q.includes("br-01") || q.includes("br01")) {
+      return isEn
+        ? "Competition Rule (BR-01): Each team must consist of 3 to 5 official members to be eligible for submission and leaderboard ranking."
+        : "Theo quy chế cuộc thi (Quy tắc BR-01): Mỗi đội thi phải có tối thiểu 3 thành viên và tối đa 5 thành viên chính thức mới đủ điều kiện nộp bài và tranh tài trên bảng xếp hạng.";
     }
 
-    if (q.includes("muộn") || q.includes("trễ") || q.includes("deadline") || q.includes("hạn chót") || q.includes("phạt") || q.includes("br-02") || q.includes("br02")) {
-      return "Quy định nộp bài (Quy tắc BR-02): Các bài nộp sau hạn chót sẽ bị đánh dấu là Nộp muộn (LATE). Hệ thống tự động trừ 10% tổng điểm có trọng số của đội thi khi tổng hợp xếp hạng.";
+    if (q.includes("muộn") || q.includes("trễ") || q.includes("deadline") || q.includes("hạn chót") || q.includes("phạt") || q.includes("late") || q.includes("penalty") || q.includes("br-02") || q.includes("br02")) {
+      return isEn
+        ? "Submission Rule (BR-02): Submissions after the deadline will be marked as LATE. The system automatically deducts 10% from the team's total weighted score."
+        : "Quy định nộp bài (Quy tắc BR-02): Các bài nộp sau hạn chót sẽ bị đánh dấu là Nộp muộn (LATE). Hệ thống tự động trừ 10% tổng điểm có trọng số của đội thi khi tổng hợp xếp hạng.";
     }
 
-    if (q.includes("giám khảo") || q.includes("mentor") || q.includes("xung đột") || q.includes("chấm thi") || q.includes("br-03") || q.includes("br03")) {
-      return "Phòng ngừa xung đột lợi ích (Quy tắc BR-03): Giảng viên hoặc chuyên gia đang làm Mentor cho một track sẽ tuyệt đối không được phân công làm Giám khảo chấm điểm cho bất kỳ vòng thi nào trong cùng sự kiện Hackathon.";
+    if (q.includes("giám khảo") || q.includes("mentor") || q.includes("xung đột") || q.includes("chấm thi") || q.includes("conflict") || q.includes("judge") || q.includes("br-03") || q.includes("br03")) {
+      return isEn
+        ? "Conflict of Interest (BR-03): A faculty member or expert serving as a Mentor for a track cannot be assigned as a Judge for any round in the same Hackathon."
+        : "Phòng ngừa xung đột lợi ích (Quy tắc BR-03): Giảng viên hoặc chuyên gia đang làm Mentor cho một track sẽ tuyệt đối không được phân công làm Giám khảo chấm điểm cho bất kỳ vòng thi nào trong cùng sự kiện Hackathon.";
     }
 
-    if (q.includes("tiêu chí") || q.includes("rubric") || q.includes("trọng số") || q.includes("br-04") || q.includes("br04")) {
-      return "Quy định tiêu chí đánh giá (Quy tắc BR-04): Mỗi vòng thi có bộ tiêu chí (Rubric) riêng biệt, và tổng trọng số của toàn bộ các tiêu chí bắt buộc phải luôn bằng đúng 100%.";
+    if (q.includes("tiêu chí") || q.includes("rubric") || q.includes("trọng số") || q.includes("criteria") || q.includes("weight") || q.includes("br-04") || q.includes("br04")) {
+      return isEn
+        ? "Evaluation Rubric (BR-04): Each round has a distinct rubric set, and the sum of all criteria weights must always equal exactly 100%."
+        : "Quy định tiêu chí đánh giá (Quy tắc BR-04): Mỗi vòng thi có bộ tiêu chí (Rubric) riêng biệt, và tổng trọng số của toàn bộ các tiêu chí bắt buộc phải luôn bằng đúng 100%.";
     }
 
-    if (q.includes("chốt điểm") || q.includes("hiệu chuẩn") || q.includes("calibration") || q.includes("br-05") || q.includes("br05")) {
-      return "Khóa điểm & Hiệu chuẩn (Quy tắc BR-05): Điểm sau khi Giám khảo bấm 'Chốt điểm' sẽ được bảo vệ chống sửa đổi tùy tiện và được hệ thống phân tích độ lệch chuẩn Z-Score để cân bằng độ khó/dễ giữa các giám khảo.";
+    if (q.includes("chốt điểm") || q.includes("hiệu chuẩn") || q.includes("calibration") || q.includes("z-score") || q.includes("finalize") || q.includes("br-05") || q.includes("br05")) {
+      return isEn
+        ? "Score Finalization & Calibration (BR-05): Once a Judge finalizes scores, they cannot be modified. The calibration round analyzes variance and Z-Scores to harmonize strict vs. lenient judges."
+        : "Khóa điểm & Hiệu chuẩn (Quy tắc BR-05): Điểm sau khi Giám khảo bấm 'Chốt điểm' sẽ được bảo vệ chống sửa đổi tùy tiện và được hệ thống phân tích độ lệch chuẩn Z-Score để cân bằng độ khó/dễ giữa các giám khảo.";
     }
 
-    if (q.includes("xuất") || q.includes("csv") || q.includes("tải về") || q.includes("excel") || q.includes("br-06") || q.includes("br06")) {
-      return "Xuất kết quả bảng xếp hạng (Quy tắc BR-06): Bạn có thể nhấp vào nút 'Xuất CSV' trên trang Bảng xếp hạng để tải toàn bộ danh sách điểm số, thứ hạng và trạng thái vào vòng trong ra tệp bảng tính bất kỳ lúc nào.";
+    if (q.includes("xuất") || q.includes("csv") || q.includes("tải về") || q.includes("excel") || q.includes("export") || q.includes("download") || q.includes("br-06") || q.includes("br06")) {
+      return isEn
+        ? "Export Leaderboard (BR-06): You can click 'Export CSV' on the Leaderboard page to download the official rankings and scores at any time."
+        : "Xuất kết quả bảng xếp hạng (Quy tắc BR-06): Bạn có thể nhấp vào nút 'Xuất CSV' trên trang Bảng xếp hạng để tải toàn bộ danh sách điểm số, thứ hạng và trạng thái vào vòng trong ra tệp bảng tính bất kỳ lúc nào.";
     }
 
-    if (q.includes("giải thưởng") || q.includes("tiền thưởng") || q.includes("quà")) {
-      return "Cơ cấu giải thưởng của SEAL Hackathon bao gồm: Giải Nhất, Giải Nhì, Giải Ba và các Giải Chuyên đề (Ý tưởng Đột phá, Ứng dụng Thực tiễn xuất sắc, Đội thi được Yêu thích nhất do cộng đồng bình chọn).";
+    if (q.includes("giải thưởng") || q.includes("tiền thưởng") || q.includes("quà") || q.includes("prize") || q.includes("reward")) {
+      return isEn
+        ? "SEAL Hackathon Prizes: 1st Prize (10,000,000 VND + Trophy), 2nd Prize (5,000,000 VND), 3rd Prize (3,000,000 VND), and Most Popular Team Award (2,000,000 VND)."
+        : "Cơ cấu giải thưởng của SEAL Hackathon bao gồm: Giải Nhất (10.000.000 VNĐ + Cúp), Giải Nhì (5.000.000 VNĐ), Giải Ba (3.000.000 VNĐ) và Giải Đội thi được Yêu thích nhất (2.000.000 VNĐ).";
     }
 
-    if (q.includes("xin chào") || q.includes("hello") || q.includes("hi") || q.includes("bot ơi") || q.includes("bạn là ai")) {
-      return "Xin chào! Mình là SEAL Bot — Trợ lý ảo thông minh của SEAL Hackathon! Mình có thể hỗ trợ bạn giải đáp mọi thắc mắc về thể lệ, quy tắc thi đấu (BR-01 đến BR-06), thời hạn nộp bài và cách thức tính điểm. Bạn muốn hỏi điều gì nào?";
+    if (q.includes("xin chào") || q.includes("hello") || q.includes("hi") || q.includes("bot ơi") || q.includes("bạn là ai") || q.includes("who are you")) {
+      return isEn
+        ? "Hello! I am SEAL Bot — the intelligent AI assistant for SEAL Hackathon! Ask me anything about competition rules, team formation (BR-01 to BR-06), deadlines, or scoring!"
+        : "Xin chào! Mình là SEAL Bot — Trợ lý ảo thông minh của SEAL Hackathon! Mình có thể hỗ trợ bạn giải đáp mọi thắc mắc về thể lệ, quy tắc thi đấu (BR-01 đến BR-06), thời hạn nộp bài và cách thức tính điểm. Bạn muốn hỏi điều gì nào?";
     }
 
-    return "Cảm ơn câu hỏi của bạn! Bạn có thể hỏi mình về: Quy định số lượng thành viên (BR-01), Quy định nộp muộn (BR-02), Xung đột lợi ích Giám khảo/Mentor (BR-03), Tiêu chí chấm điểm Rubric (BR-04), hoặc Xuất bảng điểm CSV (BR-06). Ban tổ chức chúc bạn có một mùa Hackathon thật rực rỡ!";
+    return isEn
+      ? "Thank you for asking! You can ask me about: Team Size (BR-01), Late Submission Penalty (BR-02), Judge Conflict of Interest (BR-03), Criteria Weights (BR-04), or Leaderboard CSV Export (BR-06)."
+      : "Cảm ơn câu hỏi của bạn! Bạn có thể hỏi mình về: Quy định số lượng thành viên (BR-01), Quy định nộp muộn (BR-02), Xung đột lợi ích Giám khảo/Mentor (BR-03), Tiêu chí chấm điểm Rubric (BR-04), hoặc Xuất bảng điểm CSV (BR-06). Ban tổ chức chúc bạn có một mùa Hackathon thật rực rỡ!";
   },
 };

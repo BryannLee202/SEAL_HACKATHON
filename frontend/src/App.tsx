@@ -17,6 +17,7 @@ import EventsPage from "@/pages/EventsPage";
 import EventDetailPage from "@/pages/EventDetailPage";
 import { DEFAULT_TAB } from "@/pages/tabConfig";
 import { ToastContainer } from "./components/Toast";
+import { MascotChatDrawer } from "./components/MascotChatDrawer";
 import AuditLogPage from "./pages/coordinator/AuditLogPage";
 import "@/styles/global.css";
 import "@/styles/team-mentor.css";
@@ -127,6 +128,7 @@ export default function App() {
         <LanguageProvider>
           <AuthProvider>
             <ToastContainer />
+            <MascotChatDrawer />
             <AppRoutes />
           </AuthProvider>
         </LanguageProvider>

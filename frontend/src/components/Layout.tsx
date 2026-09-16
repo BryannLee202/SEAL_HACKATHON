@@ -1,4 +1,3 @@
-import { MascotChatDrawer } from "./MascotChatDrawer";
 import type { ReactNode } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { SealLogo } from "./SealLogo";
@@ -167,7 +166,6 @@ export function Layout({ children }: { children: ReactNode }) {
       </aside>
 
       <main className="main">{children}</main>
-      <MascotChatDrawer />
     </div>
   );
 }

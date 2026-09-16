@@ -58,8 +58,7 @@ export const aiApi = {
   /**
    * Trả lời câu hỏi thể lệ từ MascotBot.
    */
-  async askMascot(question: string): Promise<string> {
-    // Có thể gọi backend hoặc trả lời tức thì qua mockAiEngine
-    return mockAiEngine.answerMascotFaq(question);
+  async askMascot(question: string, isEn: boolean = false): Promise<string> {
+    return mockAiEngine.answerMascotFaq(question, isEn);
   },
 };

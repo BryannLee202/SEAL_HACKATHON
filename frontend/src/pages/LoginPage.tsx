@@ -3,6 +3,8 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { IconArrowRight } from "../components/icons";
 import { AuthHero } from "../components/AuthHero";
+import { ThemeToggle } from "../components/ThemeToggle";
+import { LanguageSwitcher } from "../components/LanguageSwitcher";
 
 export function LoginPage() {
   const { login } = useAuth();
@@ -30,6 +32,10 @@ export function LoginPage() {
     <div className="auth-shell">
       <AuthHero />
       <div className="auth-form-side">
+        <div style={{ position: "absolute", top: 20, right: 24, display: "flex", gap: 10, alignItems: "center", zIndex: 10 }}>
+          <ThemeToggle />
+          <LanguageSwitcher />
+        </div>
         <div className="auth-card">
           <h1>Chào mừng trở lại</h1>
           <p className="subtitle">Đăng nhập để vào hệ thống SEAL Hackathon</p>
