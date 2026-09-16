@@ -70,11 +70,11 @@ export default function UsersApprovalPage() {
     loadData(false);
   }, [statusFilter, loadData]);
 
-  // Real-time polling every 6 seconds so newly registered users appear automatically!
+  // Real-time polling every 2.5 seconds so newly registered users appear almost instantly!
   useEffect(() => {
     const timer = setInterval(() => {
       loadData(false);
-    }, 6000);
+    }, 2500);
     return () => clearInterval(timer);
   }, [loadData]);
 
