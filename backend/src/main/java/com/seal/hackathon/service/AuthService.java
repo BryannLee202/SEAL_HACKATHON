@@ -119,13 +119,13 @@ public class AuthService {
 
     @Transactional(readOnly = true)
     public Page<UserSummaryResponse> listPending(Pageable pageable) {
-        return userRepository.findByAccountStatus(AccountStatus.PENDING, pageable)
+        return userRepository.findByAccountStatusOrderByCreatedAtDesc(AccountStatus.PENDING, pageable)
                 .map(UserSummaryResponse::from);
     }
 
     @Transactional(readOnly = true)
     public Page<UserSummaryResponse> listApproved(Pageable pageable) {
-        return userRepository.findByAccountStatus(AccountStatus.APPROVED, pageable)
+        return userRepository.findByAccountStatusOrderByCreatedAtDesc(AccountStatus.APPROVED, pageable)
                 .map(UserSummaryResponse::from);
     }
 

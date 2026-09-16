@@ -10,7 +10,9 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,13 +37,21 @@ public class AdminUserController {
     }
 
     @GetMapping("/pending")
-    public Page<UserSummaryResponse> listPending(@PageableDefault(size = 200) Pageable pageable) {
-        return authService.listPending(pageable);
+    public ResponseEntity<Page<UserSummaryResponse>> listPending(@PageableDefault(size = 200) Pageable pageable) {
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate")
+                .header(HttpHeaders.PRAGMA, "no-cache")
+                .header(HttpHeaders.EXPIRES, "0")
+                .body(authService.listPending(pageable));
     }
 
     @GetMapping("/approved")
-    public Page<UserSummaryResponse> listApproved(@PageableDefault(size = 200) Pageable pageable) {
-        return authService.listApproved(pageable);
+    public ResponseEntity<Page<UserSummaryResponse>> listApproved(@PageableDefault(size = 200) Pageable pageable) {
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate")
+                .header(HttpHeaders.PRAGMA, "no-cache")
+                .header(HttpHeaders.EXPIRES, "0")
+                .body(authService.listApproved(pageable));
     }
 
     @PostMapping("/{userId}/approval")
