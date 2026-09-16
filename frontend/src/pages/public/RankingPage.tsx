@@ -1,6 +1,7 @@
 import { SealLogo } from "../../components/SealLogo";
 import { ThemeToggle } from "../../components/ThemeToggle";
 import { LanguageSwitcher } from "../../components/LanguageSwitcher";
+import { useLanguage } from "../../context/LanguageContext";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../../api/client";
@@ -25,6 +26,8 @@ const CRITERIA_WEIGHTS = [
 ];
 
 export function RankingPage() {
+  const { language } = useLanguage();
+  const isEn = language === "en";
   const { user } = useAuth();
   const [events, setEvents] = useState<EventItem[]>([]);
   const [eventId, setEventId] = useState("");
@@ -139,14 +142,14 @@ export function RankingPage() {
             <SealLogo size={36} showText={true} />
           </Link>
           <div className="l-nav-links">
-            <Link to="/">Trang chủ</Link>
-            <Link to="/vote">Bình chọn</Link>
+            <Link to="/">{isEn ? "Home" : "Trang chủ"}</Link>
+            <Link to="/vote">{isEn ? "Voting" : "Bình chọn"}</Link>
           </div>
           <div className="l-nav-actions" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <ThemeToggle />
             <LanguageSwitcher />
             <Link className="l-btn-ghost small" to="/">
-              Quay lại trang chủ
+              {isEn ? "Back to Home" : "Quay lại trang chủ"}
             </Link>
           </div>
         </div>

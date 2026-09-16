@@ -33,151 +33,246 @@ function Reveal({ children, className = "" }: RevealProps) {
   return <div className={`l-reveal ${className}`}>{children}</div>;
 }
 
-const STATS = [
-  { target: 500, suffix: "+", label: "Sinh viên & Thí sinh" },
-  { target: 50, suffix: "+", label: "Đội thi tham gia" },
-  { target: 100, suffix: "%", label: "Minh bạch điểm số" },
-  { target: 20, suffix: " tr+", label: "Tổng giải thưởng (VNĐ)" },
-];
-
-const ROUNDS = [
-  {
-    tag: "Vòng 1",
-    title: "Vòng Loại — Khởi động & Nộp Đề án",
-    desc: "Các đội thành lập từ 3-5 thành viên, đăng ký theo Hạng mục và nộp repository, tài liệu đề án giải pháp công nghệ.",
-  },
-  {
-    tag: "Vòng 2",
-    title: "Vòng Bán Kết — Triển khai & Hiệu chuẩn",
-    desc: "Top đội thi xuất sắc nộp sản phẩm hoàn thiện, video demo. Hội đồng giám khảo chấm điểm độc lập và đối soát hiệu chuẩn.",
-  },
-  {
-    tag: "Vòng 3",
-    title: "Vòng Chung Kết — Pitching & Trao Giải",
-    desc: "Trực tiếp trình bày trước hội đồng ban giám khảo và mở cổng bình chọn khán giả công khai để vinh danh đội vô địch.",
-  },
-];
-
-const CRITERIA = [
-  { weight: 35, name: "Kỹ thuật & Kiến trúc phần mềm", desc: "Chất lượng mã nguồn, kiến trúc hệ thống, kiểm thử tự động và áp dụng công nghệ phù hợp." },
-  { weight: 25, name: "Tính sáng tạo & Đổi mới", desc: "Ý tưởng độc đáo, giải quyết bài toán thực tế một cách sáng tạo và có giá trị khác biệt." },
-  { weight: 20, name: "Trải nghiệm người dùng (UX/UI)", desc: "Giao diện hiện đại, trực quan, khả năng tiếp cận và độ mượt mà khi tương tác." },
-  { weight: 20, name: "Tính khả thi & Tiềm năng ứng dụng", desc: "Khả năng thương mại hóa, giải quyết nhu cầu xã hội và mô hình triển khai bền vững." },
-];
-
-const FEATURES = [
-  {
-    image: "/images/feat-rounds.jpg",
-    icon: <IconTechBracket width={19} height={19} />,
-    tag: "Lộ trình & Bảng đấu",
-    title: "Quản lý Đa vòng & Hạng mục",
-    desc: "Cấu hình linh hoạt vòng loại, chung kết, các bảng thi đấu chuyên đề và luật thăng hạng Top N tự động.",
-  },
-  {
-    image: "/images/feat-scoring.jpg",
-    icon: <IconTechScoring width={19} height={19} />,
-    tag: "Hội đồng Giám khảo",
-    title: "Chấm điểm Tiêu chí có Trọng số",
-    desc: "Giám khảo chấm độc lập theo từng tiêu chí, tính điểm trực tiếp và ghi nhận nhận xét chi tiết từng bài thi.",
-  },
-  {
-    image: "/images/feat-voting.jpg",
-    icon: <IconTechPulseVote width={19} height={19} />,
-    tag: "Tương tác Cộng đồng",
-    title: "Bình chọn Khán giả Công khai",
-    desc: "Cổng bình chọn trực tuyến cho khán giả theo dõi đội thi yêu thích và cập nhật lượt vote tức thì thời gian thực.",
-  },
-  {
-    image: "/images/feat-ranking.jpg",
-    icon: <IconTechTrophy width={19} height={19} />,
-    tag: "Vinh danh & Báo cáo",
-    title: "Xếp hạng & Xuất kết quả Excel",
-    desc: "Tự động xếp hạng theo bảng và toàn cuộc thi, hỗ trợ xuất báo cáo xếp hạng chuẩn định dạng Excel/CSV.",
-  },
-  {
-    image: "/images/feat-audit.jpg",
-    icon: <IconTechAudit width={19} height={19} />,
-    tag: "Minh bạch Tuyệt đối",
-    title: "Nhật ký Kiểm toán (Audit Log)",
-    desc: "Mọi hành động phê duyệt, chấm điểm, loại đội đều được ghi log bất biến, đảm bảo tính công bằng cao nhất.",
-  },
-  {
-    image: "/images/feat-research.jpg",
-    icon: <IconTechRadar width={19} height={19} />,
-    tag: "Độ tin cậy Khoa học",
-    title: "Hiệu chuẩn & Nghiên cứu RBL",
-    desc: "Thu thập phân phối điểm số của giám khảo nội bộ và chuyên gia khách mời phục vụ phân tích độ tin cậy ICC.",
-  },
-];
-
-const ROLES = [
-  {
-    id: "team",
-    image: "/images/role-team.jpg",
-    icon: <IconUsers width={22} height={22} />,
-    name: "Thành viên & Đội trưởng",
-    tag: "Thí sinh tranh tài",
-    color: "#38bdf8",
-    bgAlpha: "rgba(56, 189, 248, 0.12)",
-    borderAlpha: "rgba(56, 189, 248, 0.35)",
-    desc: "Tạo đội thi từ 3–5 thành viên, nộp bài dự thi qua link Git repo, theo dõi tiến độ và nhận phản hồi từ Mentor.",
-    highlights: [
-      "Nộp repo Git & tài liệu kỹ thuật",
-      "Theo dõi điểm số & phản hồi trực tiếp",
-      "Kêu gọi bình chọn cộng đồng",
-    ],
-  },
-  {
-    id: "judge",
-    image: "/images/role-judge.jpg",
-    icon: <IconGavel width={22} height={22} />,
-    name: "Hội đồng Giám khảo",
-    tag: "Đánh giá chuyên môn",
-    color: "#bc7155",
-    bgAlpha: "rgba(188, 113, 85, 0.15)",
-    borderAlpha: "rgba(188, 113, 85, 0.38)",
-    desc: "Chấm điểm từng tiêu chí với trọng số rõ ràng, tham gia vòng hiệu chuẩn (Calibration) nâng cao tính đồng thuận đánh giá.",
-    highlights: [
-      "Chấm điểm tiêu chuẩn hoá đa tiêu chí",
-      "Góp ý & nhận xét chuyên sâu",
-      "Phân tích độ tin cậy liên đánh giá (RBL)",
-    ],
-  },
-  {
-    id: "coord",
-    image: "/images/role-coord.jpg",
-    icon: <IconShieldCheck width={22} height={22} />,
-    name: "Ban Điều phối (Coordinator)",
-    tag: "Vận hành sự kiện",
-    color: "#10b981",
-    bgAlpha: "rgba(16, 185, 129, 0.12)",
-    borderAlpha: "rgba(16, 185, 129, 0.35)",
-    desc: "Cấu hình toàn diện sự kiện, vòng thi, bộ tiêu chí, phê duyệt tài khoản thí sinh và giám sát nhật ký kiểm toán minh bạch.",
-    highlights: [
-      "Cấu hình đa vòng thi & luật thăng hạng",
-      "Kiểm soát tài khoản & phân quyền chặt chẽ",
-      "Nhật ký kiểm toán minh bạch không thể xoá",
-    ],
-  },
-];
-
-const PRIZES = [
-  { medal: "🥇", track: "Giải Nhất Toàn cuộc thi", amount: "10.000.000 VNĐ", reward: "Cúp Vô Địch & Giấy chứng nhận" },
-  { medal: "🥈", track: "Giải Nhì Toàn cuộc thi", amount: "5.000.000 VNĐ", reward: "Kỷ niệm chương danh giá" },
-  { medal: "🥉", track: "Giải Ba Toàn cuộc thi", amount: "3.000.000 VNĐ", reward: "Kỷ niệm chương danh giá" },
-  { medal: "💖", track: "Giải Đội thi được Yêu thích nhất", amount: "2.000.000 VNĐ", reward: "Khán giả bình chọn trực tuyến" },
-];
-
-const SPONSORS = [
-  "Khoa Kỹ thuật Phần mềm — Đại học FPT",
-  "FPT Software",
-  "SEAL Research Lab",
-  "Google Developer Student Clubs",
-];
-
 export function LandingPage() {
   const { user } = useAuth();
+  const { language } = useLanguage();
+  const isEn = language === "en";
   const [selectedRoleTab, setSelectedRoleTab] = useState(0);
+
+  const stats = [
+    { target: 500, suffix: "+", label: isEn ? "Students & Contestants" : "Sinh viên & Thí sinh" },
+    { target: 50, suffix: "+", label: isEn ? "Competing Teams" : "Đội thi tham gia" },
+    { target: 100, suffix: "%", label: isEn ? "Scoring Transparency" : "Minh bạch điểm số" },
+    { target: 20, suffix: isEn ? "M+ VND" : " tr+ VNĐ", label: isEn ? "Total Prize Pool" : "Tổng giải thưởng" },
+  ];
+
+  const rounds = [
+    {
+      tag: isEn ? "Stage 1" : "Vòng 1",
+      title: isEn ? "Qualifying — Kickoff & Proposal Submission" : "Vòng Loại — Khởi động & Nộp Đề án",
+      desc: isEn
+        ? "Teams of 3–5 form, register under chosen tracks, and submit project repositories and architectural documentation."
+        : "Các đội thành lập từ 3-5 thành viên, đăng ký theo Hạng mục và nộp repository, tài liệu đề án giải pháp công nghệ.",
+    },
+    {
+      tag: isEn ? "Stage 2" : "Vòng 2",
+      title: isEn ? "Semi-Finals — Implementation & Calibration" : "Vòng Bán Kết — Triển khai & Hiệu chuẩn",
+      desc: isEn
+        ? "Top qualifying teams submit functional products and video demos. Judges evaluate independently with calibration reconciliation."
+        : "Top đội thi xuất sắc nộp sản phẩm hoàn thiện, video demo. Hội đồng giám khảo chấm điểm độc lập và đối soát hiệu chuẩn.",
+    },
+    {
+      tag: isEn ? "Stage 3" : "Vòng 3",
+      title: isEn ? "Grand Finale — Pitching & Award Ceremony" : "Vòng Chung Kết — Pitching & Trao Giải",
+      desc: isEn
+        ? "Live pitch before the judging panel combined with public audience voting to crown the championship team."
+        : "Trực tiếp trình bày trước hội đồng ban giám khảo và mở cổng bình chọn khán giả công khai để vinh danh đội vô địch.",
+    },
+  ];
+
+  const criteria = [
+    {
+      weight: 35,
+      name: isEn ? "Software Engineering & Architecture" : "Kỹ thuật & Kiến trúc phần mềm",
+      desc: isEn
+        ? "Code cleanliness, system architecture, automated test suites, and appropriate technology stack."
+        : "Chất lượng mã nguồn, kiến trúc hệ thống, kiểm thử tự động và áp dụng công nghệ phù hợp.",
+    },
+    {
+      weight: 25,
+      name: isEn ? "Innovation & Originality" : "Tính sáng tạo & Đổi mới",
+      desc: isEn
+        ? "Unique concept, novel problem-solving approach, and distinctive technological differentiation."
+        : "Ý tưởng độc đáo, giải quyết bài toán thực tế một cách sáng tạo và có giá trị khác biệt.",
+    },
+    {
+      weight: 20,
+      name: isEn ? "User Experience (UX/UI)" : "Trải nghiệm người dùng (UX/UI)",
+      desc: isEn
+        ? "Modern, intuitive interface, accessibility standards, and smooth interaction flows."
+        : "Giao diện hiện đại, trực quan, khả năng tiếp cận và độ mượt mà khi tương tác.",
+    },
+    {
+      weight: 20,
+      name: isEn ? "Feasibility & Practical Impact" : "Tính khả thi & Tiềm năng ứng dụng",
+      desc: isEn
+        ? "Commercial viability, real-world impact, and sustainable deployment capability."
+        : "Khả năng thương mại hóa, giải quyết nhu cầu xã hội và mô hình triển khai bền vững.",
+    },
+  ];
+
+  const features = [
+    {
+      image: "/images/feat-rounds.jpg",
+      icon: <IconTechBracket width={19} height={19} />,
+      tag: isEn ? "Roadmap & Brackets" : "Lộ trình & Bảng đấu",
+      title: isEn ? "Multi-round & Track Management" : "Quản lý Đa vòng & Hạng mục",
+      desc: isEn
+        ? "Flexible setup for qualifiers, grand finals, topic-based brackets, and automated Top N progression."
+        : "Cấu hình linh hoạt vòng loại, chung kết, các bảng thi đấu chuyên đề và luật thăng hạng Top N tự động.",
+    },
+    {
+      image: "/images/feat-scoring.jpg",
+      icon: <IconTechScoring width={19} height={19} />,
+      tag: isEn ? "Judging Panel" : "Hội đồng Giám khảo",
+      title: isEn ? "Weighted Multi-Criteria Evaluation" : "Chấm điểm Tiêu chí có Trọng số",
+      desc: isEn
+        ? "Judges evaluate independently per criterion, real-time score synthesis, and structured technical feedback."
+        : "Giám khảo chấm độc lập theo từng tiêu chí, tính điểm trực tiếp và ghi nhận nhận xét chi tiết từng bài thi.",
+    },
+    {
+      image: "/images/feat-voting.jpg",
+      icon: <IconTechPulseVote width={19} height={19} />,
+      tag: isEn ? "Community Pulse" : "Tương tác Cộng đồng",
+      title: isEn ? "Live Public Audience Voting" : "Bình chọn Khán giả Công khai",
+      desc: isEn
+        ? "Real-time voting portal allowing the tech community to support favorite teams with live tally updates."
+        : "Cổng bình chọn trực tuyến cho khán giả theo dõi đội thi yêu thích và cập nhật lượt vote tức thì thời gian thực.",
+    },
+    {
+      image: "/images/feat-ranking.jpg",
+      icon: <IconTechTrophy width={19} height={19} />,
+      tag: isEn ? "Honor & Reporting" : "Vinh danh & Báo cáo",
+      title: isEn ? "Leaderboard & Excel/CSV Export" : "Xếp hạng & Xuất kết quả Excel",
+      desc: isEn
+        ? "Automated ranking by track and overall tournament, with instant official Excel and CSV export."
+        : "Tự động xếp hạng theo bảng và toàn cuộc thi, hỗ trợ xuất báo cáo xếp hạng chuẩn định dạng Excel/CSV.",
+    },
+    {
+      image: "/images/feat-audit.jpg",
+      icon: <IconTechAudit width={19} height={19} />,
+      tag: isEn ? "Total Transparency" : "Minh bạch Tuyệt đối",
+      title: isEn ? "Immutable Audit Logging" : "Nhật ký Kiểm toán (Audit Log)",
+      desc: isEn
+        ? "Every approval, score submission, and qualification action is permanently logged for maximum integrity."
+        : "Mọi hành động phê duyệt, chấm điểm, loại đội đều được ghi log bất biến, đảm bảo tính công bằng cao nhất.",
+    },
+    {
+      image: "/images/feat-research.jpg",
+      icon: <IconTechRadar width={19} height={19} />,
+      tag: isEn ? "Scientific Rigor" : "Độ tin cậy Khoa học",
+      title: isEn ? "Calibration & RBL Research" : "Hiệu chuẩn & Nghiên cứu RBL",
+      desc: isEn
+        ? "Collects distribution metrics from internal and external judges to empower ICC inter-rater reliability analysis."
+        : "Thu thập phân phối điểm số của giám khảo nội bộ và chuyên gia khách mời phục vụ phân tích độ tin cậy ICC.",
+    },
+  ];
+
+  const roles = [
+    {
+      id: "team",
+      image: "/images/role-team.jpg",
+      icon: <IconUsers width={22} height={22} />,
+      name: isEn ? "Team Leader & Members" : "Thành viên & Đội trưởng",
+      tag: isEn ? "Contestant Arena" : "Thí sinh tranh tài",
+      color: "#38bdf8",
+      bgAlpha: "rgba(56, 189, 248, 0.12)",
+      borderAlpha: "rgba(56, 189, 248, 0.35)",
+      desc: isEn
+        ? "Form teams of 3–5, submit project deliverables via Git repo URLs, track progress, and receive direct feedback from Mentors."
+        : "Tạo đội thi từ 3–5 thành viên, nộp bài dự thi qua link Git repo, theo dõi tiến độ và nhận phản hồi từ Mentor.",
+      highlights: isEn
+        ? [
+            "Submit Git repo & technical specs",
+            "Track real-time scores & mentor feedback",
+            "Rally community audience votes",
+          ]
+        : [
+            "Nộp repo Git & tài liệu kỹ thuật",
+            "Theo dõi điểm số & phản hồi trực tiếp",
+            "Kêu gọi bình chọn cộng đồng",
+          ],
+    },
+    {
+      id: "judge",
+      image: "/images/role-judge.jpg",
+      icon: <IconGavel width={22} height={22} />,
+      name: isEn ? "Judging Panel" : "Hội đồng Giám khảo",
+      tag: isEn ? "Expert Evaluation" : "Đánh giá chuyên môn",
+      color: "#bc7155",
+      bgAlpha: "rgba(188, 113, 85, 0.15)",
+      borderAlpha: "rgba(188, 113, 85, 0.38)",
+      desc: isEn
+        ? "Score projects across weighted criteria with clear rubrics, participating in calibration rounds to maximize scoring consensus."
+        : "Chấm điểm từng tiêu chí với trọng số rõ ràng, tham gia vòng hiệu chuẩn (Calibration) nâng cao tính đồng thuận đánh giá.",
+      highlights: isEn
+        ? [
+            "Standardized multi-criteria rubrics",
+            "In-depth technical critique & guidance",
+            "Inter-rater reliability (RBL) analysis",
+          ]
+        : [
+            "Chấm điểm tiêu chuẩn hoá đa tiêu chí",
+            "Góp ý & nhận xét chuyên sâu",
+            "Phân tích độ tin cậy liên đánh giá (RBL)",
+          ],
+    },
+    {
+      id: "coord",
+      image: "/images/role-coord.jpg",
+      icon: <IconShieldCheck width={22} height={22} />,
+      name: isEn ? "Organizing Coordinator" : "Ban Điều phối (Coordinator)",
+      tag: isEn ? "Event Operations" : "Vận hành sự kiện",
+      color: "#10b981",
+      bgAlpha: "rgba(16, 185, 129, 0.12)",
+      borderAlpha: "rgba(16, 185, 129, 0.35)",
+      desc: isEn
+        ? "Comprehensive configuration of rounds, criteria sets, account verification, and transparent immutable audit logging."
+        : "Cấu hình toàn diện sự kiện, vòng thi, bộ tiêu chí, phê duyệt tài khoản thí sinh và giám sát nhật ký kiểm toán minh bạch.",
+      highlights: isEn
+        ? [
+            "Multi-round setup & auto-advancement",
+            "Strict RBAC access controls",
+            "Immutable audit log governance",
+          ]
+        : [
+            "Cấu hình đa vòng thi & luật thăng hạng",
+            "Kiểm soát tài khoản & phân quyền chặt chẽ",
+            "Nhật ký kiểm toán minh bạch không thể xoá",
+          ],
+    },
+  ];
+
+  const prizes = [
+    {
+      medal: "🥇",
+      track: isEn ? "Grand Champion" : "Giải Nhất Toàn cuộc thi",
+      amount: "10.000.000 VNĐ",
+      reward: isEn ? "Championship Trophy & Gold Certificate" : "Cúp Vô Địch & Giấy chứng nhận",
+    },
+    {
+      medal: "🥈",
+      track: isEn ? "First Runner-Up" : "Giải Nhì Toàn cuộc thi",
+      amount: "5.000.000 VNĐ",
+      reward: isEn ? "Prestigious Silver Honor Medallion" : "Kỷ niệm chương danh giá",
+    },
+    {
+      medal: "🥉",
+      track: isEn ? "Second Runner-Up" : "Giải Ba Toàn cuộc thi",
+      amount: "3.000.000 VNĐ",
+      reward: isEn ? "Prestigious Bronze Honor Medallion" : "Kỷ niệm chương danh giá",
+    },
+    {
+      medal: "💖",
+      track: isEn ? "Audience Choice Award" : "Giải Đội thi được Yêu thích nhất",
+      amount: "2.000.000 VNĐ",
+      reward: isEn ? "Voted directly by online audience" : "Khán giả bình chọn trực tuyến",
+    },
+  ];
+
+  const sponsors = isEn
+    ? [
+        "Software Engineering Department — FPT University",
+        "FPT Software",
+        "SEAL Research Lab",
+        "Google Developer Student Clubs",
+      ]
+    : [
+        "Khoa Kỹ thuật Phần mềm — Đại học FPT",
+        "FPT Software",
+        "SEAL Research Lab",
+        "Google Developer Student Clubs",
+      ];
 
   return (
     <div className="landing">
@@ -189,27 +284,43 @@ export function LandingPage() {
           <div className="l-hero-left">
             <div className="l-badge">
               <IconSparkles width={14} height={14} />
-              SEAL Hackathon 2026 — Ngành Kỹ thuật Phần mềm
+              {isEn
+                ? "SEAL Hackathon 2026 — Software Engineering Department"
+                : "SEAL Hackathon 2026 — Ngành Kỹ thuật Phần mềm"}
             </div>
             <h1 className="l-hero-title">
-              Đấu trường Công nghệ.
-              <br />
-              <span className="l-title-accent">Kiến tạo &amp; Đánh giá</span> Phần mềm.
+              {isEn ? (
+                <>
+                  Arena of Technology.
+                  <br />
+                  <span className="l-title-accent">Build &amp; Benchmark</span> Software.
+                </>
+              ) : (
+                <>
+                  Đấu trường Công nghệ.
+                  <br />
+                  <span className="l-title-accent">Kiến tạo &amp; Đánh giá</span> Phần mềm.
+                </>
+              )}
             </h1>
             <p className="l-hero-subtitle">
-              Hệ thống số hóa toàn diện quy trình SEAL Hackathon: quản lý vòng thi, chấm điểm đa tiêu chí độc lập, bình chọn khán giả công khai và phân tích độ tin cậy liên đánh giá viên (RBL).
+              {isEn
+                ? "Comprehensive digital system for SEAL Hackathon: multi-round workflows, independent multi-criteria scoring, real-time public voting, and inter-rater reliability (RBL) research."
+                : "Hệ thống số hóa toàn diện quy trình SEAL Hackathon: quản lý vòng thi, chấm điểm đa tiêu chí độc lập, bình chọn khán giả công khai và phân tích độ tin cậy liên đánh giá viên (RBL)."}
             </p>
 
             <div className="l-hero-actions">
               <Link className="l-btn-primary" to={user ? "/app" : "/register"}>
-                {user ? "Vào trang quản trị" : "Đăng ký tham gia ngay"}{" "}
+                {user
+                  ? (isEn ? "Go to Dashboard" : "Vào trang quản trị")
+                  : (isEn ? "Register Now" : "Đăng ký tham gia ngay")}{" "}
                 <IconArrowRight width={16} height={16} />
               </Link>
               <Link className="l-btn-ghost" to="/vote">
-                <IconHeart width={16} height={16} /> Bình chọn khán giả
+                <IconHeart width={16} height={16} /> {isEn ? "Audience Voting" : "Bình chọn khán giả"}
               </Link>
               <Link className="l-btn-ghost" to="/rankings">
-                <IconTrophy width={16} height={16} /> Bảng xếp hạng
+                <IconTrophy width={16} height={16} /> {isEn ? "Leaderboard" : "Bảng xếp hạng"}
               </Link>
             </div>
           </div>
@@ -224,7 +335,7 @@ export function LandingPage() {
       <section className="l-stats-section">
         <div className="l-container">
           <div className="l-stats-grid">
-            {STATS.map((s) => (
+            {stats.map((s) => (
               <div className="l-stat-item" key={s.label}>
                 <div className="l-stat-value">
                   <CountUp target={s.target} suffix={s.suffix} duration={1.5} />
@@ -240,16 +351,21 @@ export function LandingPage() {
       <section className="l-section l-section-alt" id="about">
         <div className="l-container">
           <Reveal>
-            <div className="l-eyebrow">Giới thiệu nền tảng</div>
-            <h2 className="l-section-title">Minh bạch hoá toàn bộ quy trình Hackathon</h2>
+            <div className="l-eyebrow">{isEn ? "Platform Overview" : "Giới thiệu nền tảng"}</div>
+            <h2 className="l-section-title">
+              {isEn
+                ? "Complete Transparency for Hackathon Operations"
+                : "Minh bạch hoá toàn bộ quy trình Hackathon"}
+            </h2>
             <p className="l-section-desc">
-              Thay thế hoàn toàn bảng tính Excel rời rạc bằng hệ thống tập trung — hỗ trợ giám khảo chấm điểm độc lập,
-              tự động hóa thăng vòng và tạo dữ liệu nghiên cứu độ tin cậy đánh giá viên.
+              {isEn
+                ? "Fully replacing disconnected spreadsheets with a unified system — empowering independent scoring, automated progression, and academic reliability analysis."
+                : "Thay thế hoàn toàn bảng tính Excel rời rạc bằng hệ thống tập trung — hỗ trợ giám khảo chấm điểm độc lập, tự động hóa thăng vòng và tạo dữ liệu nghiên cứu độ tin cậy đánh giá viên."}
             </p>
           </Reveal>
 
           <div className="l-feature-grid">
-            {FEATURES.map((f) => (
+            {features.map((f) => (
               <Reveal className="l-feature-card" key={f.title}>
                 <div className="l-feature-img-wrap">
                   <img
@@ -275,10 +391,12 @@ export function LandingPage() {
       {/* Timeline Section */}
       <section className="l-section l-section-dark" id="timeline">
         <div className="l-container">
-          <div className="l-eyebrow">Lộ trình thi đấu</div>
-          <h2 className="l-section-title light">3 chặng đua — Một hành trình vươn tầm</h2>
+          <div className="l-eyebrow">{isEn ? "Competition Timeline" : "Lộ trình thi đấu"}</div>
+          <h2 className="l-section-title light">
+            {isEn ? "3 Stages — One Journey to Excellence" : "3 chặng đua — Một hành trình vươn tầm"}
+          </h2>
           <div className="l-timeline">
-            {ROUNDS.map((r, i) => (
+            {rounds.map((r, i) => (
               <div className="l-timeline-item" key={r.title}>
                 <div className="l-timeline-index">{String(i + 1).padStart(2, "0")}</div>
                 <div className="l-timeline-tag">{r.tag}</div>
@@ -294,14 +412,20 @@ export function LandingPage() {
       <section className="l-section l-section-alt" id="criteria">
         <div className="l-container">
           <Reveal>
-            <div className="l-eyebrow">Tiêu chí đánh giá</div>
-            <h2 className="l-section-title">Khung tiêu chí chuẩn mực — Trọng số minh bạch</h2>
+            <div className="l-eyebrow">{isEn ? "Evaluation Criteria" : "Tiêu chí đánh giá"}</div>
+            <h2 className="l-section-title">
+              {isEn
+                ? "Rigorous Standards — Transparent Weighting"
+                : "Khung tiêu chí chuẩn mực — Trọng số minh bạch"}
+            </h2>
             <p className="l-section-desc">
-              Mỗi sự kiện kế thừa bộ tiêu chí cốt lõi của ngành Phần mềm và tuỳ chỉnh linh hoạt theo từng vòng thi.
+              {isEn
+                ? "Inheriting core Software Engineering department standards with agile adjustments for each competitive stage."
+                : "Mỗi sự kiện kế thừa bộ tiêu chí cốt lõi của ngành Phần mềm và tuỳ chỉnh linh hoạt theo từng vòng thi."}
             </p>
           </Reveal>
           <div className="l-criteria-grid">
-            {CRITERIA.map((c) => (
+            {criteria.map((c) => (
               <Reveal className="l-criteria-card" key={c.name}>
                 <div className="l-criteria-weight">{c.weight}%</div>
                 <div>
@@ -318,16 +442,20 @@ export function LandingPage() {
       <section className="l-section l-section-dark" id="roles">
         <div className="l-container">
           <Reveal>
-            <div className="l-eyebrow">Phân quyền chuyên biệt</div>
-            <h2 className="l-section-title light">Một nền tảng — Đầy đủ mọi vai trò</h2>
+            <div className="l-eyebrow">{isEn ? "Dedicated Roles" : "Phân quyền chuyên biệt"}</div>
+            <h2 className="l-section-title light">
+              {isEn ? "One Platform — Every Stakeholder Empowered" : "Một nền tảng — Đầy đủ mọi vai trò"}
+            </h2>
             <p className="l-section-desc" style={{ color: "#94a3b8" }}>
-              Trải nghiệm tùy biến chuyên sâu cho từng chủ thể tham gia với giao diện và phân quyền riêng biệt.
+              {isEn
+                ? "Tailored experiences for every participant with dedicated workspaces and fine-grained permissions."
+                : "Trải nghiệm tùy biến chuyên sâu cho từng chủ thể tham gia với giao diện và phân quyền riêng biệt."}
             </p>
           </Reveal>
 
           {/* Interactive Role Tab Strip */}
           <div className="l-role-tabs-strip">
-            {ROLES.map((r, idx) => (
+            {roles.map((r, idx) => (
               <button
                 key={r.id}
                 type="button"
@@ -345,7 +473,7 @@ export function LandingPage() {
           </div>
 
           <div className="l-roles-grid">
-            {ROLES.map((r, idx) => {
+            {roles.map((r, idx) => {
               const isSelected = selectedRoleTab === idx;
               return (
                 <div
@@ -403,14 +531,18 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Prizes Section - Soft Platinum Canvas with Prestigious Gold/Amber Championship Banner */}
+      {/* Prizes Section */}
       <section className="l-section l-section-prizes" id="prizes">
         <div className="l-container">
           <Reveal>
-            <div className="l-eyebrow">Cơ cấu giải thưởng</div>
-            <h2 className="l-section-title">Giải thưởng &amp; Đơn vị đồng hành</h2>
+            <div className="l-eyebrow">{isEn ? "Prize Structure" : "Cơ cấu giải thưởng"}</div>
+            <h2 className="l-section-title">
+              {isEn ? "Awards & Official Partners" : "Giải thưởng & Đơn vị đồng hành"}
+            </h2>
             <p className="l-section-desc">
-              Vinh danh những sản phẩm phần mềm xuất sắc nhất và kết nối thí sinh với doanh nghiệp công nghệ uy tín.
+              {isEn
+                ? "Honoring premier software solutions and connecting talent with leading tech enterprises."
+                : "Vinh danh những sản phẩm phần mềm xuất sắc nhất và kết nối thí sinh với doanh nghiệp công nghệ uy tín."}
             </p>
           </Reveal>
 
@@ -420,15 +552,22 @@ export function LandingPage() {
                 <IconTechTrophy width={38} height={38} />
               </div>
               <div className="l-prize-amount">
-                <CountUp target={20} suffix=" triệu+" duration={1.6} />
-                <small>Tổng giá trị giải thưởng tiền mặt, cúp &amp; quà tặng hiện vật</small>
+                <CountUp target={20} suffix={isEn ? " Million+ VND" : " triệu+ VNĐ"} duration={1.6} />
+                <small>
+                  {isEn
+                    ? "Total cash prizes, trophies & official partner gear"
+                    : "Tổng giá trị giải thưởng tiền mặt, cúp & quà tặng hiện vật"}
+                </small>
               </div>
               <div className="l-prize-guarantee">
-                <span className="l-prize-guarantee-dot" /> Trao thưởng vinh danh tại Đêm Chung kết
+                <span className="l-prize-guarantee-dot" />{" "}
+                {isEn
+                  ? "Official honors awarded live at Grand Finale Gala"
+                  : "Trao thưởng vinh danh tại Đêm Chung kết"}
               </div>
             </div>
             <div className="l-prize-list">
-              {PRIZES.map((p, idx) => (
+              {prizes.map((p, idx) => (
                 <div className={`l-prize-row ${idx === 0 ? "first-prize" : ""}`} key={p.track}>
                   <div className="l-prize-row-left">
                     <span className="l-prize-medal">{p.medal}</span>
@@ -444,9 +583,11 @@ export function LandingPage() {
           </Reveal>
 
           <div className="l-sponsors-wrap">
-            <div className="l-eyebrow center">Đơn vị tài trợ &amp; Hỗ trợ chuyên môn</div>
+            <div className="l-eyebrow center">
+              {isEn ? "Sponsors & Academic Support" : "Đơn vị tài trợ & Hỗ trợ chuyên môn"}
+            </div>
             <div className="l-sponsors">
-              {SPONSORS.map((s) => (
+              {sponsors.map((s) => (
                 <span className="l-sponsor-chip" key={s}>
                   <IconGift width={16} height={16} />
                   {s}
@@ -457,45 +598,70 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Call to Action - Grand Cyber Arena Deck with 3D Cyber Seal Mascot in Flight */}
+      {/* Call to Action */}
       <section className="l-cta" id="cta">
         <div className="l-container">
           <div className="l-cta-shell">
             <div className="l-cta-content">
               <div className="l-cta-badge">
                 <span className="l-cta-live-dot" />
-                MÙA THI ĐẤU 2026 • ĐANG MỞ ĐĂNG KÝ
+                {isEn ? "SEASON 2026 • REGISTRATION OPEN" : "MÙA THI ĐẤU 2026 • ĐANG MỞ ĐĂNG KÝ"}
               </div>
               <h2 className="l-cta-title">
-                Sẵn sàng kiến tạo <br />
-                <span className="l-cta-title-accent">giải pháp công nghệ</span> đột phá?
+                {isEn ? (
+                  <>
+                    Ready to build <br />
+                    <span className="l-cta-title-accent">breakthrough tech</span> solutions?
+                  </>
+                ) : (
+                  <>
+                    Sẵn sàng kiến tạo <br />
+                    <span className="l-cta-title-accent">giải pháp công nghệ</span> đột phá?
+                  </>
+                )}
               </h2>
               <p className="l-cta-desc">
-                Tạo tài khoản sinh viên, thành lập đội thi 3–5 thành viên và gia nhập cuộc đua hackathon lập trình chuyên nghiệp ngay hôm nay.
+                {isEn
+                  ? "Create your student account, form a team of 3–5, and join the premier academic software competition today."
+                  : "Tạo tài khoản sinh viên, thành lập đội thi 3–5 thành viên và gia nhập cuộc đua hackathon lập trình chuyên nghiệp ngay hôm nay."}
               </p>
 
               <div className="l-cta-perks">
                 <div className="l-cta-perk">
                   <span className="l-cta-perk-check">✓</span>
-                  <span>Miễn phí 100% lệ phí tham dự cho mọi thí sinh</span>
+                  <span>
+                    {isEn
+                      ? "100% Free registration for all eligible student teams"
+                      : "Miễn phí 100% lệ phí tham dự cho mọi thí sinh"}
+                  </span>
                 </div>
                 <div className="l-cta-perk">
                   <span className="l-cta-perk-check">✓</span>
-                  <span>Trực tiếp thuyết trình trước hội đồng chuyên gia &amp; nhà tuyển dụng</span>
+                  <span>
+                    {isEn
+                      ? "Direct live pitch before tech leads & recruiters"
+                      : "Trực tiếp thuyết trình trước hội đồng chuyên gia & nhà tuyển dụng"}
+                  </span>
                 </div>
                 <div className="l-cta-perk">
                   <span className="l-cta-perk-check">✓</span>
-                  <span>Cấp giấy chứng nhận kỹ năng phần mềm chính thức</span>
+                  <span>
+                    {isEn
+                      ? "Official Software Engineering certification provided"
+                      : "Cấp giấy chứng nhận kỹ năng phần mềm chính thức"}
+                  </span>
                 </div>
               </div>
 
               <div className="l-cta-actions">
                 <Link className="l-btn-primary l-cta-btn-glow" to={user ? "/app" : "/register"}>
-                  {user ? "Vào bảng điều khiển" : "Đăng ký tài khoản mới"}{" "}
+                  {user
+                    ? (isEn ? "Open Control Center" : "Vào bảng điều khiển")
+                    : (isEn ? "Register New Account" : "Đăng ký tài khoản mới")}{" "}
                   <IconArrowRight width={16} height={16} />
                 </Link>
                 <Link className="l-btn-ghost l-cta-btn-ghost" to="/vote">
-                  <IconHeart width={16} height={16} /> Bình chọn khán giả
+                  <IconHeart width={16} height={16} /> {isEn ? "Audience Voting" : "Bình chọn khán giả"}
                 </Link>
               </div>
             </div>
@@ -514,11 +680,15 @@ export function LandingPage() {
 
                 <div className="l-cta-chip l-cta-chip-top">
                   <span className="l-cta-chip-icon">⚡</span>
-                  <span className="l-cta-chip-text">50+ Đội thi tranh tài</span>
+                  <span className="l-cta-chip-text">
+                    {isEn ? "50+ Competing Teams" : "50+ Đội thi tranh tài"}
+                  </span>
                 </div>
                 <div className="l-cta-chip l-cta-chip-bottom">
                   <span className="l-cta-chip-icon">🏆</span>
-                  <span className="l-cta-chip-text">Tổng thưởng 20Tr+</span>
+                  <span className="l-cta-chip-text">
+                    {isEn ? "Total Prize 20M+ VND" : "Tổng thưởng 20Tr+"}
+                  </span>
                 </div>
               </div>
             </div>
@@ -533,7 +703,9 @@ export function LandingPage() {
             <SealLogo size={34} showText={true} theme="dark" />
           </div>
           <div className="muted" style={{ fontSize: 13 }}>
-            © 2026 SEAL Hackathon — Ngành Kỹ thuật Phần mềm (SE Department).
+            {isEn
+              ? "© 2026 SEAL Hackathon — Software Engineering Department (SE Department)."
+              : "© 2026 SEAL Hackathon — Ngành Kỹ thuật Phần mềm (SE Department)."}
           </div>
         </div>
       </footer>
