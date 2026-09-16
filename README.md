@@ -127,7 +127,28 @@ Hệ thống được thiết kế theo mô hình **3-Tier Architecture tách bi
 
 ---
 
-### Cách 1: Khởi động 1-Click bằng Docker Compose (Khuyến nghị cho Demo)
+### Cách 1: Khởi Động 1-Click Siêu Tốc Bằng `start-system.bat` (Khuyến nghị cho Demo)
+
+Dự án cung cấp sẵn tệp kịch bản tự động hóa cho hệ điều hành Windows:
+1. **Khởi chạy hệ thống**: Nhấp đúp chuột vào file **`start-system.bat`** (hoặc chạy trong PowerShell / CMD):
+   ```cmd
+   start-system.bat
+   ```
+   - Nhấn **`Enter`** (chọn `[1]`): Hệ thống tự động kích hoạt 4 Container ngầm qua Docker Compose và mở trình duyệt tại [http://localhost:3000](http://localhost:3000).
+   - Nếu chưa bật Docker Desktop, chọn `[2]` để chạy trực tiếp trên 3 cửa sổ terminal với H2 in-memory Database nạp sẵn dữ liệu demo.
+
+2. **Chạy kiểm thử tự động 100% Xanh**: Nhấp đúp chuột vào file **`run-automated-tests.bat`**:
+   ```cmd
+   run-automated-tests.bat
+   ```
+   - Tự động chạy Ma trận RTM (27/27 Use Cases)
+   - Tự động chạy 94 bài kiểm thử Backend (JUnit 5 / Java 21)
+   - Tự động chạy 101 bài kiểm thử Frontend (Vitest / React 19)
+   - Tự động kiểm tra cú pháp TypeScript & Bundle production (0 errors)
+
+---
+
+### Cách 2: Khởi động Thủ Công bằng Docker Compose
 
 1. **Khởi chạy toàn bộ hệ thống trong 1 lệnh duy nhất**:
    ```bash

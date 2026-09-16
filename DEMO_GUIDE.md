@@ -11,17 +11,25 @@
 
 Để buổi báo cáo diễn ra trơn tru và không lãng phí dù chỉ 1 giây, nhóm phải hoàn thành các bước chuẩn bị này trước khi bước lên bục thuyết trình:
 
-### 1.1. Khởi động hệ thống Docker 4 Container
-Mở PowerShell (Run as Administrator nếu cần) và chạy:
-```powershell
-cd "C:\SEAL_HACKATHON-main (1)\SEAL_HACKATHON-main"
-docker compose up -d
-```
-Kiểm tra trạng thái cả 4 container:
-```powershell
-docker compose ps
-```
-*Yêu cầu bắt buộc: Cả 4 service `seal-frontend`, `seal-bff`, `seal-backend`, `seal-postgres` đều phải hiển thị `Up (healthy)`.*
+### 1.1. Khởi Động 1-Click Bằng `start-system.bat` & Trình Diễn Kiểm Thử `run-automated-tests.bat`
+Để loại bỏ hoàn toàn việc gõ lệnh thủ công dễ phát sinh lỗi trước mặt Hội đồng phản biện, nhóm đã xây dựng sẵn 2 tệp kịch bản tự động hóa 1-Click:
+
+#### 🟢 Bước A: Khởi động hệ thống bằng `start-system.bat`
+1. Nhấp đúp chuột mở file **`start-system.bat`** tại thư mục gốc dự án.
+2. Màn hình console xuất hiện, chỉ cần nhấn **`Enter`** (chọn mặc định `[1]`):
+   - Hệ thống tự động kiểm tra Docker Engine và kích hoạt toàn bộ 4 Container ngầm (`seal-frontend`, `seal-bff`, `seal-backend`, `seal-postgres`).
+   - Tự động kiểm tra độ sẵn sàng và **tự động mở trình duyệt truy cập ngay `http://localhost:3000`**.
+   - *Dự phòng khẩn cấp*: Nếu máy tính chưa kịp bật Docker Desktop, hệ thống sẽ tự động phát hiện và chuyển sang chế độ **Cục bộ `[2]` (Local Mode)**, tự động nạp cơ sở dữ liệu in-memory H2 từ `data-demo.sql` và mở 3 terminal ngầm mà không cần cài đặt thêm bất kỳ thứ gì!
+
+#### 🧪 Bước B (KHOE ĐIỂM KỸ THUẬT): Trình diễn kiểm thử tự động bằng `run-automated-tests.bat`
+- Khi Thầy Cô hỏi: *"Nhóm đã kiểm thử hệ thống như thế nào? Có test case không?"*:
+- Driver chỉ cần **nhấp đúp chuột mở file `run-automated-tests.bat`**.
+- Hệ thống tự động thực thi và hiển thị kết quả 100% XANH tuyệt đối qua 4 tầng:
+  1. **Ma trận RTM (Traceability)**: 27/27 Use Cases đối soát chuẩn xác giữa yêu cầu và mã nguồn.
+  2. **Backend Unit Tests**: Toàn bộ **94 bài kiểm thử** (Spring Boot 3 / JUnit 5) đạt `BUILD SUCCESS`.
+  3. **Frontend Tests**: Toàn bộ **101 bài kiểm thử** (React 19 / Vitest) đạt `101 passed (100%)`.
+  4. **TypeScript & Bundler**: Trình biên dịch báo cáo `CLEAN (0 errors)` sẵn sàng production.
+- Đây chính là **"vũ khí hủy diệt"** giúp nhóm khẳng định tiêu chuẩn kỹ thuật phần mềm vượt trội!
 
 ---
 

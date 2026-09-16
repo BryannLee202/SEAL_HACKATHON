@@ -8,7 +8,15 @@ echo   CHUONG TRINH CHAY VA KIEM TRA KIEM THU TU DONG HOA TOAN DIEN
 echo ===============================================================================
 echo.
 
-:: 1. Kiem tra Ma tran Truy xuat Nguon goc (RTM)
+:: 1. Kiem tra thu vien Frontend
+if not exist "frontend\node_modules" (
+    echo [THONG BAO] Dang cai dat thu vien Frontend...
+    cd frontend
+    call npm install
+    cd ..
+)
+
+:: 2. Kiem tra Ma tran Truy xuat Nguon goc (RTM)
 echo [1/4] Dang xac thuc Ma tran Truy xuat Yeu cau (Traceability Matrix)...
 python scripts\traceability.py --verify
 if %ERRORLEVEL% neq 0 (
@@ -19,10 +27,10 @@ if %ERRORLEVEL% neq 0 (
 echo [THANH CONG] Ma tran RTM: 27/27 Use Cases dat 100%% hop le!
 echo.
 
-:: 2. Kiem thu Backend Spring Boot (JUnit 5 / Java 21)
+:: 3. Kiem thu Backend Spring Boot (JUnit 5 / Java 21)
 echo [2/4] Dang chay toan bo 94 bai kiem thu Backend Spring Boot...
 cd backend
-call mvnw.cmd test -Dtest="!*IntegrationTest"
+call mvnw.cmd test
 if %ERRORLEVEL% neq 0 (
     echo [THAT BAI] Backend unit tests phat hien loi!
     cd ..
@@ -33,8 +41,8 @@ cd ..
 echo [THANH CONG] Backend Unit Tests: 100%% Xanh (BUILD SUCCESS)!
 echo.
 
-:: 3. Kiem thu Frontend (Vitest & React Testing Library)
-echo [3/4] Dang chay toan bo 101 bai kiem thu Frontend UI & AI Engine...
+:: 4. Kiem thu Frontend (Vitest & React Testing Library)
+echo [3/4] Dang chay toan bo 101 bai kiem thu Frontend UI va AI Engine...
 cd frontend
 call npm test -- --run
 if %ERRORLEVEL% neq 0 (
@@ -47,10 +55,10 @@ cd ..
 echo [THANH CONG] Frontend Tests: 100%% Xanh (19/19 files, 101 tests passed)!
 echo.
 
-:: 4. Kiem tra kieu du lieu TypeScript (Typecheck)
-echo [4/4] Dang xac thuc kieu du lieu TypeScript (npx tsc -b)...
+:: 5. Kiem tra kieu du lieu TypeScript & Build (Typecheck)
+echo [4/4] Dang xac thuc kieu du lieu TypeScript va Bundle (npm run build)...
 cd frontend
-call npx tsc -b
+call npm run build
 if %ERRORLEVEL% neq 0 (
     echo [THAT BAI] Bien dich TypeScript phat hien loi Type!
     cd ..

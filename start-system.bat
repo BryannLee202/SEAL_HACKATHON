@@ -27,65 +27,33 @@ echo.
 :: 2. Menu lua chon che do khoi dong
 echo Vui long chon che do khoi dong phu hop:
 echo.
-echo   [1] KHOI DONG DEMO NHANH (Khuyen dung - 3 cua so tu dong mo + Nap san du lieu mau)
-echo   [2] KHOI DONG BANG DOCKER COMPOSE (Chay 4 Container ngam: DB, Backend, BFF, Web)
-echo   [3] KHOI DONG CHI RIENG DATABASE POSTGRESQL (Docker)
-echo   [4] DUNG TOAN BO CAC CONTAINER DOCKER (Stop all)
+echo   [1] KHOI DONG TRON GOI VOI DOCKER COMPOSE (Khuyen dung - 1 Click chay 4 Container ngam)
+echo   [2] KHOI DONG CUC BO (Local Dev - 3 cua so Terminal tu dong, khong can Docker)
+echo   [3] CHAY BO KIEM THU TU DONG (Automated Tests - 101 Vitest + 94 JUnit + RTM)
+echo   [4] DUNG TOAN BO CAC CONTAINER DOCKER (Stop Docker)
 echo   [5] Thoat
 echo.
 set /p CHOICE="Nhap lua chon cua ban [1-5] (Mac dinh: 1): "
 if "%CHOICE%"=="" set CHOICE=1
 
-if "%CHOICE%"=="1" goto START_LOCAL_DEMO
-if "%CHOICE%"=="2" goto START_DOCKER
-if "%CHOICE%"=="3" goto START_DB_ONLY
+if "%CHOICE%"=="1" goto START_DOCKER
+if "%CHOICE%"=="2" goto START_LOCAL_DEMO
+if "%CHOICE%"=="3" goto RUN_TESTS
 if "%CHOICE%"=="4" goto STOP_DOCKER
 if "%CHOICE%"=="5" goto EXIT_SCRIPT
 
-:START_LOCAL_DEMO
-echo.
-echo ===============================================================================
-echo   DANG KHOI DONG 3 DICH VU TRONG 3 CUA SO POWERSHELL RIENG BIET...
-echo   (Nạp sẵn dữ liệu demo: Tài khoản, Đội thi, Tiêu chí Rubric, Bài nộp)
-echo ===============================================================================
-echo.
-
-echo [1/3] Dang mo cua so Terminal cho Backend Spring Boot (cong 8080)...
-start "SHMS [1] - Backend Spring Boot (Demo Profile)" powershell -NoExit -Command "cd '%~dp0backend'; $env:SPRING_PROFILES_ACTIVE='demo'; .\mvnw.cmd spring-boot:run"
-
-timeout /t 6 /nobreak >nul
-
-echo [2/3] Dang mo cua so Terminal cho BFF Gateway NestJS (cong 4000)...
-start "SHMS [2] - BFF Gateway NestJS" powershell -NoExit -Command "cd '%~dp0bff'; npm run start:dev"
-
-timeout /t 3 /nobreak >nul
-
-echo [3/3] Dang mo cua so Terminal cho Frontend React 19 (cong 3001)...
-start "SHMS [3] - Frontend React 19" powershell -NoExit -Command "cd '%~dp0frontend'; $env:VITE_BFF_URL='http://localhost:4000'; npm run dev"
-
-timeout /t 2 /nobreak >nul
-
-echo.
-echo ===============================================================================
-echo   CA 3 DICH VU DA DUOC KHOI DONG XONG!
-echo   - Frontend Web App:     http://localhost:3001
-echo   - BFF Gateway (NestJS): http://localhost:4000
-echo   - Backend Spring Boot:  http://localhost:8080
-echo.
-echo   Tai khoan demo san sang:
-echo   - Ban to chuc:  coordinator@seal.edu.vn / Coordinator@123
-echo   - Giam khao:    judge1@seal.edu.vn       / Judge@123
-echo   - Doi thi:      leader1@seal.edu.vn      / Leader@123
-echo ===============================================================================
-echo.
-echo Dang tu dong mo trinh duyet truy cap Web App...
-start http://localhost:3001
-pause
-goto :eof
-
 :START_DOCKER
 echo.
-echo [DOCKER] Dang khoi dong cac container he thong SHMS...
+echo [DOCKER] Dang kiem tra trang thai Docker Engine...
+docker info >nul 2>&1
+if %ERRORLEVEL% neq 0 (
+    echo [CANH BAO] Docker Desktop chua bat hoac chua san sang!
+    echo Tu dong chuyen sang Che do [2] Khoi dong Cuc bo (Local Mode)...
+    timeout /t 3 /nobreak >nul
+    goto START_LOCAL_DEMO
+)
+
+echo [DOCKER] Dang khoi dong 4 Container: Database, Backend, BFF Gateway, Frontend...
 docker compose up -d
 if %ERRORLEVEL% equ 0 (
     echo.
@@ -95,22 +63,89 @@ if %ERRORLEVEL% equ 0 (
     echo   - BFF Gateway (NestJS): http://localhost:4000
     echo   - Backend Spring Boot:  http://localhost:8080
     echo   - Swagger API Docs:     http://localhost:8080/swagger-ui.html
+    echo.
+    echo   Tai khoan Demo san sang (Mat khau chung: Demo@123456):
+    echo   - Ban to chuc:  coordinator@demo.local
+    echo   - Giam khao 1:  judge1@demo.local
+    echo   - Giam khao 2:  judge2@demo.local
+    echo   - Mentor:       mentor1@demo.local
+    echo   - Doi thi:      leader@demo.local
     echo ===============================================================================
+    echo.
+    echo Dang tu dong mo trinh duyet truy cap Web App...
     start http://localhost:3000
 ) else (
     echo.
     echo [LOI] Khong the khoi dong Docker Compose!
-    echo Neu may chua bat Docker Desktop, vui long chon Che do [1] de chay truc tiep cuc bo.
+    echo Vui long kiem tra Docker Desktop hoac chon Che do [2] de chay cuc bo.
 )
 pause
 goto :eof
 
-:START_DB_ONLY
+:START_LOCAL_DEMO
 echo.
-echo [DOCKER] Dang khoi dong dich vu PostgreSQL Database...
-docker compose up -d postgres
-echo [OK] Database PostgreSQL da san sang tren cong 5432!
+echo ===============================================================================
+echo   DANG KHOI DONG HE THONG O CHE DO CUC BO (LOCAL MODE)...
+echo   (Su dung H2 in-memory Database va nap san du lieu mau tu data-demo.sql)
+echo ===============================================================================
+echo.
+
+:: Kiem tra node_modules
+if not exist "bff\node_modules" (
+    echo [BFF] Dang cai dat thu vien cho BFF Gateway...
+    pushd bff
+    call npm install
+    popd
+    echo.
+)
+
+if not exist "frontend\node_modules" (
+    echo [Frontend] Dang cai dat thu vien cho Frontend...
+    pushd frontend
+    call npm install
+    popd
+    echo.
+)
+
+echo [1/3] Dang mo Terminal cho Backend Spring Boot (cong 8080, Profile Demo)...
+start "SHMS [1] - Backend Spring Boot" cmd /k "cd /d "%~dp0backend" && mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=demo"
+
+timeout /t 6 /nobreak >nul
+
+echo [2/3] Dang mo Terminal cho BFF Gateway NestJS (cong 4000)...
+start "SHMS [2] - BFF Gateway NestJS" cmd /k "cd /d "%~dp0bff" && npm run start:dev"
+
+timeout /t 3 /nobreak >nul
+
+echo [3/3] Dang mo Terminal cho Frontend React 19 (cong 3000)...
+start "SHMS [3] - Frontend React 19" cmd /k "cd /d "%~dp0frontend" && npm run dev"
+
+timeout /t 2 /nobreak >nul
+
+echo.
+echo ===============================================================================
+echo   CA 3 DICH VU DA DUOC KHOI DONG TRONG CAC CUA SO RIENG BIET!
+echo   - Frontend Web App:     http://localhost:3000
+echo   - BFF Gateway (NestJS): http://localhost:4000
+echo   - Backend Spring Boot:  http://localhost:8080
+echo.
+echo   Tai khoan Demo san sang (Mat khau chung: Demo@123456):
+echo   - Ban to chuc:  coordinator@demo.local
+echo   - Giam khao 1:  judge1@demo.local
+echo   - Giam khao 2:  judge2@demo.local
+echo   - Mentor:       mentor1@demo.local
+echo   - Doi thi:      leader@demo.local
+echo ===============================================================================
+echo.
+echo Dang tu dong mo trinh duyet truy cap Web App...
+start http://localhost:3000
 pause
+goto :eof
+
+:RUN_TESTS
+echo.
+echo Dang chuyen tiep toi chuong trinh kiem thu tu dong hoa toan dien...
+call run-automated-tests.bat
 goto :eof
 
 :STOP_DOCKER
