@@ -78,6 +78,9 @@ Hệ thống được thiết kế theo mô hình **3-Tier Architecture tách bi
 | Phân hệ | Mô tả chức năng chi tiết |
 |---|---|
 | **🌐 Cổng Thông Tin Công Khai** | Landing Page phong cách Cyber Arena, giới thiệu cơ cấu giải thưởng 20Tr+, đơn vị đồng hành (FPT Software, GDSC, SEAL Lab), và linh vật 3D bay lượn khí động học. |
+| **🤖 Trợ Lý Ảo AI SEAL Bot** | Drawer trợ lý AI thông minh toàn hệ thống (`MascotChatDrawer`), phản hồi thời gian thực về thể lệ, bộ tiêu chí, phân tích RBL và gợi ý câu hỏi mẫu. |
+| **🌐 Song Ngữ Quốc Tế (i18n)** | Chuyển đổi ngôn ngữ tức thì giữa **Tiếng Việt (🇻🇳)** và **English (🇬🇧)** trên toàn bộ Landing Page, Auth Hero, Login, Register, Bảng xếp hạng và Bình chọn. |
+| **🌓 Giao Diện Kép (Dark / Light)** | Thiết kế phong cách Hyer Aviation Luxury Editorial (Sáng) & Cyber Midnight Hull (Tối), chuyển đổi êm mượt, tối ưu độ tương phản và chống chói mắt. |
 | **🗳️ Bình Chọn Khán Giả (`/vote`)** | Cổng bình chọn thời gian thực cho khán giả tiếp sức đội thi yêu thích; bảo vệ chống spam phiếu qua mã khóa cục bộ và giao diện dạ quang hổ phách. |
 | **🏆 Bảng Xếp Hạng (`/rankings`)** | Bục vinh danh quán quân Leaderboard Arena, lọc theo vòng thi, gắn huy chương Top 1-2-3 và xuất file kết quả chính thức định dạng CSV/Excel. |
 | **👥 Quản Lý Đội Thi & Bài Nộp** | Đội trưởng lập nhóm 3–5 thành viên, gửi lời mời qua email, nộp link GitHub repo, tài liệu docs và link chạy demo. |
@@ -93,6 +96,7 @@ Hệ thống được thiết kế theo mô hình **3-Tier Architecture tách bi
 ### Frontend
 - **Framework**: React 19, TypeScript 5, Vite 8
 - **Routing & State**: React Router 7, React Context API, Axios Client
+- **Trợ lý Thông minh & i18n**: AI Knowledge Engine Mock, Bilingual Localization Engine (`vi`/`en`), Theme Context
 - **Testing**: Vitest, React Testing Library, jsdom (101/101 tests pass 100%)
 - **Styling & Motion**: Modern CSS Variables, Glassmorphism, BEM, CSS Keyframe Animations (Pitch/Roll/Soar Flight Physics)
 

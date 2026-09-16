@@ -37,7 +37,12 @@
 
 6. **Thiết Kế Cyber IT Editorial & 3D Interactive Mascot**:
    - Giao diện được trau chuốt theo ngôn ngữ thiết kế sang trọng, hiện đại với linh vật 3D Robot Hải Cẩu có hiệu ứng khí động học chuyển động theo trạng thái chuyển tab.
+   - Hỗ trợ giao diện kép **Light Mode & Dark Mode** chuyển đổi êm mượt, tối ưu độ tương phản, chống chói lóa mắt khi sử dụng ban đêm.
    - Đạt chuẩn tương thích Responsive từ màn hình điện thoại di động đến màn hình máy chiếu độ phân giải cao.
+
+7. **Trợ Lý Ảo AI SEAL Bot & Đa Ngôn Ngữ Song Ngữ (AI Assistant & Bilingual i18n)**:
+   - Tích hợp cửa sổ trò chuyện thông minh **SEAL Bot Assistant**, hỗ trợ thí sinh và giám khảo tra cứu thể lệ, giải thích công thức RBL và tư vấn kỹ thuật 24/7.
+   - Toàn diện hóa chuẩn quốc tế với khả năng chuyển đổi tức thì giữa **🇻🇳 Tiếng Việt** và **🇬🇧 English**, sẵn sàng cho các đấu trường Hackathon quốc tế.
 
 ---
 
@@ -50,6 +55,7 @@
 | **3. Phân Hệ Mentor Đồng Hành** | • Phân bổ Mentor theo bảng đấu chuyên môn (AI, Mobile, Web)<br>• Mentor truy cập xem chi tiết bài nộp của các đội trong bảng phụ trách<br>• Gửi góp ý kỹ thuật, nhận xét điểm mạnh/điểm yếu trước giờ chấm thi | Nâng cao chất lượng dự án của sinh viên, thể hiện mô hình Hackathon có cố vấn đồng hành thực tế. |
 | **4. Ban Giám Khảo (Judge)** | • Chấm điểm độc lập theo ma trận tiêu chí có trọng số<br>• Nhập nhận xét chuyên môn chi tiết cho từng bài thi<br>• Cơ chế khóa điểm chính thức (**Finalize Score**)<br>• Tham gia Vòng hiệu chuẩn (**Calibration Round**) với bài nộp mẫu | Giám khảo chấm điểm công bằng, chuyên nghiệp và có cơ sở khoa học đối soát. |
 | **5. Ban Tổ Chức (Coordinator)** | • Khởi tạo và quản lý sự kiện Hackathon đa vòng (Vòng loại, Vòng chung kết)<br>• Thiết lập tiêu chí và gán trọng số cho từng vòng đấu<br>• Phân công giám khảo theo Scope (Global hoặc từng Round cụ thể)<br>• Chạy thuật toán tính điểm và xếp hạng tự động<br>• Áp dụng luật thăng hạng tự động Top N lên vòng tiếp theo<br>• Xuất bảng điểm chính thức ra file chuẩn CSV/Excel<br>• Tra cứu và lọc toàn bộ Nhật ký kiểm toán (**Audit Log**) | Tự động hóa toàn bộ công việc tính toán thủ công bằng Excel trước đây, giảm sai sót xuống 0%. |
+| **6. Trợ Lý AI & Song Ngữ Quốc Tế** | • Drawer trợ lý ảo AI SEAL Bot tương tác trực tiếp với cơ sở tri thức hackathon<br>• Gợi ý kịch bản, giải đáp thể lệ, tiêu chí chấm thi và thuật toán RBL<br>• Chuyển đổi song ngữ tức thì giữa **Tiếng Việt (🇻🇳)** và **English (🇬🇧)**<br>• Chế độ Dark/Light Theme chống chói mắt | Tối ưu hóa trải nghiệm người dùng, tiếp cận thí sinh quốc tế và hỗ trợ giải đáp 24/7 không cần nhân sự trực. |
 
 ---
 
@@ -180,6 +186,21 @@ Dưới đây là 12 câu hỏi "tủ" mà các thầy cô chuyên môn phản b
 ### ❓ Câu 12: Khó khăn kỹ thuật lớn nhất mà nhóm đã gặp phải và cách giải quyết là gì?
 * **Đáp ăn điểm**:
   > *"Dạ, khó khăn lớn nhất là việc xử lý tính nhất quán của dữ liệu chấm thi khi nhiều giám khảo cùng chấm điểm đồng thời và cơ chế đồng bộ phiên làm việc qua Cookie HttpOnly giữa 3 tầng độc lập (React -> NestJS BFF -> Spring Boot). Nhóm đã nghiên cứu và giải quyết bằng cách áp dụng mô hình Proxy ủy quyền xác thực tại BFF, kết hợp Transaction Isolation và Flyway Migration để đảm bảo cơ sở dữ liệu luôn đồng nhất tuyệt đối."*
+
+---
+
+### ❓ Câu 13: Phân hệ Trợ lý Ảo AI và Chuyển đổi Song ngữ mang lại giá trị gì cho một giải thi Hackathon?
+* **Đáp ăn điểm**:
+  > *"Dạ thưa Thầy Cô, trong thực tế các giải thi Hackathon lớn, Ban Tổ Chức thường xuyên bị quá tải bởi hàng trăm câu hỏi giống nhau từ thí sinh (thể lệ, giờ nộp bài, tiêu chí kỹ thuật, cách tính điểm RBL). Trợ lý AI SEAL Bot được nạp sẵn cơ sở tri thức giải đáp tức thì 24/7 giúp tiết kiệm tối đa nhân sự trực. Đồng thời, tính năng chuyển đổi song ngữ (🇻🇳 Tiếng Việt & 🇬🇧 English) 1-click giúp cuộc thi mở rộng quy mô cho sinh viên quốc tế tham dự mà không cần duy trì 2 hệ thống riêng biệt."*
+
+---
+
+### ❓ Câu 14: Nhóm đã thực hiện kiểm thử (Testing) như thế nào để đảm bảo chất lượng phần mềm?
+* **Đáp ăn điểm**:
+  > *"Dạ, nhóm đã thiết lập quy trình kiểm thử tự động toàn diện từ unit test đến integration test:*  
+  > *• **Frontend**: Đạt **101/101 unit tests pass 100%** sử dụng Vitest & React Testing Library, bao phủ toàn bộ Context, logic ưu tiên Dashboard, quyền hạn RBAC và các component trọng yếu.*  
+  > *• **Backend**: Bao phủ 94 bài kiểm thử JUnit 5 & Mockito cho các dịch vụ nghiệp vụ cốt lõi, xác thực Spring Security và tính toán ma trận điểm số.*  
+  > *• **Đóng gói**: Ứng dụng vượt qua khâu đóng gói Docker multi-stage build nghiêm ngặt, đảm bảo không có bất kỳ lỗi TypeScript hay runtime nào."*
 
 ---
 

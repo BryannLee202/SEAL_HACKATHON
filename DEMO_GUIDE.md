@@ -69,16 +69,26 @@ Tất cả tài khoản dưới đây đã được nạp sẵn mật khẩu chu
 
 ## 🎬 4. Kịch Bản Demo Từng Bước (12 Phút Đạt Điểm Tối Đa)
 
-### Phase 1: Giới Thiệu Tổng Quan & Cổng Công Khai (2 Phút)
+### Phase 1: Giới Thiệu Tổng Quan & Cổng Công Khai (2.5 Phút - GÂY ẤN TƯỢNG MẠNH)
 - **Màn hình**: `http://localhost:3000/` (Trang chủ)
 - **Lời thoại của Presenter**:
-  > *"Kính thưa Thầy Cô, SEAL Hackathon Management System là nền tảng quản trị và đánh giá giải thi lập trình chuyên nghiệp. Điểm nhấn đầu tiên là giao diện Cyber Editorial hiện đại với linh vật 3D robot hải cẩu tương tác mượt mà, phản chiếu tính công nghệ cao của sinh viên ngành Kỹ thuật Phần mềm."*
+  > *"Kính thưa Thầy Cô, SEAL Hackathon Management System là nền tảng quản trị và đánh giá giải thi lập trình chuyên nghiệp. Điểm nhấn đầu tiên là trải nghiệm người dùng hiện đại với giao diện Cyber Editorial, hỗ trợ đa ngôn ngữ quốc tế, chế độ Dark/Light Mode chống chói mắt và Trợ lý Ảo AI SEAL Bot thông minh."*
 - **Hành động của Driver**:
-  - Cuộn nhẹ trang chủ qua phần giải thưởng 20Tr+, các tính năng và đơn vị đồng hành.
-  - Bấm vào menu **"Bình chọn"** (`/vote`).
-  - Chọn bảng đấu **"Mobile Application"**, thấy 2 đội thi `Team Rocket` và `Byte Force`.
-  - Bấm nút **"Bình chọn cho đội này"** trên thẻ `Team Rocket`. Thấy số phiếu tăng ngay lập tức và nút chuyển sang trạng thái đã bình chọn dạ quang xanh lá.
-  - Bấm chuyển sang **"Bảng xếp hạng"** (`/rankings`), chỉ cho Thầy Cô thấy bục vinh danh và khung ma trận tiêu chí đánh giá.
+  1. **Demo Dark / Light Theme (10 giây)**:
+     - Bấm nút biểu tượng **Trăng / Mặt trời** trên thanh điều hướng (`ThemeToggle`).
+     - Cho Thầy Cô thấy toàn bộ giao diện chuyển êm ái sang chế độ Dark Theme (**Cyber Midnight Hull**) với độ tương phản cao, dịu mắt, không hề bị lóa.
+  2. **Demo Song Ngữ Anh - Việt (10 giây)**:
+     - Bấm nút **`🇻🇳 VI`** -> chuyển sang **`🇬🇧 EN`**.
+     - Toàn bộ nội dung Landing Page, huy hiệu, tiêu đề *"Arena of Technology"*, số liệu và tiêu chí tự động đổi sang tiếng Anh chuẩn công nghệ quốc tế. Bấm lại về **`🇻🇳 VI`**.
+  3. **Demo Trợ Lý Ảo AI SEAL Bot (20 giây - GHI ĐIỂM BẤT NGỜ!)**:
+     - Bấm vào biểu tượng **Linh vật SEAL Bot** phát sáng ở góc dưới bên phải màn hình.
+     - Khung chat **SEAL Assistant** mở ra. Bấm chọn 1 câu hỏi mẫu: *"Thể lệ cuộc thi thế nào?"* hoặc *"Tiêu chí chấm điểm ra sao?"*.
+     - Xem AI trả lời chi tiết tức thì về số lượng thành viên, các mốc vòng thi và tiêu chí kỹ thuật. Bấm nút đóng chat.
+  4. **Demo Cổng Bình Chọn Khán Giả (`/vote`)**:
+     - Bấm vào menu **"Bình chọn"** (`/vote`).
+     - Chọn bảng đấu **"Mobile Application"**, thấy 2 đội thi `Team Rocket` và `Byte Force`.
+     - Bấm nút **"Bình chọn cho đội này"** trên thẻ `Team Rocket`. Thấy số phiếu tăng ngay lập tức và nút chuyển sang trạng thái đã bình chọn dạ quang xanh lá.
+  5. Bấm chuyển sang **"Bảng xếp hạng"** (`/rankings`), chỉ cho Thầy Cô thấy bục vinh danh và khung ma trận tiêu chí đánh giá.
 
 ---
 
