@@ -73,14 +73,35 @@ export function VotingPage() {
       .catch(() => {});
   }, [eventId]);
 
-  // 3. Check localStorage for already voted team in this track
+  // 3. Fetch server my-vote status & sync with localStorage
   useEffect(() => {
     if (!trackId) {
       setVotedTeamId(null);
       return;
     }
-    const stored = localStorage.getItem(votedKey(trackId));
-    setVotedTeamId(stored);
+
+    let active = true;
+    api
+      .get<{ votedTeamId: string | null }>(`/api/public/voting/tracks/${trackId}/my-vote`)
+      .then((res) => {
+        if (!active) return;
+        const serverVotedId = res.data?.votedTeamId ?? null;
+        setVotedTeamId(serverVotedId);
+        if (serverVotedId) {
+          localStorage.setItem(votedKey(trackId), serverVotedId);
+        } else {
+          localStorage.removeItem(votedKey(trackId));
+        }
+      })
+      .catch(() => {
+        if (!active) return;
+        const stored = localStorage.getItem(votedKey(trackId));
+        setVotedTeamId(stored);
+      });
+
+    return () => {
+      active = false;
+    };
   }, [trackId]);
 
   // 4. Fetch teams & tallies for selected track + periodic polling
@@ -125,13 +146,12 @@ export function VotingPage() {
 
   async function handleVote(teamId: string, teamName: string) {
     if (!trackId) return;
+    if (votedTeamId === teamId) return;
 
-    if (votedTeamId) {
-      toast.error("Bạn đã bình chọn cho một đội trong Hạng mục này rồi!");
-      return;
-    }
-
+    const isSwitching = !!votedTeamId;
+    const oldTeamId = votedTeamId;
     setVotingTeamId(teamId);
+
     try {
       await api.post(`/api/public/voting/tracks/${trackId}/votes`, {
         teamId,
@@ -141,16 +161,24 @@ export function VotingPage() {
       setVotedTeamId(teamId);
 
       setTallies((prev) => {
-        const existing = prev.find((t) => t.teamId === teamId);
-        if (existing) {
-          return prev.map((t) =>
-            t.teamId === teamId ? { ...t, voteCount: t.voteCount + 1 } : t
+        const hasNew = prev.some((t) => t.teamId === teamId);
+        const base = hasNew
+          ? prev.map((t) => (t.teamId === teamId ? { ...t, voteCount: t.voteCount + 1 } : t))
+          : [...prev, { teamId, teamName, voteCount: 1 }];
+
+        if (isSwitching && oldTeamId) {
+          return base.map((t) =>
+            t.teamId === oldTeamId ? { ...t, voteCount: Math.max(0, t.voteCount - 1) } : t
           );
         }
-        return [...prev, { teamId, teamName, voteCount: 1 }];
+        return base;
       });
 
-      toast.success(`Đã bình chọn thành công cho "${teamName}"!`);
+      if (isSwitching) {
+        toast.success(`Đã chuyển bình chọn sang "${teamName}" thành công!`);
+      } else {
+        toast.success(`Đã bình chọn thành công cho "${teamName}"!`);
+      }
     } catch (err) {
       toast.error((err as Error).message);
     } finally {
@@ -158,7 +186,34 @@ export function VotingPage() {
     }
   }
 
-  // Combine teams and tallies
+  async function handleCancelVote() {
+    if (!trackId || !votedTeamId) return;
+
+    const teamIdToCancel = votedTeamId;
+    setVotingTeamId(teamIdToCancel);
+
+    try {
+      await api.delete(`/api/public/voting/tracks/${trackId}/votes`);
+      localStorage.removeItem(votedKey(trackId));
+      setVotedTeamId(null);
+
+      setTallies((prev) =>
+        prev.map((t) =>
+          t.teamId === teamIdToCancel
+            ? { ...t, voteCount: Math.max(0, t.voteCount - 1) }
+            : t
+        )
+      );
+
+      toast.success("Đã hủy bình chọn thành công! Bạn có thể bình chọn lại bất cứ lúc nào.");
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setVotingTeamId(null);
+    }
+  }
+
+  // Combine teams and tallies with STABLE order (cố định thứ tự thẻ, không đảo vị trí khi vote)
   const displayedItems = (() => {
     const map = new Map<string, VoteTallyItem>();
 
@@ -166,17 +221,24 @@ export function VotingPage() {
       map.set(t.teamId, t);
     });
 
-    teams.forEach((tm) => {
-      if (!map.has(tm.id)) {
-        map.set(tm.id, {
-          teamId: tm.id,
-          teamName: tm.name,
-          voteCount: 0,
-        });
-      }
+    return teams.map((tm) => {
+      const tally = map.get(tm.id);
+      return {
+        teamId: tm.id,
+        teamName: tm.name,
+        voteCount: tally ? tally.voteCount : 0,
+      };
     });
+  })();
 
-    return Array.from(map.values()).sort((a, b) => b.voteCount - a.voteCount);
+  // Rank map for leader badge (#1, #2...) without changing card position
+  const rankMap = (() => {
+    const sorted = [...displayedItems].sort((a, b) => b.voteCount - a.voteCount);
+    const m = new Map<string, number>();
+    sorted.forEach((item, idx) => {
+      m.set(item.teamId, idx + 1);
+    });
+    return m;
   })();
 
   const maxVotes = Math.max(1, ...displayedItems.map((i) => i.voteCount));
@@ -343,7 +405,7 @@ export function VotingPage() {
                       </div>
                       <div className="vote-team-info">
                         <div className="vote-rank-pill">
-                          #{index + 1} • Bảng {tracks.find((t) => t.id === trackId)?.name ?? "Đấu"}
+                          #{rankMap.get(item.teamId) ?? index + 1} • Bảng {tracks.find((t) => t.id === trackId)?.name ?? "Đấu"}
                         </div>
                         <h3 className="vote-team-name">{item.teamName}</h3>
                       </div>
@@ -370,16 +432,57 @@ export function VotingPage() {
 
                     <div className="vote-card-actions">
                       {isVotedThis ? (
-                        <button className="vote-action-btn voted" disabled>
+                        <div className="vote-action-group" style={{ display: "flex", gap: "8px", width: "100%" }}>
+                          <button className="vote-action-btn voted" style={{ flex: 1 }} disabled>
+                            <IconTechPulseVote width={18} height={18} />
+                            <span>Bạn đã bình chọn cho đội này</span>
+                          </button>
+                          <button
+                            type="button"
+                            className="vote-cancel-btn"
+                            onClick={handleCancelVote}
+                            disabled={isVotingThis}
+                            title="Hủy bình chọn đội này để chọn lại"
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              gap: "4px",
+                              padding: "8px 14px",
+                              borderRadius: "10px",
+                              border: "1px solid rgba(239, 68, 68, 0.4)",
+                              background: "rgba(239, 68, 68, 0.1)",
+                              color: "#ef4444",
+                              fontWeight: 600,
+                              fontSize: "13px",
+                              cursor: "pointer",
+                              transition: "all 0.2s ease",
+                            }}
+                          >
+                            ✕ Hủy
+                          </button>
+                        </div>
+                      ) : hasVotedAny ? (
+                        <button
+                          className="vote-action-btn switch-btn"
+                          disabled={isVotingThis}
+                          onClick={() => handleVote(item.teamId, item.teamName)}
+                          title="Đổi phiếu bình chọn sang đội này"
+                          style={{
+                            border: "1px dashed rgba(188, 113, 85, 0.6)",
+                            background: "rgba(188, 113, 85, 0.08)",
+                            color: "var(--brand-primary, #bc7155)",
+                          }}
+                        >
                           <IconTechPulseVote width={18} height={18} />
-                          <span>Bạn đã bình chọn cho đội này</span>
+                          {isVotingThis ? "Đang chuyển phiếu..." : "🔄 Đổi bình chọn sang đội này"}
                         </button>
                       ) : (
                         <button
                           className="vote-action-btn"
-                          disabled={hasVotedAny || isVotingThis}
+                          disabled={isVotingThis}
                           onClick={() => handleVote(item.teamId, item.teamName)}
-                          title={hasVotedAny ? "Bạn đã bình chọn trong hạng mục này" : "Bình chọn cho đội thi"}
+                          title="Bình chọn cho đội thi"
                         >
                           <IconTechPulseVote width={18} height={18} />
                           {isVotingThis ? "Đang ghi nhận phiếu..." : "Bình chọn cho đội này"}
