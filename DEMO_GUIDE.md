@@ -120,9 +120,9 @@
   > *"Để tăng tính gắn kết cộng đồng, hệ thống cung cấp Cổng bình chọn khán giả công khai với cơ chế mã hóa chống spam phiếu. Khán giả có thể bình chọn trực tiếp cho đội thi mình yêu thích tại Đêm Chung Kết."*
 * **Thao tác Driver**:
   1. Bấm vào menu **"Bình chọn"** trên thanh điều hướng (chuyển đến `/vote`).
-  2. Chọn bảng đấu **"Mobile Application"** -> Hiện 2 đội thi `Team Rocket` và `Byte Force`.
-  3. Bấm nút **"Bình chọn cho đội này"** trên thẻ `Team Rocket`.
-  4. Số phiếu tăng lên ngay lập tức kèm hiệu ứng chúc mừng, và nút chuyển sang trạng thái đã bình chọn dạ quang xanh lá.
+  2. Chọn bảng đấu **"Mobile Application"** -> Hiện 2 đội thi `Team Rocket` và `Byte Force` với vị trí thẻ cố định chuẩn xác.
+  3. Bấm nút **"Bình chọn cho đội này"** trên thẻ `Team Rocket`. Số phiếu tăng lên ngay lập tức, nút đổi sang "Bạn đã bình chọn cho đội này" kèm nút phụ "✕ Hủy".
+  4. (Tùy chọn khoe tính năng linh hoạt): Bấm nút **"🔄 Đổi bình chọn sang đội này"** trên thẻ `Byte Force` $\rightarrow$ Hệ thống tự động chuyển phiếu sang `Byte Force` mượt mà không bị lỗi. Bấm "✕ Hủy" để trả lại trạng thái ban đầu.
   5. Bấm xem nhanh menu **"Bảng xếp hạng"** (`/rankings`), chỉ cho Thầy Cô thấy bục vinh danh Top 1-2-3 Leaderboard Arena.
 
 ---
