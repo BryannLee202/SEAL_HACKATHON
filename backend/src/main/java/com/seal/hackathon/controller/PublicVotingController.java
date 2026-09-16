@@ -3,12 +3,15 @@ package com.seal.hackathon.controller;
 import com.seal.hackathon.dto.event.EventResponse;
 import com.seal.hackathon.dto.event.TrackResponse;
 import com.seal.hackathon.dto.vote.CastVoteRequest;
+import com.seal.hackathon.dto.vote.MyVoteResponse;
 import com.seal.hackathon.dto.vote.PublicTeamResponse;
 import com.seal.hackathon.dto.vote.TeamVoteTallyResponse;
 import com.seal.hackathon.dto.vote.VoteCastResponse;
 import com.seal.hackathon.service.PublicVotingService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -54,6 +58,14 @@ public class PublicVotingController {
         return publicVotingService.tallyByTrack(trackId);
     }
 
+    @GetMapping("/tracks/{trackId}/my-vote")
+    public MyVoteResponse getMyVote(
+            @PathVariable UUID trackId,
+            @RequestHeader(value = "X-Voter-Token", required = false) String voterToken
+    ) {
+        return publicVotingService.getMyVote(trackId, voterToken);
+    }
+
     @PostMapping("/tracks/{trackId}/votes")
     public VoteCastResponse castVote(
             @PathVariable UUID trackId,
@@ -64,5 +76,14 @@ public class PublicVotingController {
     ) {
         String clientIp = (forwardedIp != null && !forwardedIp.isBlank()) ? forwardedIp : servletRequest.getRemoteAddr();
         return publicVotingService.castVote(trackId, request, voterToken, clientIp);
+    }
+
+    @DeleteMapping("/tracks/{trackId}/votes")
+    public ResponseEntity<Map<String, Object>> cancelVote(
+            @PathVariable UUID trackId,
+            @RequestHeader(value = "X-Voter-Token", required = false) String voterToken
+    ) {
+        publicVotingService.cancelVote(trackId, voterToken);
+        return ResponseEntity.ok(Map.of("success", true, "message", "Đã hủy bình chọn thành công"));
     }
 }

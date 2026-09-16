@@ -178,7 +178,7 @@ class PublicVotingServiceTest {
         when(teamRepository.findById(teamId)).thenReturn(Optional.of(team));
         when(jwtService.resolveOrCreateVoterId("incoming-token")).thenReturn(voterId);
         when(jwtService.generateVoterToken(voterId)).thenReturn("new-jwt-token");
-        when(voteRepository.existsByTrackIdAndVoterIdHash(eq(trackId), anyString())).thenReturn(false);
+        when(voteRepository.findByTrackIdAndVoterIdHash(eq(trackId), anyString())).thenReturn(Optional.empty());
         when(voteRepository.countByTrackIdAndIpHash(eq(trackId), anyString())).thenReturn(3L);
         when(voteRepository.countByTeamId(teamId)).thenReturn(11L);
 
@@ -191,6 +191,35 @@ class PublicVotingServiceTest {
 
         verify(voteRepository).save(any(Vote.class));
         verify(auditService).record(eq(null), eq(AuditAction.VOTE_CAST), eq("Team"), eq(teamId), eq(null), eq(trackId));
+    }
+
+    @Test
+    @DisplayName("Doi binh chon sang doi khac (Switch vote) khi da vote cho doi cu")
+    void castVote_WhenAlreadyVotedDifferentTeam_ShouldSwitchVote() {
+        CastVoteRequest request = new CastVoteRequest(teamId);
+        UUID voterId = UUID.randomUUID();
+        UUID oldTeamId = UUID.randomUUID();
+        Team oldTeam = Team.builder().event(openEvent).track(track).name("Old Team").build();
+        oldTeam.setId(oldTeamId);
+
+        Vote existingVote = Vote.builder().team(oldTeam).track(track).voterIdHash("hash").ipHash("old-ip").build();
+
+        when(trackService.findOrThrow(trackId)).thenReturn(track);
+        when(teamRepository.findById(teamId)).thenReturn(Optional.of(team));
+        when(jwtService.resolveOrCreateVoterId("incoming-token")).thenReturn(voterId);
+        when(jwtService.generateVoterToken(voterId)).thenReturn("new-jwt-token");
+        when(voteRepository.findByTrackIdAndVoterIdHash(eq(trackId), anyString())).thenReturn(Optional.of(existingVote));
+        when(voteRepository.countByTeamId(teamId)).thenReturn(5L);
+
+        VoteCastResponse response = publicVotingService.castVote(trackId, request, "incoming-token", "192.168.1.100");
+
+        assertThat(response).isNotNull();
+        assertThat(response.teamId()).isEqualTo(teamId);
+        assertThat(response.teamVoteCount()).isEqualTo(5L);
+        assertThat(existingVote.getTeam()).isEqualTo(team);
+
+        verify(voteRepository).save(existingVote);
+        verify(auditService).record(eq(null), eq(AuditAction.VOTE_CAST), eq("Team"), eq(teamId), eq("SWITCHED_FROM:" + oldTeamId), eq(trackId));
     }
 
     @Test
@@ -223,16 +252,17 @@ class PublicVotingServiceTest {
     }
 
     @Test
-    @DisplayName("Bao loi khi voter da tung binh chon cho track nay roi")
+    @DisplayName("Bao loi khi voter da tung binh chon cho dung doi thi nay roi")
     void castVote_WhenAlreadyVoted_ShouldThrowConflict() {
         CastVoteRequest request = new CastVoteRequest(teamId);
         UUID voterId = UUID.randomUUID();
+        Vote existingVote = Vote.builder().team(team).track(track).voterIdHash("hash").ipHash("ip").build();
 
         when(trackService.findOrThrow(trackId)).thenReturn(track);
         when(teamRepository.findById(teamId)).thenReturn(Optional.of(team));
         when(jwtService.resolveOrCreateVoterId(any())).thenReturn(voterId);
         when(jwtService.generateVoterToken(voterId)).thenReturn("token");
-        when(voteRepository.existsByTrackIdAndVoterIdHash(eq(trackId), anyString())).thenReturn(true);
+        when(voteRepository.findByTrackIdAndVoterIdHash(eq(trackId), anyString())).thenReturn(Optional.of(existingVote));
 
         assertThatThrownBy(() -> publicVotingService.castVote(trackId, request, null, "127.0.0.1"))
                 .isInstanceOf(ApiException.class)
@@ -249,11 +279,53 @@ class PublicVotingServiceTest {
         when(teamRepository.findById(teamId)).thenReturn(Optional.of(team));
         when(jwtService.resolveOrCreateVoterId(any())).thenReturn(voterId);
         when(jwtService.generateVoterToken(voterId)).thenReturn("token");
-        when(voteRepository.existsByTrackIdAndVoterIdHash(eq(trackId), anyString())).thenReturn(false);
+        when(voteRepository.findByTrackIdAndVoterIdHash(eq(trackId), anyString())).thenReturn(Optional.empty());
         when(voteRepository.countByTrackIdAndIpHash(eq(trackId), anyString())).thenReturn(20L);
 
         assertThatThrownBy(() -> publicVotingService.castVote(trackId, request, null, "127.0.0.1"))
                 .isInstanceOf(ApiException.class)
                 .hasMessageContaining("Đã đạt giới hạn số lượt bình chọn từ mạng này");
+    }
+
+    @Test
+    @DisplayName("Huy binh chon thanh cong, xoa ban ghi vote va ghi nhan audit")
+    void cancelVote_Success_ShouldDeleteVoteAndRecordAudit() {
+        UUID voterId = UUID.randomUUID();
+        Vote existingVote = Vote.builder().team(team).track(track).voterIdHash("hash").ipHash("ip").build();
+
+        when(jwtService.resolveOrCreateVoterId("token")).thenReturn(voterId);
+        when(voteRepository.findByTrackIdAndVoterIdHash(eq(trackId), anyString())).thenReturn(Optional.of(existingVote));
+
+        publicVotingService.cancelVote(trackId, "token");
+
+        verify(voteRepository).delete(existingVote);
+        verify(auditService).record(eq(null), eq(AuditAction.VOTE_CAST), eq("Team"), eq(teamId), eq("VOTE_CANCELLED"), eq(trackId));
+    }
+
+    @Test
+    @DisplayName("Lay thong tin my-vote tra ve teamId khi da binh chon")
+    void getMyVote_WhenVoted_ShouldReturnVotedTeamId() {
+        UUID voterId = UUID.randomUUID();
+        Vote existingVote = Vote.builder().team(team).track(track).voterIdHash("hash").ipHash("ip").build();
+
+        when(jwtService.resolveOrCreateVoterId("token")).thenReturn(voterId);
+        when(voteRepository.findByTrackIdAndVoterIdHash(eq(trackId), anyString())).thenReturn(Optional.of(existingVote));
+
+        var res = publicVotingService.getMyVote(trackId, "token");
+
+        assertThat(res.votedTeamId()).isEqualTo(teamId);
+    }
+
+    @Test
+    @DisplayName("Lay thong tin my-vote tra ve null khi chua binh chon")
+    void getMyVote_WhenNotVoted_ShouldReturnNull() {
+        UUID voterId = UUID.randomUUID();
+
+        when(jwtService.resolveOrCreateVoterId("token")).thenReturn(voterId);
+        when(voteRepository.findByTrackIdAndVoterIdHash(eq(trackId), anyString())).thenReturn(Optional.empty());
+
+        var res = publicVotingService.getMyVote(trackId, "token");
+
+        assertThat(res.votedTeamId()).isNull();
     }
 }

@@ -8,6 +8,7 @@ import com.seal.hackathon.domain.enums.EventStatus;
 import com.seal.hackathon.dto.event.EventResponse;
 import com.seal.hackathon.dto.event.TrackResponse;
 import com.seal.hackathon.dto.vote.CastVoteRequest;
+import com.seal.hackathon.dto.vote.MyVoteResponse;
 import com.seal.hackathon.dto.vote.PublicTeamResponse;
 import com.seal.hackathon.dto.vote.TeamVoteTallyResponse;
 import com.seal.hackathon.dto.vote.VoteCastResponse;
@@ -26,6 +27,7 @@ import java.util.Comparator;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -97,6 +99,44 @@ public class PublicVotingService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public MyVoteResponse getMyVote(UUID trackId, String incomingVoterToken) {
+        if (trackId == null) {
+            throw ApiException.badRequest("Mã Hạng mục không được để trống");
+        }
+        if (incomingVoterToken == null || incomingVoterToken.isBlank()) {
+            return new MyVoteResponse(null);
+        }
+        try {
+            UUID voterId = jwtService.resolveOrCreateVoterId(incomingVoterToken);
+            String voterIdHash = sha256Hex(voterId.toString());
+            Optional<Vote> voteOpt = voteRepository.findByTrackIdAndVoterIdHash(trackId, voterIdHash);
+            return new MyVoteResponse(voteOpt.map(v -> v.getTeam().getId()).orElse(null));
+        } catch (Exception e) {
+            return new MyVoteResponse(null);
+        }
+    }
+
+    @Transactional
+    public void cancelVote(UUID trackId, String incomingVoterToken) {
+        if (trackId == null) {
+            throw ApiException.badRequest("Mã Hạng mục không được để trống");
+        }
+        if (incomingVoterToken == null || incomingVoterToken.isBlank()) {
+            throw ApiException.badRequest("Chưa có thông tin định danh người bình chọn");
+        }
+        UUID voterId = jwtService.resolveOrCreateVoterId(incomingVoterToken);
+        String voterIdHash = sha256Hex(voterId.toString());
+        Optional<Vote> voteOpt = voteRepository.findByTrackIdAndVoterIdHash(trackId, voterIdHash);
+        if (voteOpt.isEmpty()) {
+            throw ApiException.notFound("Không tìm thấy lượt bình chọn nào để hủy");
+        }
+        Vote vote = voteOpt.get();
+        UUID teamId = vote.getTeam().getId();
+        voteRepository.delete(vote);
+        auditService.record(null, AuditAction.VOTE_CAST, "Team", teamId, "VOTE_CANCELLED", trackId);
+    }
+
     @Transactional
     public VoteCastResponse castVote(UUID trackId, CastVoteRequest request, String incomingVoterToken, String clientIp) {
         if (trackId == null) {
@@ -120,9 +160,20 @@ public class PublicVotingService {
         String voterIdHash = sha256Hex(voterId.toString());
         String ipHash = sha256Hex(clientIp == null ? "unknown" : clientIp);
 
-        if (voteRepository.existsByTrackIdAndVoterIdHash(trackId, voterIdHash)) {
-            throw ApiException.conflict("Bạn đã bình chọn cho Hạng mục này rồi");
+        Optional<Vote> existingVoteOpt = voteRepository.findByTrackIdAndVoterIdHash(trackId, voterIdHash);
+        if (existingVoteOpt.isPresent()) {
+            Vote existingVote = existingVoteOpt.get();
+            if (existingVote.getTeam().getId().equals(team.getId())) {
+                throw ApiException.conflict("Bạn đã bình chọn cho Hạng mục này rồi");
+            }
+            UUID oldTeamId = existingVote.getTeam().getId();
+            existingVote.setTeam(team);
+            existingVote.setIpHash(ipHash);
+            voteRepository.save(existingVote);
+            auditService.record(null, AuditAction.VOTE_CAST, "Team", team.getId(), "SWITCHED_FROM:" + oldTeamId, trackId);
+            return new VoteCastResponse(team.getId(), voteRepository.countByTeamId(team.getId()), voterToken);
         }
+
         if (voteRepository.countByTrackIdAndIpHash(trackId, ipHash) >= IP_VOTE_CAP_PER_TRACK) {
             throw ApiException.conflict("Đã đạt giới hạn số lượt bình chọn từ mạng này cho Hạng mục này");
         }
