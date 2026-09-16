@@ -26,7 +26,14 @@ export function RegisterPage() {
     setError(null);
     setSubmitting(true);
     try {
-      await authApi.register(form);
+      const payload = {
+        ...form,
+        schoolName:
+          form.userCategory === "FPT_STUDENT" && !form.schoolName
+            ? "Đại học FPT"
+            : form.schoolName,
+      };
+      await authApi.register(payload);
       setSuccess(true);
     } catch (err) {
       setError((err as Error).message);
