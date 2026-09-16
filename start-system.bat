@@ -70,6 +70,11 @@ if %ERRORLEVEL% equ 0 (
     echo   - Giam khao 2:  judge2@demo.local
     echo   - Mentor:       mentor1@demo.local
     echo   - Doi thi:      leader@demo.local
+    echo [THONG BAO] Che do Docker chay ngam 4 Container ben trong Docker Desktop.
+    echo             He thong KHONG tao them cac cua so CMD rieng de tranh lam roi man hinh.
+    echo             Trinh duyet Web vua duoc mo tu dong (de len tren cua so CMD nay).
+    echo.
+    echo             Neu ban muon nhin thay 3 cua so CMD chay chu tung dich vu, hay chon Che do [2]!
     echo ===============================================================================
     echo.
     echo Dang tu dong mo trinh duyet truy cap Web App...
