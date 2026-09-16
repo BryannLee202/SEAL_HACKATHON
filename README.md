@@ -8,7 +8,7 @@
 
 [![CI / Build Status](https://img.shields.io/badge/Build-Passing-10b981?style=for-the-badge&logo=github-actions)](https://github.com/BryannLee202/SEAL_HACKATHON)
 [![Frontend Tests](https://img.shields.io/badge/Frontend%20Tests-101%2F101%20Pass%20(100%25)-10b981?style=for-the-badge&logo=vitest)](./frontend)
-[![Backend Tests](https://img.shields.io/badge/Backend%20Tests-94%20Pass-10b981?style=for-the-badge&logo=junit5)](./backend)
+[![Backend Tests](https://img.shields.io/badge/Backend%20Tests-98%20Pass%20(100%25)-10b981?style=for-the-badge&logo=junit5)](./backend)
 [![Docker Support](https://img.shields.io/badge/Docker%20Compose-Ready-38bdf8?style=for-the-badge&logo=docker)](./docker-compose.yml)
 [![Architecture](https://img.shields.io/badge/Architecture-3--Tier%20BFF-bc7155?style=for-the-badge)](./docs/03-architecture)
 
