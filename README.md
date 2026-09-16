@@ -134,8 +134,12 @@ Dự án cung cấp sẵn tệp kịch bản tự động hóa cho hệ điều 
    ```cmd
    start-system.bat
    ```
-   - Nhấn **`Enter`** (chọn `[1]`): Hệ thống tự động kích hoạt 4 Container ngầm qua Docker Compose và mở trình duyệt tại [http://localhost:3000](http://localhost:3000).
-   - Nếu chưa bật Docker Desktop, chọn `[2]` để chạy trực tiếp trên 3 cửa sổ terminal với H2 in-memory Database nạp sẵn dữ liệu demo.
+   Menu console cung cấp 5 tùy chọn linh hoạt:
+   - **`[1]` (Mặc định / Enter)**: Khởi động trọn gói 4 Container qua Docker Compose (Web: [http://localhost:3000](http://localhost:3000)). Khuyên dùng khi demo.
+   - **`[2]`**: Chạy Cục bộ (Local Mode) trên 3 cửa sổ terminal với H2 in-memory Database nạp sẵn dữ liệu demo (không cần Docker Desktop).
+   - **`[3]`**: Chạy toàn bộ kiểm thử tự động (gọi trực tiếp `run-automated-tests.bat`).
+   - **`[4]`**: Dừng và dọn dẹp sạch toàn bộ các container Docker (`docker compose down`).
+   - **`[5]`**: Thoát menu.
 
 2. **Chạy kiểm thử tự động 100% Xanh**: Nhấp đúp chuột vào file **`run-automated-tests.bat`**:
    ```cmd

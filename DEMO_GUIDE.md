@@ -16,10 +16,21 @@
 
 #### 🟢 Bước A: Khởi động hệ thống bằng `start-system.bat`
 1. Nhấp đúp chuột mở file **`start-system.bat`** tại thư mục gốc dự án.
-2. Màn hình console xuất hiện, chỉ cần nhấn **`Enter`** (chọn mặc định `[1]`):
-   - Hệ thống tự động kiểm tra Docker Engine và kích hoạt toàn bộ 4 Container ngầm (`seal-frontend`, `seal-bff`, `seal-backend`, `seal-postgres`).
-   - Tự động kiểm tra độ sẵn sàng và **tự động mở trình duyệt truy cập ngay `http://localhost:3000`**.
-   - *Dự phòng khẩn cấp*: Nếu máy tính chưa kịp bật Docker Desktop, hệ thống sẽ tự động phát hiện và chuyển sang chế độ **Cục bộ `[2]` (Local Mode)**, tự động nạp cơ sở dữ liệu in-memory H2 từ `data-demo.sql` và mở 3 terminal ngầm mà không cần cài đặt thêm bất kỳ thứ gì!
+2. Màn hình console xuất hiện menu với 5 lựa chọn rõ ràng:
+
+| Phím bấm | Chế độ chức năng | Khi nào nên dùng? | Chi tiết hành vi hệ thống |
+|:---:|---|---|---|
+| **`[1]`** *(Mặc định / Enter)* | **Khởi động trọn gói Docker Compose** | **Khuyên dùng khi đi thi / Demo Thầy Cô** | Tự kích hoạt 4 Container ngầm (`Frontend`, `BFF`, `Backend`, `Database PostgreSQL`), không làm rối màn hình, tự động bật trình duyệt `http://localhost:3000`. |
+| **`[2]`** | **Khởi động Cục bộ (Local Mode)** | **Khi máy chưa bật Docker / Máy yếu / Cần sửa code** | Tự động mở 3 cửa sổ terminal riêng biệt. Sử dụng cơ sở dữ liệu in-memory H2 nạp sẵn dữ liệu demo từ `data-demo.sql`. Có tính năng hot-reload, sửa code giao diện/API cập nhật ngay. |
+| **`[3]`** | **Chạy Bộ Kiểm Thử Tự Động (Run Tests)** | **Khi Thầy Cô yêu cầu chứng minh chất lượng kiểm thử** | Tự động gọi `run-automated-tests.bat` để chạy 101 tests Vitest Frontend, 94 tests JUnit Backend và Ma trận RTM đạt 100% Xanh. |
+| **`[4]`** | **Dừng toàn bộ Docker (Stop All)** | **Sau khi kết thúc buổi demo / Dọn dẹp RAM** | Thực thi `docker compose down`, tắt sạch các container và giải phóng RAM, CPU máy tính. |
+| **`[5]`** | **Thoát (Exit)** | **Khi muốn đóng console** | Tắt màn hình dòng lệnh mà không thay đổi trạng thái các dịch vụ đang chạy. |
+
+> 💡 **Quy tắc bỏ túi cho cả nhóm**:
+> - Đi thi / Thuyết trình: Cứ bấm **`1`** (hoặc nhấn **Enter**).
+> - Docker bị lỗi hoặc máy bạn không cài Docker: Bấm **`2`**.
+> - Thầy Cô hỏi về quy trình kiểm thử chất lượng: Bấm **`3`** (hoặc nhấp đúp file `run-automated-tests.bat`).
+> - Demo xong: Bấm **`4`** để tắt gọn gàng.
 
 #### 🧪 Bước B (KHOE ĐIỂM KỸ THUẬT): Trình diễn kiểm thử tự động bằng `run-automated-tests.bat`
 - Khi Thầy Cô hỏi: *"Nhóm đã kiểm thử hệ thống như thế nào? Có test case không?"*:
