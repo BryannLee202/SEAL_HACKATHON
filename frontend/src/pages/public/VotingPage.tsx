@@ -179,6 +179,12 @@ export function VotingPage() {
       } else {
         toast.success(`Đã bình chọn thành công cho "${teamName}"!`);
       }
+
+      // Re-fetch authoritative tallies from server
+      api
+        .get<VoteTallyItem[]>(`/api/public/voting/tracks/${trackId}/tallies`)
+        .then((res) => setTallies(res.data))
+        .catch(() => {});
     } catch (err) {
       toast.error((err as Error).message);
     } finally {
@@ -206,6 +212,12 @@ export function VotingPage() {
       );
 
       toast.success("Đã hủy bình chọn thành công! Bạn có thể bình chọn lại bất cứ lúc nào.");
+
+      // Re-fetch authoritative tallies from server
+      api
+        .get<VoteTallyItem[]>(`/api/public/voting/tracks/${trackId}/tallies`)
+        .then((res) => setTallies(res.data))
+        .catch(() => {});
     } catch (err) {
       toast.error((err as Error).message);
     } finally {

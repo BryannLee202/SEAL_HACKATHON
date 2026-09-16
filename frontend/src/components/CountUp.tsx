@@ -12,8 +12,8 @@ export function CountUp({
   locale?: string;
 }) {
   const ref = useRef<HTMLSpanElement>(null);
-  const [display, setDisplay] = useState("0");
-  const animatedRef = useRef(false);
+  const [display, setDisplay] = useState(() => Math.floor(target).toLocaleString(locale));
+  const prevTargetRef = useRef(target);
 
   useEffect(() => {
     const el = ref.current;
@@ -28,37 +28,33 @@ export function CountUp({
       return;
     }
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !animatedRef.current) {
-          animatedRef.current = true;
-          const startTime = performance.now();
-          const durationMs = duration * 1000;
+    let isCancelled = false;
+    const startVal = prevTargetRef.current;
+    prevTargetRef.current = target;
 
-          const step = (now: number) => {
-            const elapsed = now - startTime;
-            const progress = Math.min(elapsed / durationMs, 1);
-            // Ease-out cubic
-            const easeOut = 1 - Math.pow(1 - progress, 3);
-            const current = Math.floor(easeOut * target);
-            setDisplay(current.toLocaleString(locale));
+    const startTime = performance.now();
+    const durationMs = duration * 1000;
 
-            if (progress < 1) {
-              requestAnimationFrame(step);
-            } else {
-              setDisplay(Math.floor(target).toLocaleString(locale));
-            }
-          };
+    const step = (now: number) => {
+      if (isCancelled) return;
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / durationMs, 1);
+      const easeOut = 1 - Math.pow(1 - progress, 3);
+      const current = Math.floor(startVal + easeOut * (target - startVal));
+      setDisplay(current.toLocaleString(locale));
 
-          requestAnimationFrame(step);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.1 }
-    );
+      if (progress < 1) {
+        requestAnimationFrame(step);
+      } else {
+        setDisplay(Math.floor(target).toLocaleString(locale));
+      }
+    };
 
-    observer.observe(el);
-    return () => observer.disconnect();
+    requestAnimationFrame(step);
+
+    return () => {
+      isCancelled = true;
+    };
   }, [target, duration, locale]);
 
   return (
