@@ -277,7 +277,7 @@ SEAL_HACKATHON/
 | **Phạm Nguyễn Hoài Long** | **Security & Core Platform** | Hạ tầng xác thực, Phân quyền RBAC, BFF Cookie HttpOnly, Quản lý tài khoản Admin |
 | **Hoàng Lê Giang** | **Public Experience & Data** | Cổng Landing Page, Cổng bình chọn khán giả (/vote), Bảng xếp hạng (/rankings), Dữ liệu seed demo |
 | **Tạ Huỳnh Nguyên** | **Coordinator Domain** | Nghiệp vụ điều phối: Cấu trúc sự kiện, Bảng đấu (Tracks), Vòng thi (Rounds), Tiêu chí vòng thi |
-| **Huỳnh Thúc Toàn** | **Scoring & Research Engine** | Chấm điểm đa tiêu chí, Thuật toán phân tích RBL Variance, Vòng hiệu chuẩn (Calibration), Màn hình Mentor |
+| **Nguyễn Thục Toàn** | **Scoring & Research Engine** | Chấm điểm đa tiêu chí, Thuật toán phân tích RBL Variance, Vòng hiệu chuẩn (Calibration), Màn hình Mentor |
 | **Trần Thị Yến Vy** | **Team & Submission Domain** | Đăng ký đội thi, Mời thành viên qua email, Quản lý bài nộp Git repo/Demo/Docs |
 
 ---

@@ -200,6 +200,16 @@
 * **Cửa sổ thao tác**: Nhấn `Alt + Tab` sang **Cửa sổ 4** (Ban Tổ Chức `coordinator@demo.local`)
 * **Mục tiêu**: Thể hiện năng lực quản trị toàn diện, tự động hóa tính điểm và bảo mật cấp doanh nghiệp.
 
+#### Bước 5.0: Quản trị Phê Duyệt Tài Khoản Thí Sinh Thời Gian Thực (`/coordinator/users` - RẤT ẤN TƯỢNG!)
+* **Lời thoại Presenter**:
+  > *"Trước khi giải đấu bắt đầu, Ban Tổ Chức kiểm soát chặt chẽ danh sách đăng ký. Khi một thí sinh FPT hoặc trường ngoài đăng ký tài khoản mới, hệ thống tự động nhận diện trường học và kích hoạt cơ chế đồng bộ thời gian thực (Polling 2.5s kèm Anti-Cache headers). Tài khoản mới sẽ xuất hiện ngay lập tức trên màn hình Quản trị mà không cần nhấn F5.*  
+  > *Giao diện duyệt tài khoản được tách biệt rõ ràng giữa hai hành động Phê duyệt (Xanh) và Từ chối (Đỏ) kèm Hộp thoại Modal nhập lý do chuyên nghiệp."*
+* **Thao tác Driver**:
+  1. Vào màn hình **"Duyệt tài khoản"** (`/coordinator/users`).
+  2. Chỉ cho Thầy Cô thấy danh sách các tài khoản đang `Chờ duyệt` (Pending) được sắp xếp mới nhất lên đầu (`createdAt DESC`).
+  3. Bấm nút **"Từ chối"** màu đỏ trên một tài khoản -> Modal xác nhận hiện lên cho phép nhập lý do từ chối (hoặc bấm Hủy).
+  4. Bấm nút **"Duyệt tài khoản"** màu xanh -> Modal xác nhận màu xanh hiện lên, bấm Duyệt -> Tài khoản được duyệt ngay tức khắc và tự động chuyển sang tab "Đã duyệt".
+
 #### Bước 5.1: Thuật toán tính điểm ma trận & Xếp hạng tự động (`/app/coordinator`)
 * **Lời thoại Presenter**:
   > *"Giờ đây, toàn quyền điều phối thuộc về Ban Tổ Chức. Thay vì phải sao chép điểm thủ công vào bảng tính Excel mất hàng giờ và dễ nhầm lẫn công thức, Ban Tổ Chức chỉ cần bấm 1 nút duy nhất."*
