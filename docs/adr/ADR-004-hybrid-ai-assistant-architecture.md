@@ -59,3 +59,63 @@ Quyet dinh ap dung **Phuong an 3: Hybrid AI with Two-layer Defensive Fallback**.
 
 ### Danh doi:
 - Can duy tri dong bo giua heuristic rules tren Backend va `mockAiEngine` tren Frontend.
+
+---
+
+## 5. Bang chung & Kiem chung Tu dong (Automated Verification)
+
+Ba ADR truoc deu co muc nay, rieng ADR-004 thi chua. Mot quyet dinh kien truc
+khong kiem duoc thi khong phan biet duoc voi mot y kien — va rui ro cao nhat
+cua tang AI khong phai la model tra ve sai, ma la **de lo du lieu doi thi**.
+
+### 5.1. Phan quyen truy cap tro ly AI
+
+Tro ly AI la cong cu ho tro CHAM DIEM, nen luat truy cap chat hon luat xem bai
+nop thong thuong:
+
+| Vai tro | Duoc dung? |
+|---|---|
+| Ban to chuc | co |
+| Giam khao **duoc phan cong dung vong thi** | co |
+| Mentor cua **dung hang muc** | co |
+| Thanh vien doi | khong, ke ca bai cua chinh doi minh |
+| Chua dang nhap | khong |
+
+Thuc thi tai:
+- `AiAssistantService.assertCanUseAiFor()` — cho `/analyze`, can tra co so du
+  lieu de biet giam khao co phu trach vong do khong.
+- `@PreAuthorize("hasAnyRole('COORDINATOR','JUDGE','MENTOR')")` — cho
+  `/status` va `/rubric-feedback/suggest`, hai endpoint nay khong doc co so
+  du lieu nen chan theo vai tro la du.
+
+Bo test: `AiAssistantServiceTest` — 5 test rieng cho phan quyen.
+
+### 5.2. Khoa API khong duoc nam trong ma nguon
+
+`AiConfigurationProperties.apiKey` doc tu bien moi truong `AI_API_KEY`, mac
+dinh **rong**. Khong co khoa that nao trong repo.
+
+```bash
+# Phai KHONG ra ket qua nao
+grep -rnE "sk-[A-Za-z0-9_-]{15,}|AIza[A-Za-z0-9_-]{20,}" backend/ bff/ frontend/src
+```
+
+### 5.3. Co che du phong khi AI hong
+
+He thong phai chay duoc ca khi khong co khoa API hoac mat mang — buoi bao ve
+khong duoc phu thuoc vao mot dich vu ben ngoai:
+
+- `aiProperties.isEnabled() == false` hoac khoa rong -> `generateHeuristicAnalysis()`
+- Goi LLM nem loi hoac qua `timeoutMs` (mac dinh 8000ms) -> cung ve fallback
+- Truong `source` trong ket qua noi ro: `AI_LIVE` hay `HEURISTIC_FALLBACK`
+
+### 5.4. Lenh kiem chung
+
+```bash
+cd backend && ./mvnw test -Dtest=AiAssistantServiceTest
+# 10/10 tests pass — 5 test phan quyen, 5 test phan tich va fallback
+```
+
+Da kiem nguoc: comment dong `assertCanUseAiFor(submission, principal)` trong
+`AiAssistantService` thi 4/10 test do ngay. Test bat dung lo hong chu khong
+phai chi chay cho co.
