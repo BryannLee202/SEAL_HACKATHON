@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -114,14 +115,17 @@ public class TeamService {
 
     @Transactional(readOnly = true)
     public Page<TeamResponse> listByEvent(UUID eventId, Pageable pageable) {
-        return teamRepository.findByEventId(eventId, pageable).map(this::toResponse);
+        Page<Team> trang = teamRepository.findByEventId(eventId, pageable);
+        Map<UUID, List<TeamMemberResponse>> theoDoi = thanhVienCuaCacDoi(trang.getContent());
+        return trang.map(team -> TeamResponse.from(team, theoDoi.getOrDefault(team.getId(), List.of())));
     }
 
     @Transactional(readOnly = true)
     public List<TeamResponse> listMyTeams(UUID userId) {
-        return teamMemberRepository.findByUserId(userId).stream()
-                .map(tm -> toResponse(tm.getTeam()))
+        List<Team> doi = teamMemberRepository.findByUserId(userId).stream()
+                .map(TeamMember::getTeam)
                 .collect(Collectors.toList());
+        return gopThanhVien(doi);
     }
 
     @Transactional(readOnly = true)
@@ -129,9 +133,32 @@ public class TeamService {
         if (trackIds.isEmpty()) {
             return List.of();
         }
-        return teamRepository.findByTrackIdIn(trackIds).stream()
-                .map(this::toResponse)
+        return gopThanhVien(teamRepository.findByTrackIdIn(trackIds));
+    }
+
+    /**
+     * Ghép danh sách đội với thành viên của chúng bằng MỘT truy vấn.
+     *
+     * toResponse() hỏi thành viên cho từng đội một, nên mọi màn liệt kê đội đều
+     * là N+1: đo trên bộ dữ liệu demo, GET /api/events/{id}/teams với 6 đội sinh
+     * ra đúng 6 câu select team_member. Sự kiện 60 đội là 60 câu mỗi lần mở tab.
+     */
+    private List<TeamResponse> gopThanhVien(List<Team> doi) {
+        Map<UUID, List<TeamMemberResponse>> theoDoi = thanhVienCuaCacDoi(doi);
+        return doi.stream()
+                .map(team -> TeamResponse.from(team, theoDoi.getOrDefault(team.getId(), List.of())))
                 .collect(Collectors.toList());
+    }
+
+    private Map<UUID, List<TeamMemberResponse>> thanhVienCuaCacDoi(List<Team> doi) {
+        if (doi.isEmpty()) {
+            return Map.of();
+        }
+        List<UUID> ids = doi.stream().map(Team::getId).collect(Collectors.toList());
+        return teamMemberRepository.findByTeamIdIn(ids).stream()
+                .collect(Collectors.groupingBy(
+                        tm -> tm.getTeam().getId(),
+                        Collectors.mapping(TeamMemberResponse::from, Collectors.toList())));
     }
 
     @Transactional
@@ -139,15 +166,18 @@ public class TeamService {
         Team team = findOrThrow(teamId);
         assertIsLeader(team, requesterUserId);
 
-        long currentSize = teamMemberRepository.findByTeamId(teamId).size();
-        if (currentSize >= MAX_TEAM_SIZE) {
+        // Đọc danh sách thành viên MỘT lần rồi dùng lại cho cả hai phép kiểm
+        // bên dưới. Trước đây gọi findByTeamId(teamId) hai lần liền nhau cho
+        // cùng một đội.
+        List<TeamMember> thanhVien = teamMemberRepository.findByTeamId(teamId);
+        if (thanhVien.size() >= MAX_TEAM_SIZE) {
             throw ApiException.conflict("Đội đã đủ số lượng thành viên tối đa (5)");
         }
 
         String invitedEmail = request.email().trim().toLowerCase();
 
         // Kiểm tra người được mời đã là thành viên của đội hay chưa
-        boolean alreadyMember = teamMemberRepository.findByTeamId(teamId).stream()
+        boolean alreadyMember = thanhVien.stream()
                 .anyMatch(member ->
                         member.getUser().getEmail().equalsIgnoreCase(invitedEmail)
                 );
@@ -315,6 +345,7 @@ public class TeamService {
                 .orElseThrow(() -> ApiException.notFound("Không tìm thấy đội thi"));
     }
 
+    /** Một đội lẻ — vẫn một truy vấn, không đi qua đường gộp. */
     private TeamResponse toResponse(Team team) {
         List<TeamMemberResponse> members = teamMemberRepository.findByTeamId(team.getId()).stream()
                 .map(TeamMemberResponse::from)
