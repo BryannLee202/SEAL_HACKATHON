@@ -16,7 +16,7 @@ export const translations = {
     "nav.back_home": "Quay lại trang chủ",
 
     // Navigation App
-    "nav.dashboard": "Bang dieu khien",
+    "nav.dashboard": "Bảng điều khiển",
     "nav.events": "Cuộc thi & Sự kiện",
     "nav.team": "Đội của tôi",
     "nav.mentor": "Cố vấn",
@@ -48,7 +48,7 @@ export const translations = {
     "common.rejected": "Từ chối",
 
     // Dashboard
-    "dashboard.welcome": "Xin chao, {name}!",
+    "dashboard.welcome": "Xin chào, {name}!",
     "dashboard.overview": "Tổng quan hệ thống Hackathon",
     "dashboard.active_hackathons": "Cuộc thi đang diễn ra",
     "dashboard.registered_teams": "Đội thi đã đăng ký",
