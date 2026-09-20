@@ -12,5 +12,13 @@ public interface ScoreRepository extends JpaRepository<Score, UUID> {
     List<Score> findByJudgeId(UUID judgeId);
     List<Score> findBySubmissionIdIn(List<UUID> submissionIds);
     Optional<Score> findBySubmissionIdAndJudgeIdAndCriterionId(UUID submissionId, UUID judgeId, UUID criterionId);
+
+    /**
+     * Toàn bộ điểm một giám khảo đã chấm cho một bài nộp.
+     *
+     * Dùng cho {@code submitScores}: lấy cả cụm một lần thay vì hỏi từng tiêu
+     * chí một, giống cách {@code CalibrationService} đã gom.
+     */
+    List<Score> findBySubmissionIdAndJudgeId(UUID submissionId, UUID judgeId);
     boolean existsByCriterion_Round_Id(UUID roundId);
 }
