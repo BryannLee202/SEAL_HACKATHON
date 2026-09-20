@@ -33,6 +33,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -245,5 +247,133 @@ class TeamServiceTest {
 
         assertThat(team.getTrack()).isEqualTo(track);
         verify(teamRepository).save(team);
+    }
+
+    // ---------------------------------------------------------------
+    // Gộp truy vấn thành viên khi liệt kê đội
+    //
+    // toResponse() hỏi thành viên cho TỪNG đội một, nên mọi màn liệt kê đội đều
+    // là N+1. Đo trên bộ dữ liệu demo: GET /api/events/{id}/teams với 6 đội sinh
+    // ra đúng 6 câu select team_member. Sự kiện 60 đội là 60 câu mỗi lần mở tab
+    // đội của ban tổ chức.
+    // ---------------------------------------------------------------
+
+    /** Một đội có id riêng, dùng cho các test liệt kê nhiều đội. */
+    private Team doi(String ten) {
+        Team t = Team.builder().name(ten).event(event).build();
+        t.setId(UUID.randomUUID());
+        return t;
+    }
+
+    private TeamMember thanhVienCua(Team t, TeamMemberRole vaiTro) {
+        User u = User.builder().fullName("Nguoi dung").email("a@b.com").build();
+        u.setId(UUID.randomUUID());
+        TeamMember m = TeamMember.builder().team(t).user(u).roleInTeam(vaiTro).build();
+        m.setId(UUID.randomUUID());
+        return m;
+    }
+
+    @Test
+    @DisplayName("listByTracks: CHI MOT truy van thanh vien du co bao nhieu doi (chan N+1)")
+    void listByTracks_ChiMotTruyVanThanhVien() {
+        List<Team> cacDoi = new ArrayList<>();
+        List<TeamMember> tatCaThanhVien = new ArrayList<>();
+        for (int i = 0; i < 20; i++) {
+            Team t = doi("Doi " + i);
+            cacDoi.add(t);
+            tatCaThanhVien.add(thanhVienCua(t, TeamMemberRole.LEADER));
+        }
+        UUID trackId = UUID.randomUUID();
+        when(teamRepository.findByTrackIdIn(List.of(trackId))).thenReturn(cacDoi);
+        when(teamMemberRepository.findByTeamIdIn(any())).thenReturn(tatCaThanhVien);
+
+        List<?> ketQua = teamService.listByTracks(List.of(trackId));
+
+        assertThat(ketQua).hasSize(20);
+        // 20 doi van chi mot vong di ve co so du lieu.
+        verify(teamMemberRepository, times(1)).findByTeamIdIn(any());
+        verify(teamMemberRepository, never()).findByTeamId(any());
+    }
+
+    @Test
+    @DisplayName("listByTracks: ghep dung thanh vien vao dung doi, khong tron lan")
+    void listByTracks_GhepDungThanhVienVaoDungDoi() {
+        Team doiA = doi("Alpha AI");
+        Team doiB = doi("Neural Vision");
+        TeamMember a1 = thanhVienCua(doiA, TeamMemberRole.LEADER);
+        TeamMember a2 = thanhVienCua(doiA, TeamMemberRole.MEMBER);
+        TeamMember b1 = thanhVienCua(doiB, TeamMemberRole.LEADER);
+
+        UUID trackId = UUID.randomUUID();
+        when(teamRepository.findByTrackIdIn(List.of(trackId))).thenReturn(List.of(doiA, doiB));
+        when(teamMemberRepository.findByTeamIdIn(any())).thenReturn(List.of(a1, b1, a2));
+
+        var ketQua = teamService.listByTracks(List.of(trackId));
+
+        assertThat(ketQua).hasSize(2);
+        assertThat(ketQua.get(0).name()).isEqualTo("Alpha AI");
+        assertThat(ketQua.get(0).members()).hasSize(2);
+        assertThat(ketQua.get(1).name()).isEqualTo("Neural Vision");
+        assertThat(ketQua.get(1).members()).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("listByTracks: doi chua co thanh vien nao thi tra ve danh sach rong, khong null")
+    void listByTracks_DoiChuaCoThanhVien() {
+        Team doiRong = doi("Doi moi lap");
+        UUID trackId = UUID.randomUUID();
+        when(teamRepository.findByTrackIdIn(List.of(trackId))).thenReturn(List.of(doiRong));
+        when(teamMemberRepository.findByTeamIdIn(any())).thenReturn(List.of());
+
+        var ketQua = teamService.listByTracks(List.of(trackId));
+
+        assertThat(ketQua).hasSize(1);
+        assertThat(ketQua.get(0).members()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("listMyTeams: hai truy van co dinh, khong phu thuoc so doi")
+    void listMyTeams_HaiTruyVanCoDinh() {
+        List<TeamMember> cuaToi = new ArrayList<>();
+        List<TeamMember> tatCa = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            Team t = doi("Doi " + i);
+            TeamMember m = thanhVienCua(t, TeamMemberRole.MEMBER);
+            cuaToi.add(m);
+            tatCa.add(m);
+        }
+        UUID userId = UUID.randomUUID();
+        when(teamMemberRepository.findByUserId(userId)).thenReturn(cuaToi);
+        when(teamMemberRepository.findByTeamIdIn(any())).thenReturn(tatCa);
+
+        var ketQua = teamService.listMyTeams(userId);
+
+        assertThat(ketQua).hasSize(10);
+        // 1 cau tim doi cua toi + 1 cau lay thanh vien = 2, du 10 hay 100 doi.
+        verify(teamMemberRepository, times(1)).findByUserId(userId);
+        verify(teamMemberRepository, times(1)).findByTeamIdIn(any());
+        verify(teamMemberRepository, never()).findByTeamId(any());
+    }
+
+    @Test
+    @DisplayName("invite: chi doc danh sach thanh vien MOT lan cho ca hai phep kiem")
+    void invite_ChiDocDanhSachThanhVienMotLan() {
+        when(teamRepository.findById(teamId)).thenReturn(Optional.of(team));
+        when(teamMemberRepository.findByTeamIdAndUserId(teamId, leaderId))
+                .thenReturn(Optional.of(member(leaderId, "leader@demo.local", TeamMemberRole.LEADER)));
+        when(teamMemberRepository.findByTeamId(teamId)).thenReturn(membersOfSize(3));
+        when(teamInviteRepository.existsByTeamIdAndInvitedEmailIgnoreCaseAndStatus(
+                any(), any(), any())).thenReturn(false);
+        when(teamInviteRepository.save(any())).thenAnswer(inv -> {
+            var i = inv.getArgument(0, com.seal.hackathon.domain.entity.TeamInvite.class);
+            i.setId(UUID.randomUUID());
+            return i;
+        });
+
+        teamService.invite(teamId, new TeamInviteRequest("nguoimoi@demo.local"), leaderId);
+
+        // Truoc day goi findByTeamId(teamId) hai lan lien nhau cho cung mot doi:
+        // mot lan dem so luong, mot lan kiem trung.
+        verify(teamMemberRepository, times(1)).findByTeamId(teamId);
     }
 }
