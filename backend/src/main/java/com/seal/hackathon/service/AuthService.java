@@ -70,8 +70,14 @@ public class AuthService {
                 .build();
         user = userRepository.save(user);
 
-        // Default role: every approved participant starts as a TEAM_MEMBER at GLOBAL scope;
-        // TEAM_LEADER is granted implicitly when they create a team.
+        // Mọi thí sinh được duyệt đều bắt đầu với TEAM_MEMBER ở phạm vi GLOBAL.
+        //
+        // KHÔNG có vai trò TEAM_LEADER trong user_role_assignment: vai trò trong
+        // đội nằm ở team_member.role_in_team, và đó mới là nguồn duy nhất quyết
+        // định ai là đội trưởng. Ghi chú cũ ở đây nói TEAM_LEADER "được gán ngầm
+        // khi tạo đội" — điều đó chưa bao giờ đúng, TeamService.create() không
+        // gán gì cả. Giao diện từng tin theo ghi chú này và gọi
+        // hasRole("TEAM_LEADER"), khiến mọi thao tác của đội trưởng bị chặn.
         UserRoleAssignment defaultRole = UserRoleAssignment.builder()
                 .user(user)
                 .roleName(RoleName.TEAM_MEMBER)
