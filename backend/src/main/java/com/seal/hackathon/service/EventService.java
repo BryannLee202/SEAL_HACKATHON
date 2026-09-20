@@ -14,7 +14,11 @@ import com.seal.hackathon.repository.TrackRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -100,11 +104,57 @@ public class EventService {
         return EventResponse.from(eventRepository.save(event));
     }
 
+    /**
+     * Các bước chuyển trạng thái hợp lệ của một sự kiện.
+     *
+     * Vòng đời SRS mô tả là MỘT CHIỀU: Nháp → Mở đăng ký → Đang diễn ra →
+     * Kết thúc. Huỷ được từ bất kỳ trạng thái nào chưa kết thúc.
+     *
+     * Trước đây backend không kiểm gì — gọi thẳng API là quay được từ CLOSED
+     * về DRAFT, tức là mở lại một sự kiện đã công bố kết quả, trong khi bảng
+     * xếp hạng và giải thưởng đã trao vẫn còn nguyên.
+     *
+     * Bảng này ánh xạ đúng EVENT_STATUS_TRANSITIONS mà frontend đã có sẵn ở
+     * frontend/src/types/index.ts, cộng thêm ACTIVE — giá trị không nằm trong
+     * bảng của frontend nhưng V006__demo_seed_users.sql có seed thật, nên phải
+     * cho nó một lối ra, không thì sự kiện demo bị kẹt.
+     */
+    private static final Map<EventStatus, Set<EventStatus>> BUOC_CHUYEN_HOP_LE = buildTransitions();
+
+    private static Map<EventStatus, Set<EventStatus>> buildTransitions() {
+        Map<EventStatus, Set<EventStatus>> m = new EnumMap<>(EventStatus.class);
+        m.put(EventStatus.DRAFT, EnumSet.of(EventStatus.OPEN, EventStatus.CANCELLED));
+        m.put(EventStatus.OPEN, EnumSet.of(EventStatus.ACTIVE, EventStatus.ONGOING, EventStatus.CANCELLED));
+        m.put(EventStatus.ACTIVE, EnumSet.of(EventStatus.ONGOING, EventStatus.CLOSED, EventStatus.CANCELLED));
+        m.put(EventStatus.ONGOING, EnumSet.of(EventStatus.CLOSED, EventStatus.CANCELLED));
+        m.put(EventStatus.CLOSED, EnumSet.noneOf(EventStatus.class));
+        m.put(EventStatus.CANCELLED, EnumSet.noneOf(EventStatus.class));
+        return m;
+    }
+
     @Transactional
     public EventResponse changeStatus(UUID id, EventStatus status) {
         HackathonEvent event = findOrThrow(id);
+        assertBuocChuyenHopLe(event.getStatus(), status);
         event.setStatus(status);
         return EventResponse.from(eventRepository.save(event));
+    }
+
+    /**
+     * Đặt lại đúng trạng thái đang có thì cho qua — giao diện có thể gửi lại
+     * trạng thái hiện tại mà không có ý đổi gì, chặn chỗ đó chỉ gây phiền.
+     */
+    private void assertBuocChuyenHopLe(EventStatus hienTai, EventStatus moi) {
+        if (hienTai == moi) {
+            return;
+        }
+        Set<EventStatus> choPhep = BUOC_CHUYEN_HOP_LE.getOrDefault(hienTai, EnumSet.noneOf(EventStatus.class));
+        if (!choPhep.contains(moi)) {
+            throw ApiException.conflict(String.format(
+                    "Không thể chuyển sự kiện từ %s sang %s. Các bước hợp lệ từ %s: %s",
+                    hienTai, moi, hienTai,
+                    choPhep.isEmpty() ? "không còn bước nào (trạng thái kết thúc)" : choPhep));
+        }
     }
 
     HackathonEvent findOrThrow(UUID id) {

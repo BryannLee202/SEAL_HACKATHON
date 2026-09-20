@@ -175,27 +175,107 @@ class EventServiceTest {
         verify(eventRepository).save(event);
     }
 
+    // ---------------------------------------------------------------
+    // Luật chuyển trạng thái
+    //
+    // Test changeStatus_ChuaChanBuocLui trước đây ghi nhận hành vi CHƯA có
+    // luật và được để làm mốc. Nay luật đã thêm nên nó đỏ đúng như dự kiến, và
+    // được thay bằng nhóm test dưới đây.
+    // ---------------------------------------------------------------
+
+    @Test
+    @DisplayName("changeStatus: chan buoc lui CLOSED -> DRAFT")
+    void changeStatus_ChanBuocLui() {
+        event.setStatus(EventStatus.CLOSED);
+        when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
+
+        assertThatThrownBy(() -> eventService.changeStatus(eventId, EventStatus.DRAFT))
+                .isInstanceOf(ApiException.class)
+                .hasMessageContaining("Không thể chuyển sự kiện từ CLOSED sang DRAFT");
+
+        verify(eventRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("changeStatus: su kien da HUY thi khong mo lai duoc")
+    void changeStatus_ChanMoLaiSuKienDaHuy() {
+        event.setStatus(EventStatus.CANCELLED);
+        when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
+
+        assertThatThrownBy(() -> eventService.changeStatus(eventId, EventStatus.OPEN))
+                .isInstanceOf(ApiException.class)
+                .hasMessageContaining("trạng thái kết thúc");
+    }
+
+    @Test
+    @DisplayName("changeStatus: chan nhay coc DRAFT -> CLOSED")
+    void changeStatus_ChanNhayCoc() {
+        event.setStatus(EventStatus.DRAFT);
+        when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
+
+        assertThatThrownBy(() -> eventService.changeStatus(eventId, EventStatus.CLOSED))
+                .isInstanceOf(ApiException.class)
+                .hasMessageContaining("Không thể chuyển");
+    }
+
+    @Test
+    @DisplayName("changeStatus: di dung vong doi mot chieu thi cho qua")
+    void changeStatus_ChoPhepDungVongDoi() {
+        when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
+        when(eventRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        event.setStatus(EventStatus.DRAFT);
+        assertThat(eventService.changeStatus(eventId, EventStatus.OPEN).status())
+                .isEqualTo(EventStatus.OPEN);
+
+        event.setStatus(EventStatus.OPEN);
+        assertThat(eventService.changeStatus(eventId, EventStatus.ONGOING).status())
+                .isEqualTo(EventStatus.ONGOING);
+
+        event.setStatus(EventStatus.ONGOING);
+        assertThat(eventService.changeStatus(eventId, EventStatus.CLOSED).status())
+                .isEqualTo(EventStatus.CLOSED);
+    }
+
+    @Test
+    @DisplayName("changeStatus: huy duoc tu moi trang thai chua ket thuc")
+    void changeStatus_ChoPhepHuy() {
+        when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
+        when(eventRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        for (EventStatus tu : List.of(EventStatus.DRAFT, EventStatus.OPEN,
+                EventStatus.ACTIVE, EventStatus.ONGOING)) {
+            event.setStatus(tu);
+            assertThat(eventService.changeStatus(eventId, EventStatus.CANCELLED).status())
+                    .as("phai huy duoc tu %s", tu)
+                    .isEqualTo(EventStatus.CANCELLED);
+        }
+    }
+
     /**
-     * Test này ghi nhận HÀNH VI HIỆN TẠI chứ không phải hành vi mong muốn.
-     *
-     * SRS mô tả vòng đời một chiều: Nháp → Mở đăng ký → Đang diễn ra → Kết thúc.
-     * Frontend cũng đã có bảng EVENT_STATUS_TRANSITIONS trong
-     * frontend/src/types/index.ts. Nhưng backend KHÔNG kiểm gì — gọi thẳng API
-     * là quay được từ CLOSED về DRAFT, tức là mở lại một sự kiện đã công bố
-     * kết quả.
-     *
-     * Để test ở đây làm mốc: ngày nào thêm luật chuyển trạng thái thì test này
-     * sẽ đỏ, và đó là lúc sửa nó thành assertThatThrownBy.
+     * ACTIVE không nằm trong bảng EVENT_STATUS_TRANSITIONS của frontend, nhưng
+     * V006__demo_seed_users.sql seed sự kiện demo với đúng trạng thái đó. Nếu
+     * không cho nó lối ra thì sự kiện demo bị kẹt vĩnh viễn.
      */
     @Test
-    @DisplayName("changeStatus: HIEN TAI khong chan buoc lui CLOSED -> DRAFT (chua co luat)")
-    void changeStatus_ChuaChanBuocLui() {
+    @DisplayName("changeStatus: ACTIVE (trang thai V006 seed) van co loi ra")
+    void changeStatus_ActiveKhongBiKet() {
+        when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
+        when(eventRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        event.setStatus(EventStatus.ACTIVE);
+        assertThat(eventService.changeStatus(eventId, EventStatus.CLOSED).status())
+                .isEqualTo(EventStatus.CLOSED);
+    }
+
+    @Test
+    @DisplayName("changeStatus: dat lai dung trang thai dang co thi cho qua")
+    void changeStatus_ChoPhepDatLaiChinhNo() {
         event.setStatus(EventStatus.CLOSED);
         when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
         when(eventRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        EventResponse res = eventService.changeStatus(eventId, EventStatus.DRAFT);
-
-        assertThat(res.status()).isEqualTo(EventStatus.DRAFT);
+        assertThat(eventService.changeStatus(eventId, EventStatus.CLOSED).status())
+                .isEqualTo(EventStatus.CLOSED);
     }
 }
