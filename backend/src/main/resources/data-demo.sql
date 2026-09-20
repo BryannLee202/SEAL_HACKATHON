@@ -80,6 +80,18 @@ VALUES ('10000000-0000-0000-0000-000000000103', CURRENT_TIMESTAMP, CURRENT_TIMES
 INSERT INTO user_role_assignment (id, created_at, updated_at, user_id, role_name, scope_type, scope_id)
 VALUES ('10000000-0000-0000-0000-000000000104', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, '10000000-0000-0000-0000-000000000004', 'MENTOR', 'TRACK', '30000000-0000-0000-0000-000000000001');
 
+-- Vai tro thi sinh cho leader@demo.local.
+--
+-- AuthService.register() dong 76 gan TEAM_MEMBER / GLOBAL cho MOI nguoi dang
+-- ky. Tai khoan gieo san bo qua buoc dang ky nen khong co dong nay, va route
+-- /team doi requireRole ["TEAM_MEMBER", "TEAM_LEADER"] doc tu bang
+-- user_role_assignment - khong phai tu team_member.role_in_team.
+--
+-- Thieu dong nay thi doi truong dang nhap duoc nhung mo /team ra la
+-- "Ban khong co quyen truy cap trang nay".
+INSERT INTO user_role_assignment (id, created_at, updated_at, user_id, role_name, scope_type, scope_id)
+VALUES ('10000000-0000-0000-0000-000000000109', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, '10000000-0000-0000-0000-000000000005', 'TEAM_MEMBER', 'GLOBAL', NULL);
+
 -- Phan cong giam khao vao TUNG VONG THI.
 --
 -- Hai dong 'JUDGE'/'GLOBAL' o tren chi cho tai khoan mang vai tro giam khao
