@@ -77,6 +77,11 @@ public class CalibrationService {
     public List<CalibrationScoreResponse> submitScores(UUID calibrationRoundId, List<CalibrationScoreItemRequest> items, UUID judgeUserId) {
         CalibrationRound round = calibrationRoundRepository.findById(calibrationRoundId)
                 .orElseThrow(() -> ApiException.notFound("Không tìm thấy vòng hiệu chuẩn"));
+        if (!round.isActive()) {
+            throw ApiException.conflict(
+                    "Phiên hiệu chuẩn \"" + round.getName() + "\" đã đóng, không nhận thêm điểm. "
+                            + "Nếu cần chấm bổ sung, ban tổ chức phải mở lại phiên.");
+        }
         User judge = userRepository.findById(judgeUserId)
                 .orElseThrow(() -> ApiException.notFound("Không tìm thấy giám khảo"));
 
@@ -93,6 +98,25 @@ public class CalibrationService {
         }).collect(Collectors.toList());
 
         return results.stream().map(CalibrationScoreResponse::from).collect(Collectors.toList());
+    }
+
+    /**
+     * Đóng hoặc mở lại một phiên hiệu chuẩn.
+     *
+     * Cờ {@code active} trước đây được đặt {@code true} lúc tạo rồi không nơi
+     * nào đổi được nữa, nên mọi phiên hiệu chuẩn đều mở vĩnh viễn. Hai màn hình
+     * đã dựa vào cờ này từ trước: form chấm của giám khảo lọc
+     * {@code .filter(cr => cr.active)}, và ô "Cần chú ý" ở trang chủ giám khảo
+     * đếm số phiên đang mở. Không đóng được nghĩa là nhắc nhở đó không bao giờ
+     * tắt, và giám khảo vẫn nộp thêm điểm hiệu chuẩn sau khi số liệu nghiên cứu
+     * đã chốt — làm lệch phân phối dùng để so độ đồng thuận.
+     */
+    @Transactional
+    public CalibrationRoundResponse setActive(UUID calibrationRoundId, boolean active) {
+        CalibrationRound round = calibrationRoundRepository.findById(calibrationRoundId)
+                .orElseThrow(() -> ApiException.notFound("Không tìm thấy vòng hiệu chuẩn"));
+        round.setActive(active);
+        return CalibrationRoundResponse.from(calibrationRoundRepository.save(round));
     }
 
     @Transactional(readOnly = true)
