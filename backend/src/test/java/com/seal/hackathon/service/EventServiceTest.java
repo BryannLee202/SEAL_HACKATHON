@@ -278,4 +278,62 @@ class EventServiceTest {
         assertThat(eventService.changeStatus(eventId, EventStatus.CLOSED).status())
                 .isEqualTo(EventStatus.CLOSED);
     }
+
+    // ---------------------------------------------------------------
+    // Co rblEnabled bo trong
+    //
+    // Truong nay truoc day la kieu nguyen thuy boolean. Jackson phai goi ham
+    // dung chuan cua record voi du moi thanh phan, nen mot truong KHONG duoc
+    // gui len se thanh null - va null khong ep duoc ve kieu nguyen thuy. Ket
+    // qua la TOAN BO yeu cau bi tu choi chu khong phai truong do nhan gia tri
+    // mac dinh.
+    //
+    // Form tao su kien o giao dien (EventsPage.tsx dong 210) chi gui name,
+    // description, startDate va endDate. Nen truoc khi sua, ban to chuc khong
+    // tao duoc su kien nao tu giao dien.
+    // ---------------------------------------------------------------
+
+    @Test
+    @DisplayName("create: bo trong rblEnabled thi mac dinh la khong bat, khong phai loi")
+    void create_BoTrongRblEnabledThiMacDinhTat() {
+        when(eventRepository.save(any())).thenAnswer(inv -> {
+            HackathonEvent e = inv.getArgument(0);
+            e.setId(UUID.randomUUID());
+            return e;
+        });
+
+        EventRequest yeuCau = new EventRequest(
+                "SEAL Hackathon 2026", "mo ta",
+                LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 30),
+                null, null);
+
+        EventResponse ketQua = eventService.create(yeuCau);
+
+        assertThat(ketQua.rblEnabled()).isFalse();
+    }
+
+    @Test
+    @DisplayName("create: gui rblEnabled = true thi bat that")
+    void create_GuiRblEnabledTrue() {
+        when(eventRepository.save(any())).thenAnswer(inv -> {
+            HackathonEvent e = inv.getArgument(0);
+            e.setId(UUID.randomUUID());
+            return e;
+        });
+
+        EventResponse ketQua = eventService.create(new EventRequest(
+                "SEAL Hackathon 2026", "mo ta",
+                LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 30),
+                null, true));
+
+        assertThat(ketQua.rblEnabled()).isTrue();
+    }
+
+    @Test
+    @DisplayName("rblEnabledOrDefault: null va false deu ra false, true ra true")
+    void rblEnabledOrDefault_DoiChieuBaGiaTri() {
+        assertThat(new EventRequest("x", null, null, null, null, null).rblEnabledOrDefault()).isFalse();
+        assertThat(new EventRequest("x", null, null, null, null, false).rblEnabledOrDefault()).isFalse();
+        assertThat(new EventRequest("x", null, null, null, null, true).rblEnabledOrDefault()).isTrue();
+    }
 }
