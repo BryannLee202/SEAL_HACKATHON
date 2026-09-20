@@ -29,6 +29,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -162,8 +163,10 @@ class PrizeServiceTest {
                 .build();
 
         when(prizeRepository.findByEventId(eventId)).thenReturn(List.of(prize));
-        when(rankingRepository.findByRoundIdAndTeam_Track_IdAndRankInTrack(roundId, trackId, 1))
-                .thenReturn(Optional.of(ranking));
+        // autoAssign nay nap toan bo bang xep hang mot lan roi tra trong bo nho,
+        // thay vi mot cau truy van cho moi giai thuong.
+        when(rankingRepository.findByRoundIdOrderByRankOverallAsc(roundId))
+                .thenReturn(List.of(ranking));
 
         List<PrizeResponse> results = prizeService.autoAssign(eventId, roundId, actorId);
 
@@ -227,5 +230,32 @@ class PrizeServiceTest {
         assertThatThrownBy(() -> prizeService.revoke(prizeId, actorId))
                 .isInstanceOf(ApiException.class)
                 .hasMessageContaining("Không tìm thấy giải thưởng");
+    }
+
+    @Test
+    @DisplayName("autoAssign: chi nap bang xep hang MOT lan du co nhieu giai thuong")
+    void autoAssign_ChiNapBangXepHangMotLan() {
+        Prize giaiNhat = Prize.builder().event(event).track(track)
+                .name("Giai Nhat Track").rankCondition(1).revoked(false).build();
+        giaiNhat.setId(UUID.randomUUID());
+        Prize giaiNhi = Prize.builder().event(event).track(track)
+                .name("Giai Nhi Track").rankCondition(2).revoked(false).build();
+        giaiNhi.setId(UUID.randomUUID());
+        Prize giaiBa = Prize.builder().event(event).track(track)
+                .name("Giai Ba Track").rankCondition(3).revoked(false).build();
+        giaiBa.setId(UUID.randomUUID());
+
+        Ranking r1 = Ranking.builder().team(team).rankInTrack(1).build();
+
+        when(prizeRepository.findByEventId(eventId)).thenReturn(List.of(giaiNhat, giaiNhi, giaiBa));
+        when(rankingRepository.findByRoundIdOrderByRankOverallAsc(roundId)).thenReturn(List.of(r1));
+
+        prizeService.autoAssign(eventId, roundId, actorId);
+
+        // Ba giai thuong nhung chi mot cau truy van bang xep hang...
+        verify(rankingRepository, times(1)).findByRoundIdOrderByRankOverallAsc(roundId);
+        // ...va tuyet doi khong goi cac ham tra tung giai mot.
+        verify(rankingRepository, never()).findByRoundIdAndTeam_Track_IdAndRankInTrack(any(), any(), any());
+        verify(rankingRepository, never()).findByRoundIdAndRankOverall(any(), any());
     }
 }
