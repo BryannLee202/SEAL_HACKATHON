@@ -182,4 +182,119 @@ class TeamFeedbackServiceTest {
                 .isInstanceOf(ApiException.class)
                 .hasMessageContaining("Không tìm thấy đội thi");
     }
+
+    // ------------------------------------------------------------------
+    // Vai tro tac gia suy ra tu phia may chu
+    // ------------------------------------------------------------------
+
+    @Test
+    @DisplayName("post: Thanh vien doi gui tin thi vai tro luu la TEAM_MEMBER")
+    void post_ThanhVienDoiThiVaiTroLaTeamMember() {
+        AuthenticatedPrincipal thanhVien = thiSinhDoiKhac();
+        when(teamRepository.findById(teamId)).thenReturn(Optional.of(team));
+        choPhepLaThanhVien(thanhVien, true);
+        chuanBiLuuTinNhan(thanhVien);
+
+        FeedbackMessageResponse ketQua = teamFeedbackService.post(
+                teamId, new FeedbackMessageRequest("Nhóm em đã sửa phần đăng nhập ạ"), thanhVien);
+
+        assertThat(ketQua.authorRole()).isEqualTo(FeedbackAuthorRole.TEAM_MEMBER);
+        assertThat(ketQua.teamId()).isEqualTo(teamId);
+    }
+
+    @Test
+    @DisplayName("post: Mentor dung hang muc gui tin thi vai tro luu la MENTOR")
+    void post_MentorDungHangMucThiVaiTroLaMentor() {
+        AuthenticatedPrincipal mentor = mentorDungHangMuc();
+        when(teamRepository.findById(teamId)).thenReturn(Optional.of(team));
+        choPhepLaThanhVien(mentor, false);
+        chuanBiLuuTinNhan(mentor);
+
+        FeedbackMessageResponse ketQua = teamFeedbackService.post(
+                teamId, new FeedbackMessageRequest("Các em nên đo lại thời gian phản hồi API"), mentor);
+
+        assertThat(ketQua.authorRole()).isEqualTo(FeedbackAuthorRole.MENTOR);
+    }
+
+    @Test
+    @DisplayName("post: Thi sinh doi khac gui tin bi chan va khong luu gi")
+    void post_ChanThiSinhDoiKhac() {
+        AuthenticatedPrincipal nguoiLa = thiSinhDoiKhac();
+        when(teamRepository.findById(teamId)).thenReturn(Optional.of(team));
+        choPhepLaThanhVien(nguoiLa, false);
+
+        assertThatThrownBy(() -> teamFeedbackService.post(
+                teamId, new FeedbackMessageRequest("Cho mình xem ké với"), nguoiLa))
+                .isInstanceOf(ApiException.class)
+                .hasMessageContaining("không có quyền truy cập trao đổi");
+
+        verify(messageRepository, never()).save(any());
+        verify(auditService, never()).record(any(), any(), any(), any(), any(), any());
+    }
+
+    @Test
+    @DisplayName("post: Cat khoang trang thua o dau va cuoi noi dung truoc khi luu")
+    void post_CatKhoangTrangThua() {
+        AuthenticatedPrincipal mentor = mentorDungHangMuc();
+        when(teamRepository.findById(teamId)).thenReturn(Optional.of(team));
+        choPhepLaThanhVien(mentor, false);
+        chuanBiLuuTinNhan(mentor);
+
+        FeedbackMessageResponse ketQua = teamFeedbackService.post(
+                teamId, new FeedbackMessageRequest("   Nhớ nộp trước 17h   \n"), mentor);
+
+        assertThat(ketQua.body()).isEqualTo("Nhớ nộp trước 17h");
+    }
+
+    @Test
+    @DisplayName("post: Ghi nhat ky kiem toan MENTOR_MESSAGE_SEND kem vai tro nguoi gui")
+    void post_GhiNhatKyKiemToan() {
+        AuthenticatedPrincipal mentor = mentorDungHangMuc();
+        when(teamRepository.findById(teamId)).thenReturn(Optional.of(team));
+        choPhepLaThanhVien(mentor, false);
+        chuanBiLuuTinNhan(mentor);
+
+        teamFeedbackService.post(teamId, new FeedbackMessageRequest("Góp ý kiến trúc"), mentor);
+
+        verify(auditService).record(
+                eq(mentor.userId()),
+                eq(AuditAction.MENTOR_MESSAGE_SEND),
+                eq("Team"),
+                eq(teamId),
+                isNull(),
+                eq(FeedbackAuthorRole.MENTOR.name()));
+    }
+
+    @Test
+    @DisplayName("post: Doi chua duoc xep hang muc thi mentor khong vao duoc, tranh NullPointerException")
+    void post_DoiChuaCoHangMuc() {
+        Team doiChuaCoHangMuc = Team.builder().name("Chưa phân hạng mục").track(null).build();
+        doiChuaCoHangMuc.setId(teamId);
+
+        AuthenticatedPrincipal mentor = mentorDungHangMuc();
+        when(teamRepository.findById(teamId)).thenReturn(Optional.of(doiChuaCoHangMuc));
+        choPhepLaThanhVien(mentor, false);
+
+        assertThatThrownBy(() -> teamFeedbackService.post(
+                teamId, new FeedbackMessageRequest("Chào các em"), mentor))
+                .isInstanceOf(ApiException.class)
+                .hasMessageContaining("không có quyền truy cập trao đổi");
+    }
+
+    @Test
+    @DisplayName("post: Ban to chuc vao duoc moi doi, ke ca doi chua co hang muc")
+    void post_BanToChucVaoDuocMoiDoi() {
+        Team doiChuaCoHangMuc = Team.builder().name("Chưa phân hạng mục").track(null).build();
+        doiChuaCoHangMuc.setId(teamId);
+
+        AuthenticatedPrincipal btc = banToChuc();
+        when(teamRepository.findById(teamId)).thenReturn(Optional.of(doiChuaCoHangMuc));
+        choPhepLaThanhVien(btc, false);
+        chuanBiLuuTinNhan(btc);
+
+        FeedbackMessageResponse ketQua = teamFeedbackService.post(
+                teamId, new FeedbackMessageRequest("Nhắc lịch nộp bài"), btc);
+
+        assertThat(ketQua.authorRole()).isEqualTo(FeedbackAuthorRole.MENTOR);
+    }
 }
