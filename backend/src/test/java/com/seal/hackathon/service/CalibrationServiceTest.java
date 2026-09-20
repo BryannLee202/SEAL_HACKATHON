@@ -236,4 +236,96 @@ class CalibrationServiceTest {
 
         assertThat(calibrationService.listByEvent(eventId)).hasSize(1);
     }
+
+    // ---------------------------------------------------------------
+    // Đóng và mở lại phiên hiệu chuẩn
+    //
+    // Cờ active trước đây là cờ chết: đặt true lúc tạo rồi không nơi nào đổi
+    // được. Nhóm test này giữ lại hai điều sau khi vá: đóng được thật, và
+    // phiên đã đóng thì không nhận thêm điểm.
+    // ---------------------------------------------------------------
+
+    @Test
+    @DisplayName("setActive: ban to chuc dong duoc phien hieu chuan da du so lieu")
+    void setActive_DongDuocPhien() {
+        when(calibrationRoundRepository.findById(roundId)).thenReturn(Optional.of(round));
+        when(calibrationRoundRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        CalibrationRoundResponse res = calibrationService.setActive(roundId, false);
+
+        assertThat(res.active()).isFalse();
+        assertThat(round.isActive()).isFalse();
+    }
+
+    @Test
+    @DisplayName("setActive: mo lai duoc phien lo tay dong nham, khong roi vao ngo cut")
+    void setActive_MoLaiDuocPhienDongNham() {
+        round.setActive(false);
+        when(calibrationRoundRepository.findById(roundId)).thenReturn(Optional.of(round));
+        when(calibrationRoundRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        CalibrationRoundResponse res = calibrationService.setActive(roundId, true);
+
+        assertThat(res.active()).isTrue();
+    }
+
+    @Test
+    @DisplayName("setActive: bao loi khi phien hieu chuan khong ton tai")
+    void setActive_ChanPhienKhongTonTai() {
+        when(calibrationRoundRepository.findById(roundId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> calibrationService.setActive(roundId, false))
+                .isInstanceOf(ApiException.class)
+                .hasMessageContaining("Không tìm thấy vòng hiệu chuẩn");
+
+        verify(calibrationRoundRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("submitScores: phien da dong thi KHONG nhan them diem")
+    void submitScores_ChanKhiPhienDaDong() {
+        round.setActive(false);
+        Criterion c = criterion("Tinh sang tao");
+        when(calibrationRoundRepository.findById(roundId)).thenReturn(Optional.of(round));
+
+        assertThatThrownBy(() -> calibrationService.submitScores(roundId,
+                List.of(new CalibrationScoreItemRequest(c.getId(), new BigDecimal("8.0"))), judgeId))
+                .isInstanceOf(ApiException.class)
+                .hasMessageContaining("đã đóng, không nhận thêm điểm");
+
+        // Khong duoc luu gi ca. Neu lot mot ban ghi vao sau khi so lieu da chot
+        // thi phan phoi dung de so do dong thuan bi lech, va khong co cach nao
+        // biet ban ghi nao la thua.
+        verify(calibrationScoreRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("submitScores: thong bao tu choi neu ro ten phien da dong")
+    void submitScores_ThongBaoNeuRoTenPhien() {
+        round.setActive(false);
+        when(calibrationRoundRepository.findById(roundId)).thenReturn(Optional.of(round));
+
+        assertThatThrownBy(() -> calibrationService.submitScores(roundId,
+                List.of(new CalibrationScoreItemRequest(UUID.randomUUID(), new BigDecimal("8.0"))), judgeId))
+                .hasMessageContaining("Hieu chuan vong loai");
+    }
+
+    @Test
+    @DisplayName("submitScores: phien dang mo thi van nop diem binh thuong")
+    void submitScores_PhienDangMoVanNopDuoc() {
+        Criterion c = criterion("Tinh sang tao");
+        when(calibrationRoundRepository.findById(roundId)).thenReturn(Optional.of(round));
+        when(userRepository.findById(judgeId)).thenReturn(Optional.of(judge));
+        when(criterionRepository.findById(c.getId())).thenReturn(Optional.of(c));
+        when(calibrationScoreRepository.save(any())).thenAnswer(inv -> {
+            CalibrationScore sc = inv.getArgument(0);
+            sc.setId(UUID.randomUUID());
+            return sc;
+        });
+
+        List<CalibrationScoreResponse> res = calibrationService.submitScores(roundId,
+                List.of(new CalibrationScoreItemRequest(c.getId(), new BigDecimal("8.0"))), judgeId);
+
+        assertThat(res).hasSize(1);
+    }
 }
