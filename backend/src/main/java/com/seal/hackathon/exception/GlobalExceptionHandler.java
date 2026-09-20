@@ -7,7 +7,10 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
@@ -38,6 +41,34 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Map<String, Object>> handleConstraintViolation(ConstraintViolationException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body(HttpStatus.BAD_REQUEST, ex.getMessage()));
+    }
+
+    /**
+     * Thiếu tham số truy vấn bắt buộc, sai kiểu dữ liệu trên đường dẫn, hoặc
+     * thân yêu cầu không đọc được.
+     *
+     * Ba trường hợp này trước đây rơi hết vào bộ bắt {@code Exception.class} ở
+     * cuối lớp và trả về 500 "Đã xảy ra lỗi, vui lòng thử lại sau". Đó là lỗi
+     * của phía GỌI, không phải của máy chủ: gõ nhầm một ký tự trong UUID trên
+     * thanh địa chỉ cũng ra màn hình lỗi máy chủ, và người dùng không có cách
+     * nào biết mình sai ở đâu. Trả về 400 kèm tên tham số sai.
+     */
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<Map<String, Object>> handleThieuThamSo(MissingServletRequestParameterException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(body(HttpStatus.BAD_REQUEST, "Thiếu tham số bắt buộc: " + ex.getParameterName()));
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Map<String, Object>> handleSaiKieuThamSo(MethodArgumentTypeMismatchException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(body(HttpStatus.BAD_REQUEST, "Giá trị không hợp lệ cho tham số: " + ex.getName()));
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, Object>> handleThanYeuCauHong(HttpMessageNotReadableException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(body(HttpStatus.BAD_REQUEST, "Nội dung yêu cầu không đọc được, vui lòng kiểm tra định dạng JSON"));
     }
 
     @ExceptionHandler(AccessDeniedException.class)
