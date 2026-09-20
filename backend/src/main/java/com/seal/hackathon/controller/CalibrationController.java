@@ -59,7 +59,17 @@ public class CalibrationController {
         return calibrationService.setActive(calibrationRoundId, request.active());
     }
 
+    /**
+     * Phổ điểm hiệu chuẩn của TỪNG giám khảo, kèm tên.
+     *
+     * Đây là dữ liệu nghiên cứu RBL, cùng loại với {@code /api/rounds/{id}/rbl/variance}
+     * mà {@code RblController} khoá ở mức lớp cho COORDINATOR. Trước đây endpoint này
+     * không có guard nào, nên với {@code .anyRequest().authenticated()} thì BẤT KỲ ai
+     * đăng nhập — kể cả thí sinh — đều đọc được giám khảo nào chấm chặt, chấm lỏng.
+     * Đo thực tế: mentor bị chặn 403 ở /rbl/variance nhưng vẫn đọc được 200 ở đây.
+     */
     @GetMapping("/api/calibration-rounds/{calibrationRoundId}/distribution")
+    @PreAuthorize("hasRole('COORDINATOR')")
     public List<CalibrationScoreResponse> distribution(@PathVariable UUID calibrationRoundId) {
         return calibrationService.distribution(calibrationRoundId);
     }
