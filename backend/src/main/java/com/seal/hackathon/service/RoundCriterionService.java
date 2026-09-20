@@ -54,9 +54,7 @@ public class RoundCriterionService {
         assertNoScoresYet(roundId);
         Criterion criterion = criterionRepository.findById(criterionId)
                 .orElseThrow(() -> ApiException.notFound("Không tìm thấy tiêu chí"));
-        if (criterion.getRound() == null || !criterion.getRound().getId().equals(roundId)) {
-            throw ApiException.badRequest("Tiêu chí không thuộc vòng thi này");
-        }
+        assertThuocVongThi(criterion, roundId);
         weightPolicy.assertFits(criterionRepository.findByRoundId(roundId), criterionId, request.weight());
         criterion.setName(request.name());
         criterion.setDescription(request.description());
@@ -67,10 +65,23 @@ public class RoundCriterionService {
 
     @Transactional
     public void remove(UUID roundId, UUID criterionId) {
-        assertNoScoresYet(roundId);
         Criterion criterion = criterionRepository.findById(criterionId)
                 .orElseThrow(() -> ApiException.notFound("Không tìm thấy tiêu chí"));
+        // Phải đối chiếu tiêu chí với vòng thi trên URL TRƯỚC khi kiểm tra điểm.
+        // Nếu không, khoá "vòng thi đã có điểm" bị vô hiệu: gọi
+        // DELETE /api/rounds/{vongChuaChamDiem}/criteria/{tieuChiCuaVongKhac}
+        // sẽ chạy assertNoScoresYet() trên vòng chưa chấm (luôn qua) rồi xoá
+        // tiêu chí của vòng đang chấm dở, kéo theo toàn bộ điểm đã nhập.
+        // update() đã đối chiếu như vậy từ đầu, chỉ remove() bỏ sót.
+        assertThuocVongThi(criterion, roundId);
+        assertNoScoresYet(roundId);
         criterionRepository.delete(criterion);
+    }
+
+    private void assertThuocVongThi(Criterion criterion, UUID roundId) {
+        if (criterion.getRound() == null || !criterion.getRound().getId().equals(roundId)) {
+            throw ApiException.badRequest("Tiêu chí không thuộc vòng thi này");
+        }
     }
 
     private void assertNoScoresYet(UUID roundId) {
