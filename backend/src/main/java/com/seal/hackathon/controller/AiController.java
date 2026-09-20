@@ -4,7 +4,9 @@ import com.seal.hackathon.dto.ai.AiSubmissionAnalysisDto;
 import com.seal.hackathon.dto.ai.AiFeedbackSuggestionRequestDto;
 import com.seal.hackathon.dto.ai.AiFeedbackSuggestionResponseDto;
 import org.springframework.web.bind.annotation.RequestBody;
+import com.seal.hackathon.security.AuthenticatedPrincipal;
 import com.seal.hackathon.service.AiAssistantService;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -38,8 +40,10 @@ public class AiController {
 
     @Operation(summary = "Phân tích bài nộp, tóm tắt và gợi ý câu hỏi phản biện cho Giám khảo")
     @PostMapping("/submissions/{submissionId}/analyze")
-    public ResponseEntity<AiSubmissionAnalysisDto> analyzeSubmission(@PathVariable UUID submissionId) {
-        AiSubmissionAnalysisDto analysis = aiAssistantService.analyzeSubmission(submissionId);
+    public ResponseEntity<AiSubmissionAnalysisDto> analyzeSubmission(
+            @PathVariable UUID submissionId,
+            @AuthenticationPrincipal AuthenticatedPrincipal principal) {
+        AiSubmissionAnalysisDto analysis = aiAssistantService.analyzeSubmission(submissionId, principal);
         return ResponseEntity.ok(analysis);
     }
     @Operation(summary = "Gợi ý nhận xét chấm điểm theo Rubric cho Giám khảo")
