@@ -4,7 +4,10 @@ import com.seal.hackathon.dto.ai.AiSubmissionAnalysisDto;
 import com.seal.hackathon.dto.ai.AiFeedbackSuggestionRequestDto;
 import com.seal.hackathon.dto.ai.AiFeedbackSuggestionResponseDto;
 import org.springframework.web.bind.annotation.RequestBody;
+import com.seal.hackathon.security.AuthenticatedPrincipal;
 import com.seal.hackathon.service.AiAssistantService;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +30,7 @@ public class AiController {
     private final AiAssistantService aiAssistantService;
 
     @Operation(summary = "Kiểm tra trạng thái cấu hình AI")
+    @PreAuthorize("hasAnyRole('COORDINATOR', 'JUDGE', 'MENTOR')")
     @GetMapping("/status")
     public ResponseEntity<Map<String, Object>> getAiStatus() {
         return ResponseEntity.ok(Map.of(
@@ -38,11 +42,23 @@ public class AiController {
 
     @Operation(summary = "Phân tích bài nộp, tóm tắt và gợi ý câu hỏi phản biện cho Giám khảo")
     @PostMapping("/submissions/{submissionId}/analyze")
-    public ResponseEntity<AiSubmissionAnalysisDto> analyzeSubmission(@PathVariable UUID submissionId) {
-        AiSubmissionAnalysisDto analysis = aiAssistantService.analyzeSubmission(submissionId);
+    public ResponseEntity<AiSubmissionAnalysisDto> analyzeSubmission(
+            @PathVariable UUID submissionId,
+            @AuthenticationPrincipal AuthenticatedPrincipal principal) {
+        AiSubmissionAnalysisDto analysis = aiAssistantService.analyzeSubmission(submissionId, principal);
         return ResponseEntity.ok(analysis);
     }
+    /**
+     * Khác với /analyze, endpoint này KHÔNG đọc gì từ cơ sở dữ liệu — mọi dữ
+     * liệu (tên đội, điểm từng tiêu chí, ghi chú) đều do người gọi truyền lên.
+     * Nên ở đây không có nguy cơ rò rỉ dữ liệu đội khác.
+     *
+     * Vẫn phải chặn theo vai trò: để mở thì bất kỳ ai đã đăng nhập cũng biến
+     * được nó thành một cổng gọi LLM miễn phí, tiêu hết hạn mức API của dự án.
+     * Chỉ những vai trò thực sự chấm điểm mới cần công cụ này.
+     */
     @Operation(summary = "Gợi ý nhận xét chấm điểm theo Rubric cho Giám khảo")
+    @PreAuthorize("hasAnyRole('COORDINATOR', 'JUDGE', 'MENTOR')")
     @PostMapping("/rubric-feedback/suggest")
     public ResponseEntity<AiFeedbackSuggestionResponseDto> suggestRubricFeedback(
             @RequestBody AiFeedbackSuggestionRequestDto request) {

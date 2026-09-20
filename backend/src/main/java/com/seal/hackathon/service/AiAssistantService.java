@@ -4,12 +4,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.seal.hackathon.config.AiConfigurationProperties;
 import com.seal.hackathon.domain.entity.Submission;
+import com.seal.hackathon.domain.entity.Team;
+import com.seal.hackathon.domain.enums.RoleName;
+import com.seal.hackathon.domain.enums.ScopeType;
 import com.seal.hackathon.dto.ai.AiSubmissionAnalysisDto;
 import com.seal.hackathon.dto.ai.AiFeedbackSuggestionRequestDto;
 import com.seal.hackathon.dto.ai.AiFeedbackSuggestionResponseDto;
 
 import com.seal.hackathon.exception.ApiException;
 import com.seal.hackathon.repository.SubmissionRepository;
+import com.seal.hackathon.security.AuthenticatedPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,12 +41,48 @@ public class AiAssistantService {
 
     private final AiConfigurationProperties aiProperties;
     private final SubmissionRepository submissionRepository;
+    private final JudgeAssignmentService judgeAssignmentService;
     private final ObjectMapper objectMapper;
 
-    public AiAssistantService(AiConfigurationProperties aiProperties, SubmissionRepository submissionRepository) {
+    public AiAssistantService(AiConfigurationProperties aiProperties,
+                              SubmissionRepository submissionRepository,
+                              JudgeAssignmentService judgeAssignmentService) {
         this.aiProperties = aiProperties;
         this.submissionRepository = submissionRepository;
+        this.judgeAssignmentService = judgeAssignmentService;
         this.objectMapper = new ObjectMapper();
+    }
+
+    /**
+     * Chặn người không có phận sự xem phân tích AI của một bài nộp.
+     *
+     * Trợ lý AI là công cụ hỗ trợ CHẤM ĐIỂM, nên luật ở đây chặt hơn luật xem
+     * bài nộp thông thường: thành viên đội KHÔNG được xem phân tích bài của
+     * chính đội mình, càng không được xem của đội khác.
+     *
+     * Thiếu phép kiểm này thì bất kỳ ai đã đăng nhập cũng lấy được tóm tắt,
+     * điểm mạnh, điểm yếu và câu hỏi phản biện của mọi đội thi — chỉ cần biết
+     * submissionId.
+     */
+    private void assertCanUseAiFor(Submission submission, AuthenticatedPrincipal principal) {
+        if (principal == null) {
+            throw ApiException.forbidden("Cần đăng nhập để dùng trợ lý AI");
+        }
+        if (principal.isCoordinator()) {
+            return;
+        }
+        if (judgeAssignmentService.isJudgeAssignedToRound(
+                principal.userId(), submission.getRound().getId())) {
+            return;
+        }
+        Team team = submission.getTeam();
+        if (team != null && team.getTrack() != null
+                && principal.hasRoleInScope(RoleName.MENTOR, ScopeType.TRACK, team.getTrack().getId())) {
+            return;
+        }
+        throw ApiException.forbidden(
+                "Chỉ Ban tổ chức, giám khảo được phân công vòng thi này, "
+                        + "hoặc mentor của hạng mục mới dùng được trợ lý AI cho bài nộp này");
     }
 
     /**
@@ -50,9 +90,11 @@ public class AiAssistantService {
      * Tự động chuyển đổi sang Heuristic Fallback khi AI bị tắt hoặc không có API key hoặc lỗi mạng.
      */
     @Transactional(readOnly = true)
-    public AiSubmissionAnalysisDto analyzeSubmission(UUID submissionId) {
+    public AiSubmissionAnalysisDto analyzeSubmission(UUID submissionId, AuthenticatedPrincipal principal) {
         Submission submission = submissionRepository.findById(submissionId)
                 .orElseThrow(() -> ApiException.notFound("Không tìm thấy bài nộp với ID: " + submissionId));
+
+        assertCanUseAiFor(submission, principal);
 
         if (!aiProperties.isEnabled() || aiProperties.getApiKey() == null || aiProperties.getApiKey().isBlank()) {
             log.info("AI đang ở chế độ Tắt hoặc chưa cấu hình API key -> Sử dụng cơ chế phân tích Heuristic Fallback");
