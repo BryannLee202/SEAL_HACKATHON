@@ -19,7 +19,9 @@ import com.seal.hackathon.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -85,17 +87,44 @@ public class CalibrationService {
         User judge = userRepository.findById(judgeUserId)
                 .orElseThrow(() -> ApiException.notFound("Không tìm thấy giám khảo"));
 
-        List<CalibrationScore> results = items.stream().map(item -> {
+        // Bảng calibration_score có UNIQUE (calibration_round_id, judge_id,
+        // criterion_id). Trước đây mỗi lần nộp đều dựng bản ghi MỚI, nên giám
+        // khảo chấm nhầm một tiêu chí rồi nộp lại là đâm thẳng vào ràng buộc đó
+        // và nhận về thông báo chung chung "Dữ liệu bị trùng lặp hoặc vi phạm
+        // ràng buộc" — không sửa được điểm, mà cũng không hiểu vì sao.
+        //
+        // Động từ của endpoint là PUT, nghĩa là thay thế, nên nộp lại phải CẬP
+        // NHẬT điểm cũ. Lấy hết điểm cũ của giám khảo này trong một truy vấn rồi
+        // tra trong bộ nhớ, thay vì hỏi cơ sở dữ liệu một lần cho mỗi tiêu chí.
+        Map<UUID, CalibrationScore> diemDaCham = calibrationScoreRepository
+                .findByCalibrationRoundIdAndJudgeId(calibrationRoundId, judgeUserId)
+                .stream()
+                .collect(Collectors.toMap(sc -> sc.getCriterion().getId(), sc -> sc, (a, b) -> a));
+
+        List<CalibrationScore> results = new ArrayList<>();
+        for (CalibrationScoreItemRequest item : items) {
             Criterion criterion = criterionRepository.findById(item.criterionId())
                     .orElseThrow(() -> ApiException.notFound("Không tìm thấy tiêu chí"));
-            CalibrationScore score = CalibrationScore.builder()
-                    .calibrationRound(round)
-                    .judge(judge)
-                    .criterion(criterion)
-                    .scoreValue(item.scoreValue())
-                    .build();
-            return calibrationScoreRepository.save(score);
-        }).collect(Collectors.toList());
+
+            CalibrationScore score = diemDaCham.get(criterion.getId());
+            if (score == null) {
+                score = CalibrationScore.builder()
+                        .calibrationRound(round)
+                        .judge(judge)
+                        .criterion(criterion)
+                        .scoreValue(item.scoreValue())
+                        .build();
+            } else {
+                score.setScoreValue(item.scoreValue());
+            }
+            score = calibrationScoreRepository.save(score);
+
+            // Ghi lại vào bản đồ: nếu chính lượt nộp này lặp cùng một tiêu chí
+            // hai lần thì lần sau phải cập nhật bản ghi vừa lưu, chứ không dựng
+            // thêm một bản ghi nữa rồi lại vỡ ràng buộc.
+            diemDaCham.put(criterion.getId(), score);
+            results.add(score);
+        }
 
         return results.stream().map(CalibrationScoreResponse::from).collect(Collectors.toList());
     }
