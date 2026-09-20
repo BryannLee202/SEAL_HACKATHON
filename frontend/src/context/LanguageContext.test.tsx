@@ -30,7 +30,7 @@ describe("LanguageContext & LanguageSwitcher", () => {
       </LanguageProvider>
     );
     expect(screen.getByTestId("current-lang").textContent).toBe("vi");
-    expect(screen.getByTestId("translated-title").textContent).toBe("Bang dieu khien");
+    expect(screen.getByTestId("translated-title").textContent).toBe("Bảng điều khiển");
   });
 
   it("ho tro noi suy tham so (interpolation)", () => {
@@ -39,7 +39,7 @@ describe("LanguageContext & LanguageSwitcher", () => {
         <TestConsumer />
       </LanguageProvider>
     );
-    expect(screen.getByTestId("interpolated").textContent).toBe("Xin chao, Tai!");
+    expect(screen.getByTestId("interpolated").textContent).toBe("Xin chào, Tai!");
   });
 
   it("tra ve chinh key neu khong tim thay trong tu dien", () => {
