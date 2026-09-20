@@ -20,6 +20,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -327,5 +328,136 @@ class CalibrationServiceTest {
                 List.of(new CalibrationScoreItemRequest(c.getId(), new BigDecimal("8.0"))), judgeId);
 
         assertThat(res).hasSize(1);
+    }
+
+    // ---------------------------------------------------------------
+    // Nộp lại điểm — sửa điểm chấm nhầm
+    //
+    // calibration_score có UNIQUE (round, judge, criterion). Trước đây mỗi
+    // lần nộp đều dựng bản ghi mới, nên nộp lại là vỡ ràng buộc và giám khảo
+    // không có cách nào sửa điểm chấm nhầm.
+    // ---------------------------------------------------------------
+
+    @Test
+    @DisplayName("submitScores: nop lai cung tieu chi thi CAP NHAT diem cu, khong chen ban ghi moi")
+    void submitScores_NopLaiThiCapNhat() {
+        Criterion c = criterion("Tinh sang tao");
+        CalibrationScore diemCu = CalibrationScore.builder()
+                .calibrationRound(round).judge(judge).criterion(c).scoreValue(new BigDecimal("8.0")).build();
+        diemCu.setId(UUID.randomUUID());
+
+        when(calibrationRoundRepository.findById(roundId)).thenReturn(Optional.of(round));
+        when(userRepository.findById(judgeId)).thenReturn(Optional.of(judge));
+        when(criterionRepository.findById(c.getId())).thenReturn(Optional.of(c));
+        when(calibrationScoreRepository.findByCalibrationRoundIdAndJudgeId(roundId, judgeId))
+                .thenReturn(List.of(diemCu));
+        when(calibrationScoreRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        List<CalibrationScoreResponse> res = calibrationService.submitScores(roundId,
+                List.of(new CalibrationScoreItemRequest(c.getId(), new BigDecimal("6.5"))), judgeId);
+
+        // Phai ghi de len CHINH ban ghi cu, chi doi gia tri - khong phai ban
+        // ghi thu hai. Bat thuc the that su duoc luu de doi chieu id.
+        assertThat(res).hasSize(1);
+        ArgumentCaptor<CalibrationScore> daLuu = ArgumentCaptor.forClass(CalibrationScore.class);
+        verify(calibrationScoreRepository, times(1)).save(daLuu.capture());
+        assertThat(daLuu.getValue().getId()).isEqualTo(diemCu.getId());
+        assertThat(daLuu.getValue().getScoreValue()).isEqualByComparingTo("6.5");
+    }
+
+    @Test
+    @DisplayName("submitScores: tieu chi chua cham thi van chen moi nhu cu")
+    void submitScores_TieuChiChuaChamThiChenMoi() {
+        Criterion daCham = criterion("Tinh sang tao");
+        Criterion chuaCham = criterion("Thuyet trinh");
+        CalibrationScore diemCu = CalibrationScore.builder()
+                .calibrationRound(round).judge(judge).criterion(daCham).scoreValue(new BigDecimal("8.0")).build();
+        diemCu.setId(UUID.randomUUID());
+
+        when(calibrationRoundRepository.findById(roundId)).thenReturn(Optional.of(round));
+        when(userRepository.findById(judgeId)).thenReturn(Optional.of(judge));
+        when(criterionRepository.findById(chuaCham.getId())).thenReturn(Optional.of(chuaCham));
+        when(calibrationScoreRepository.findByCalibrationRoundIdAndJudgeId(roundId, judgeId))
+                .thenReturn(List.of(diemCu));
+        when(calibrationScoreRepository.save(any())).thenAnswer(inv -> {
+            CalibrationScore sc = inv.getArgument(0);
+            if (sc.getId() == null) sc.setId(UUID.randomUUID());
+            return sc;
+        });
+
+        List<CalibrationScoreResponse> res = calibrationService.submitScores(roundId,
+                List.of(new CalibrationScoreItemRequest(chuaCham.getId(), new BigDecimal("7.0"))), judgeId);
+
+        assertThat(res).hasSize(1);
+        ArgumentCaptor<CalibrationScore> daLuu = ArgumentCaptor.forClass(CalibrationScore.class);
+        verify(calibrationScoreRepository).save(daLuu.capture());
+        assertThat(daLuu.getValue().getId())
+                .as("phai la ban ghi moi, khong phai ghi de len diem cua tieu chi khac")
+                .isNotEqualTo(diemCu.getId());
+        assertThat(daLuu.getValue().getCriterion().getId()).isEqualTo(chuaCham.getId());
+        assertThat(diemCu.getScoreValue())
+                .as("diem cua tieu chi khac khong duoc dong toi")
+                .isEqualByComparingTo("8.0");
+    }
+
+    @Test
+    @DisplayName("submitScores: mot luot nop lap cung tieu chi hai lan thi chi ra MOT ban ghi")
+    void submitScores_LapTieuChiTrongCungMotLuot() {
+        Criterion c = criterion("Tinh sang tao");
+
+        when(calibrationRoundRepository.findById(roundId)).thenReturn(Optional.of(round));
+        when(userRepository.findById(judgeId)).thenReturn(Optional.of(judge));
+        when(criterionRepository.findById(c.getId())).thenReturn(Optional.of(c));
+        when(calibrationScoreRepository.findByCalibrationRoundIdAndJudgeId(roundId, judgeId))
+                .thenReturn(List.of());
+        when(calibrationScoreRepository.save(any())).thenAnswer(inv -> {
+            CalibrationScore sc = inv.getArgument(0);
+            if (sc.getId() == null) sc.setId(UUID.randomUUID());
+            return sc;
+        });
+
+        // Giao dien gui trung do bam hai lan, hoac do loi dung mang.
+        List<CalibrationScoreResponse> res = calibrationService.submitScores(roundId, List.of(
+                new CalibrationScoreItemRequest(c.getId(), new BigDecimal("8.0")),
+                new CalibrationScoreItemRequest(c.getId(), new BigDecimal("6.0"))), judgeId);
+
+        // Hai muc nhung chi MOT ban ghi that: lan luu thu hai phai ghi de len
+        // chinh ban ghi vua tao, neu khong se vo rang buoc UNIQUE.
+        ArgumentCaptor<CalibrationScore> daLuu = ArgumentCaptor.forClass(CalibrationScore.class);
+        verify(calibrationScoreRepository, times(2)).save(daLuu.capture());
+        List<CalibrationScore> luot = daLuu.getAllValues();
+        assertThat(luot.get(1).getId())
+                .as("lan thu hai phai la chinh ban ghi vua tao")
+                .isEqualTo(luot.get(0).getId());
+        assertThat(res).hasSize(2);
+        assertThat(res.get(1).scoreValue())
+                .as("gia tri nop sau cung thang")
+                .isEqualByComparingTo("6.0");
+    }
+
+    @Test
+    @DisplayName("submitScores: chi MOT truy van doc diem cu du nop bao nhieu tieu chi (chan N+1)")
+    void submitScores_ChiMotTruyVanDocDiemCu() {
+        when(calibrationRoundRepository.findById(roundId)).thenReturn(Optional.of(round));
+        when(userRepository.findById(judgeId)).thenReturn(Optional.of(judge));
+        when(calibrationScoreRepository.findByCalibrationRoundIdAndJudgeId(roundId, judgeId))
+                .thenReturn(List.of());
+        when(calibrationScoreRepository.save(any())).thenAnswer(inv -> {
+            CalibrationScore sc = inv.getArgument(0);
+            sc.setId(UUID.randomUUID());
+            return sc;
+        });
+
+        List<CalibrationScoreItemRequest> muc = new java.util.ArrayList<>();
+        for (int i = 0; i < 8; i++) {
+            Criterion c = criterion("Tieu chi " + i);
+            when(criterionRepository.findById(c.getId())).thenReturn(Optional.of(c));
+            muc.add(new CalibrationScoreItemRequest(c.getId(), new BigDecimal("7.0")));
+        }
+
+        calibrationService.submitScores(roundId, muc, judgeId);
+
+        // 8 tieu chi van chi doc diem cu dung mot lan.
+        verify(calibrationScoreRepository, times(1)).findByCalibrationRoundIdAndJudgeId(roundId, judgeId);
     }
 }
