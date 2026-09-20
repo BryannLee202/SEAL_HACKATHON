@@ -5,6 +5,37 @@ Dinh dang nhat ky tuan thu chat che theo chuan [Keep a Changelog](https://keepac
 
 ---
 
+## [1.7.0] - 2026-09-20
+
+### Fixed (Sua loi)
+- **Chan xoa cheo tieu chi giua cac vong thi (PR #89)**:
+  - `RoundCriterionService.remove()` truoc day chi tim tieu chi theo id roi xoa, khong doi chieu `roundId` tren URL - trong khi `update()` da doi chieu tu dau. Lo hong nay vo hieu luon khoa "vong thi da co diem": goi `DELETE /api/rounds/{vongChuaChamDiem}/criteria/{tieuChiCuaVongDangCham}` se xoa tieu chi cua vong dang cham do, keo theo toan bo diem giam khao da nhap.
+- **Gom truy van bang xep hang trong `PrizeService.autoAssign` (PR #91)**:
+  - Su kien 4 hang muc x 3 giai + 3 giai toan cuoc truoc day ton 15 truy van; nay con 1.
+- **Ap tran trong so 100 ngay tai mau tieu chi (PR #94)**:
+  - `RoundService.create()` sao nguyen xi tieu chi cua mau vao vong thi bang `saveAll()`, khong di qua `RoundCriterionService.add()`, nen luat trong so bi di vong hoan toan. Mot mau tong 150 se de ra vong thi tong 150 va diem quy doi cua moi doi deu sai ma khong co thong bao loi nao.
+- **Nop lai diem hieu chuan thi cap nhat thay vi chen them (PR #96)**:
+  - Bang `calibration_score` co `UNIQUE (calibration_round_id, judge_id, criterion_id)`, nhung `submitScores()` moi lan nop deu dung ban ghi moi. Giam khao cham nham mot tieu chi roi nop lai la dam vao rang buoc do va nhan thong bao chung chung, khong co cach nao sua diem.
+- **Dong bo tai khoan demo giua hai duong nap du lieu (PR #97)**:
+  - `data-demo.sql` (H2) thieu `leader@demo.local`, `V006` (Postgres) thieu `mentor1@demo.local`, trong khi README liet ke ca hai. Dang nhap vai thi sinh o ban demo truoc day that bai voi 401.
+
+### Added (Them moi)
+- **Luat chuyen trang thai su kien (PR #89)**:
+  - Khai bao bang chuyen hop le bang `EnumMap`; buoc khong hop le tra ve `409` kem danh sach buoc con di duoc. Truoc day mot su kien da `CLOSED` van quay nguoc ve `DRAFT` duoc.
+- **Dong va mo lai phien hieu chuan (PR #95)**:
+  - Them `PATCH /api/calibration-rounds/{id}/status` (chi `COORDINATOR`). Co `active` truoc day la co chet: dat `true` luc tao roi khong endpoint nao dat duoc ve `false`, du giao dien da loc theo no o hai cho. `submitScores()` nay tu choi `409` khi phien da dong.
+- **Bo sung kiem thu Backend, 123 -> 194 test**:
+  - `RoundCriterionServiceTest` 9 test (PR #89), `CalibrationServiceTest` 8 -> 18 test (PR #90, #95, #96), `VarianceDashboardServiceTest` 6 test (PR #90), `ReportExportServiceTest` 4 test va `AuditLogQueryServiceTest` 6 test (PR #92), `TeamFeedbackServiceTest` 11 test (PR #93), `CriteriaTemplateServiceTest` 10 test (PR #94).
+  - Moi mo-dun deu duoc kiem nguoc: co tinh lam hong lai ma nguon de xac nhan test that su bat duoc loi chu khong chi chay qua.
+- **Migration `V007__demo_seed_mentor.sql` (PR #97)**:
+  - Viet thanh migration moi thay vi sua `V006` da duoc ap dung, tranh loi sai checksum Flyway.
+
+### Changed (Thay doi)
+- **Cap nhat so lieu kiem thu trong tai lieu (PR #97)**:
+  - `README.md` va `run-automated-tests.bat` con ghi 94 backend test (thuc te 194) va `Spring Boot 3.x` (thuc te 4.1.0). Bo sung dong kiem thu BFF (19 test).
+
+---
+
 ## [1.6.0] - 2026-09-16
 
 ### Added (Them moi)

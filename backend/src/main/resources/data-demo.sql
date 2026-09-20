@@ -49,6 +49,22 @@ VALUES (
     false
 );
 
+-- Doi truong doi thi. README liet ke tai khoan nay nhung truoc day no chi co
+-- trong V006__demo_seed_users.sql (duong Flyway/Postgres), khong co o day -
+-- ma profile demo lai chay bang file nay voi flyway.enabled: false. Ket qua la
+-- dang nhap vai thi sinh o ban demo luon that bai voi 401.
+INSERT INTO app_user (id, created_at, updated_at, full_name, email, password_hash, user_category, account_status, guest_judge)
+VALUES (
+    '10000000-0000-0000-0000-000000000005',
+    CURRENT_TIMESTAMP, CURRENT_TIMESTAMP,
+    'Demo Team Leader',
+    'leader@demo.local',
+    '$2a$10$R1VsPPKvp46JANEngp/4c.37STCKsYGl2M6NX8Wymc8fXyZIyKmvi',
+    'FPT_STUDENT',
+    'APPROVED',
+    false
+);
+
 INSERT INTO user_role_assignment (id, created_at, updated_at, user_id, role_name, scope_type, scope_id)
 VALUES ('10000000-0000-0000-0000-000000000101', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, '10000000-0000-0000-0000-000000000001', 'COORDINATOR', 'GLOBAL', NULL);
 
@@ -239,7 +255,11 @@ VALUES
 ('65000000-0000-0000-0000-000000000003', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, '60000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000003', 'LEADER'),
 ('65000000-0000-0000-0000-000000000004', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, '60000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000001', 'MEMBER'),
 ('65000000-0000-0000-0000-000000000005', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, '60000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000002', 'MEMBER'),
-('65000000-0000-0000-0000-000000000006', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, '60000000-0000-0000-0000-000000000006', '10000000-0000-0000-0000-000000000003', 'MEMBER');
+('65000000-0000-0000-0000-000000000006', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, '60000000-0000-0000-0000-000000000006', '10000000-0000-0000-0000-000000000003', 'MEMBER'),
+-- leader@demo.local lam doi truong doi 'Mobile Next'. Chon doi nay vi no chua
+-- co LEADER, nen chi can THEM dong moi, khong phai sua dong nao dang co - bai
+-- nop va diem da gieo san khong bi anh huong.
+('65000000-0000-0000-0000-000000000007', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, '60000000-0000-0000-0000-000000000006', '10000000-0000-0000-0000-000000000005', 'LEADER');
 
 -- 7. Submissions (Moi doi 1 bai o Vong loai, 1 bai de is_late = true)
 INSERT INTO submission (id, created_at, updated_at, team_id, round_id, repo_url, demo_url, doc_url, repo_metadata_json, submitted_at, is_late)
