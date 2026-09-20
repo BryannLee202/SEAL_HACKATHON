@@ -21,10 +21,12 @@ public class CriteriaTemplateService {
 
     private final CriteriaTemplateRepository templateRepository;
     private final CriterionRepository criterionRepository;
+    private final CriterionWeightPolicy weightPolicy;
 
-    public CriteriaTemplateService(CriteriaTemplateRepository templateRepository, CriterionRepository criterionRepository) {
+    public CriteriaTemplateService(CriteriaTemplateRepository templateRepository, CriterionRepository criterionRepository, CriterionWeightPolicy weightPolicy) {
         this.templateRepository = templateRepository;
         this.criterionRepository = criterionRepository;
+        this.weightPolicy = weightPolicy;
     }
 
     @Transactional
@@ -54,6 +56,12 @@ public class CriteriaTemplateService {
     @Transactional
     public CriterionResponse addCriterion(UUID templateId, CriterionRequest request) {
         CriteriaTemplate template = findOrThrow(templateId);
+        // Trần trọng số 100 phải chặn ngay tại mẫu, không chỉ ở vòng thi.
+        // RoundService.create() sao nguyên xi tiêu chí của mẫu vào vòng bằng
+        // criterionRepository.saveAll(), không đi qua RoundCriterionService.add()
+        // nên luật trọng số ở đó không hề được gọi. Một mẫu tổng 150 sẽ đẻ ra
+        // vòng thi tổng 150, và điểm quy đổi của mọi đội đều sai kể từ đó.
+        weightPolicy.assertFits(criterionRepository.findByTemplateId(templateId), null, request.weight());
         Criterion criterion = Criterion.builder()
                 .template(template)
                 .name(request.name())
