@@ -4,6 +4,7 @@ import com.seal.hackathon.dto.rbl.CalibrationRoundRequest;
 import com.seal.hackathon.dto.rbl.CalibrationRoundResponse;
 import com.seal.hackathon.dto.rbl.CalibrationScoreItemRequest;
 import com.seal.hackathon.dto.rbl.CalibrationScoreResponse;
+import com.seal.hackathon.dto.rbl.CalibrationStatusRequest;
 import com.seal.hackathon.security.AuthenticatedPrincipal;
 import com.seal.hackathon.service.CalibrationService;
 import jakarta.validation.Valid;
@@ -43,6 +44,19 @@ public class CalibrationController {
             @AuthenticationPrincipal AuthenticatedPrincipal principal
     ) {
         return calibrationService.submitScores(calibrationRoundId, items, principal.userId());
+    }
+
+    /**
+     * Đóng phiên hiệu chuẩn khi đã đủ số liệu, hoặc mở lại nếu đóng nhầm.
+     * Chỉ ban tổ chức, vì đóng phiên là chốt dữ liệu nghiên cứu.
+     */
+    @PatchMapping("/api/calibration-rounds/{calibrationRoundId}/status")
+    @PreAuthorize("hasRole('COORDINATOR')")
+    public CalibrationRoundResponse setStatus(
+            @PathVariable UUID calibrationRoundId,
+            @Valid @RequestBody CalibrationStatusRequest request
+    ) {
+        return calibrationService.setActive(calibrationRoundId, request.active());
     }
 
     @GetMapping("/api/calibration-rounds/{calibrationRoundId}/distribution")
