@@ -40,8 +40,7 @@ type EventOption = {
 };
 
 function MyTeam() {
-    const { hasRole, refreshPermissions } = useAuth();
-    const isTeamLeader = hasRole("TEAM_LEADER");
+    const { user, refreshPermissions } = useAuth();
 
     const [hasTeam, setHasTeam] = useState(false);
     const [teamName, setTeamName] = useState("");
@@ -58,6 +57,26 @@ function MyTeam() {
     const [inviteEmail, setInviteEmail] = useState("");
 
     const [members, setMembers] = useState<Member[]>([]);
+
+    /**
+     * Đội trưởng hay không đọc từ vai trò TRONG ĐỘI, không phải vai trò hệ thống.
+     *
+     * Trước đây dòng này là `hasRole("TEAM_LEADER")`. Nhưng không một chỗ nào
+     * trong backend gán vai trò TEAM_LEADER cho ai: AuthService.register() chỉ
+     * gán TEAM_MEMBER, và TeamService.create() không gán gì thêm — dù ghi chú ở
+     * AuthService dòng 74 nói là "granted implicitly when they create a team".
+     *
+     * Nên isTeamLeader LUÔN false, và ba việc chính của đội trưởng — mời thành
+     * viên, xoá thành viên, đăng ký hạng mục — bị chặn với tất cả mọi người,
+     * kèm thông báo "Chỉ đội trưởng mới có quyền..." mà chính đội trưởng cũng
+     * nhận được.
+     *
+     * Vai trò trong đội vốn đã nằm sẵn ở team_member.role_in_team và backend đã
+     * trả về; đọc thẳng từ đó vừa đúng vừa không cần thêm gì ở phía máy chủ.
+     */
+    const isTeamLeader = members.some(
+        (m) => m.userId === user?.userId && m.role === "Leader",
+    );
 
     const [invitations, setInvitations] = useState<Invitation[]>([]);
 
@@ -277,7 +296,7 @@ useEffect(() => {
             const difference = deadlineTime - now;
 
             if (difference <= 0) {
-                setTimeLeft("Deadline passed");
+                setTimeLeft("Đã quá hạn nộp");
                 setIsDeadlinePassed(true);
                 return;
             }
@@ -1110,7 +1129,7 @@ return (
                         <div className="section-header main-heading dashboard-section">
                             <div>
                                 <h1>
-                                    {hasTeam ? teamName : "My Team"}
+                                    {hasTeam ? teamName : "Đội của tôi"}
                                 </h1>
                             </div>
                         </div>
@@ -1195,8 +1214,8 @@ return (
             <h2>Chưa có</h2>
 
             <p>
-                Register for a track to view the
-                current round and deadline.
+                Đăng ký hạng mục để xem vòng thi
+                hiện tại và hạn nộp bài.
             </p>
         </div>
     </section>
@@ -1225,7 +1244,7 @@ return (
                                                 )
                                             }
                                         >
-                                            + Invite Member
+                                            + Mời thành viên
                                         </button>
                                     )}
                                 </div>
@@ -1253,7 +1272,9 @@ return (
                         : "member"
                 }`}
             >
-                {member.role}
+                {/* Giá trị nội bộ vẫn là "Leader"/"Member" để so sánh ở nơi khác;
+                    chỉ đổi nhãn hiển thị. */}
+                {member.role === "Leader" ? "Đội trưởng" : "Thành viên"}
             </span>
 
             {isTeamLeader && member.role !== "Leader" && (
@@ -1358,7 +1379,7 @@ return (
 <section className="dashboard-card">
     <div className="card-heading-row">
         <div>
-            <h2>🎯 Track Registration</h2>
+            <h2>🎯 Đăng ký hạng mục</h2>
             <p>
                 Chọn hạng mục dự thi cho đội.
             </p>
@@ -1376,8 +1397,8 @@ return (
                 >
                     <option value="">
                         {tracks.length === 0
-                            ? "-- No tracks available --"
-                            : "-- Select Track --"}
+                            ? "-- Chưa có hạng mục nào --"
+                            : "-- Chọn hạng mục --"}
                     </option>
 
                     {tracks.map((track) => (
@@ -1443,10 +1464,10 @@ return (
                         <section className="dashboard-card submission-dashboard-card">
                             <div className="card-heading-row">
                                 <div>
-                                    <h2>📄 Submission</h2>
+                                    <h2>📄 Nộp bài</h2>
                                     <p>
-                                        Submit your project for the current round.
-                                        Late submissions will be marked as late.
+                                        Nộp bài dự thi cho vòng thi hiện tại.
+                                        Bài nộp sau hạn sẽ bị đánh dấu là nộp trễ.
                                     </p>
                                 </div>
                             </div>
@@ -1517,20 +1538,18 @@ return (
                                             }
                                         >
                                             {!currentRound
-                                                ? "Submission Not Available"
+                                                ? "Chưa mở nộp bài"
                                                 : isDeadlinePassed
-                                                ? "⬆ Submit Late"
-                                                : "⬆ Submit Project"}
+                                                ? "⬆ Nộp trễ hạn"
+                                                : "⬆ Nộp bài"}
                                         </button>
 
                                         {!registeredTrack &&
                                             !isDeadlinePassed && (
                                                 <p className="helper-text">
-                                                    Please
-                                                    register for a
-                                                    track before
-                                                    submitting your
-                                                    project.
+                                                    Vui lòng đăng ký
+                                                    hạng mục trước khi
+                                                    nộp bài.
                                                 </p>
                                             )}
                                     </div>

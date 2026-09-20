@@ -30,9 +30,10 @@ vi.mock("@/api/events", () => ({
 
 vi.mock("@/context/AuthContext", () => ({
   useAuth: () => ({
-    user: { id: "u1", email: "leader@demo.local", fullName: "Doi Truong", roles: [] },
+    user: { userId: "u1", email: "leader@demo.local", fullName: "Doi Truong", roles: [] },
     loading: false,
     hasRole: () => false,
+    refreshPermissions: vi.fn(),
   }),
 }));
 
@@ -56,6 +57,12 @@ describe("MyTeam — trang đội thi", () => {
     vi.mocked(teamApi.getMyTeams).mockResolvedValue([]);
     vi.mocked(teamApi.getMyInvites).mockResolvedValue([]);
     vi.mocked(eventsApi.list).mockResolvedValue([]);
+    // Trang còn ba lần nạp phụ thuộc eventId/teamId. Để chúng chưa được mock thì
+    // lời gọi trả về undefined và văng ra ngoài luồng sau khi test đã kết thúc —
+    // lúc hiện lúc không tuỳ thứ tự chạy. Mock đủ cho hết hẳn.
+    vi.mocked(eventsApi.listRounds).mockResolvedValue([]);
+    vi.mocked(eventsApi.listTracks).mockResolvedValue([]);
+    vi.mocked(teamApi.getSubmissionStatus).mockResolvedValue({ status: "PENDING" } as never);
   });
 
   afterEach(() => {
@@ -116,5 +123,63 @@ describe("MyTeam — trang đội thi", () => {
       .filter((t) => /^(Enter|Select|Type|Choose) /.test(t));
 
     expect(placeholderAnh).toEqual([]);
+  });
+
+  // -----------------------------------------------------------------
+  // Đội trưởng đọc từ vai trò TRONG ĐỘI
+  //
+  // Trước đây là `hasRole("TEAM_LEADER")`, mà không nơi nào trong backend gán
+  // vai trò đó — nên isTeamLeader LUÔN false và ba việc chính của đội trưởng
+  // (mời thành viên, xoá thành viên, đăng ký hạng mục) bị chặn với tất cả mọi
+  // người. Chú ý: mock useAuth ở trên cố tình để hasRole trả về false, đúng
+  // như hệ thống thật.
+  // -----------------------------------------------------------------
+
+  const doiCoToiLamDoiTruong = [{
+    id: "t1", name: "Mobile Next", eventId: "e1", trackName: null,
+    members: [
+      { userId: "u1", fullName: "Doi Truong", email: "leader@demo.local", roleInTeam: "LEADER" },
+      { userId: "u2", fullName: "Thanh vien", email: "tv@demo.local", roleInTeam: "MEMBER" },
+    ],
+  }];
+
+  it("đội trưởng thật thấy được nút mời thành viên", async () => {
+    vi.mocked(teamApi.getMyTeams).mockResolvedValue(doiCoToiLamDoiTruong as never);
+
+    moTrang();
+    await waitFor(() => expect(teamApi.getMyTeams).toHaveBeenCalled());
+
+    // hasRole("TEAM_LEADER") trả false trong mock, nên nếu nút này hiện ra thì
+    // đúng là đang đọc từ roleInTeam chứ không phải từ vai trò hệ thống.
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: /Mời thành viên/ })).toBeInTheDocument(),
+    );
+  });
+
+  it("thành viên thường KHÔNG thấy nút mời thành viên", async () => {
+    const doiMaToiChiLaThanhVien = [{
+      ...doiCoToiLamDoiTruong[0],
+      members: [
+        { userId: "khac", fullName: "Nguoi khac", email: "k@demo.local", roleInTeam: "LEADER" },
+        { userId: "u1", fullName: "Doi Truong", email: "leader@demo.local", roleInTeam: "MEMBER" },
+      ],
+    }];
+    vi.mocked(teamApi.getMyTeams).mockResolvedValue(doiMaToiChiLaThanhVien as never);
+
+    moTrang();
+    await waitFor(() => expect(teamApi.getMyTeams).toHaveBeenCalled());
+
+    expect(screen.queryByRole("button", { name: /Mời thành viên/ })).not.toBeInTheDocument();
+  });
+
+  it("nhãn vai trò trong đội hiển thị bằng tiếng Việt", async () => {
+    vi.mocked(teamApi.getMyTeams).mockResolvedValue(doiCoToiLamDoiTruong as never);
+
+    moTrang();
+    await waitFor(() => expect(teamApi.getMyTeams).toHaveBeenCalled());
+
+    const chu = document.body.textContent ?? "";
+    expect(chu).toContain("Đội trưởng");
+    expect(chu).toContain("Thành viên");
   });
 });
