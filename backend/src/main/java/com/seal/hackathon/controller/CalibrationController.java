@@ -31,7 +31,15 @@ public class CalibrationController {
         return calibrationService.create(eventId, request);
     }
 
+    /**
+     * Danh sách phiên hiệu chuẩn của một sự kiện: tên và cờ đang mở, KHÔNG có điểm.
+     *
+     * Nhẹ hơn hẳn {@code /distribution} nên không khoá riêng cho ban tổ chức —
+     * giám khảo phải đọc được thì {@code JudgePage.tsx} dòng 66 mới lọc ra phiên
+     * đang mở để chấm. Nhưng thí sinh thì không có việc gì ở đây.
+     */
     @GetMapping("/api/events/{eventId}/calibration-rounds")
+    @PreAuthorize("hasAnyRole('COORDINATOR', 'JUDGE')")
     public List<CalibrationRoundResponse> list(@PathVariable UUID eventId) {
         return calibrationService.listByEvent(eventId);
     }
