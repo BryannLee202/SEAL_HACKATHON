@@ -11,8 +11,17 @@ export type ScopeType = "GLOBAL" | "EVENT" | "TRACK" | "ROUND";
 export type JudgeType = "INTERNAL" | "GUEST";
 export type UserCategory = "FPT_STUDENT" | "EXTERNAL_STUDENT" | "STAFF";
 export type AccountStatus = "PENDING" | "APPROVED" | "REJECTED";
-export type EventStatus = "DRAFT" | "OPEN" | "ONGOING" | "CLOSED" | "CANCELLED";
-export type TeamStatus = "FORMING" | "REGISTERED" | "DISQUALIFIED";
+// Phải khớp ĐÚNG enum EventStatus của backend
+// (backend/src/main/java/com/seal/hackathon/domain/enums/EventStatus.java).
+//
+// "ACTIVE" từng bị bỏ sót ở đây trong khi backend có, và migration
+// V006__demo_seed_users.sql còn ghi thẳng 'ACTIVE' vào cơ sở dữ liệu. Hậu quả:
+// TypeScript khẳng định giá trị đó không thể xảy ra, nên mọi chỗ tra nhãn theo
+// trạng thái đều trả về undefined khi gặp nó.
+export type EventStatus = "DRAFT" | "OPEN" | "ACTIVE" | "ONGOING" | "CLOSED" | "CANCELLED";
+// Khớp enum TeamStatus của backend. "ACTIVE" cũng từng bị sót ở đây, và
+// V006 seed các đội demo với đúng giá trị đó.
+export type TeamStatus = "FORMING" | "ACTIVE" | "REGISTERED" | "DISQUALIFIED";
 
 export interface RoleGrant {
   roleName: RoleName;
