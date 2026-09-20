@@ -57,7 +57,7 @@ public class EventService {
                 .endDate(request.endDate())
                 .status(EventStatus.DRAFT)
                 .baseCriteriaTemplate(template)
-                .rblEnabled(request.rblEnabled())
+                .rblEnabled(request.rblEnabledOrDefault())
                 .build();
         return EventResponse.from(eventRepository.save(event));
     }
@@ -100,7 +100,7 @@ public class EventService {
         event.setStartDate(request.startDate());
         event.setEndDate(request.endDate());
         event.setBaseCriteriaTemplate(template);
-        event.setRblEnabled(request.rblEnabled());
+        event.setRblEnabled(request.rblEnabledOrDefault());
         return EventResponse.from(eventRepository.save(event));
     }
 
