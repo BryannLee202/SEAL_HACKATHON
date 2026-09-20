@@ -3,6 +3,7 @@ import PersonPicker from "../../components/PersonPicker";
 import { teamApi } from "@/api/teamApi";
 import { eventsApi } from "@/api/events";
 import { useAuth } from "@/context/AuthContext";
+import { toast } from "@/components/Toast";
 
 type Member = {
     userId: string;
@@ -338,12 +339,12 @@ useEffect(() => {
     const normalizedTeamName = teamName.trim();
 
     if (!selectedEventId) {
-        alert("Please select an event.");
+        toast.error("Vui lòng chọn sự kiện.");
         return;
     }
 
     if (!normalizedTeamName) {
-        alert("Please enter a team name.");
+        toast.error("Vui lòng nhập tên đội.");
         return;
     }
 
@@ -387,27 +388,27 @@ useEffect(() => {
         setCreateTeamStep(1);
         setSelectedPeople([]);
 
-        setMessage("Team created successfully.");
+        setMessage("Đã tạo đội thành công.");
     } catch (error) {
         console.error("Failed to create team:", error);
-        alert("Unable to create team.");
+        toast.error("Không tạo được đội. Vui lòng thử lại.");
     }
 };
 
     const handleInviteMember = async () => {
         if (!isTeamLeader) {
-            alert("Only the team leader can invite members.");
+            toast.error("Chỉ đội trưởng mới có quyền mời thành viên.");
             return;
         }
 
 
         if (!teamId) {
-            alert("Team information is not available.");
+            toast.error("Chưa tải được thông tin đội.");
             return;
         }
 
         if (!inviteEmail.trim()) {
-            alert("Please enter member email");
+            toast.error("Vui lòng nhập email thành viên.");
             return;
         }
 
@@ -415,12 +416,12 @@ useEffect(() => {
             /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 
         if (!emailRegex.test(inviteEmail.trim())) {
-            alert("Please enter a valid email address");
+            toast.error("Địa chỉ email không hợp lệ.");
             return;
         }
 
         if (members.length >= 5) {
-            alert("Team can have maximum 5 members");
+            toast.error("Đội chỉ được tối đa 5 thành viên.");
             return;
         }
 
@@ -431,7 +432,7 @@ useEffect(() => {
         );
 
         if (existedMember) {
-            alert("This user is already a team member");
+            toast.error("Người này đã là thành viên của đội.");
             return;
         }
 
@@ -441,7 +442,7 @@ useEffect(() => {
         );
 
         if (existedInvitation) {
-            alert("This email has already been invited");
+            toast.error("Email này đã được mời rồi.");
             return;
         }
 
@@ -455,12 +456,12 @@ useEffect(() => {
                 { email: normalizedEmail, status: "Pending" },
             ]);
 
-            setMessage("Invitation sent successfully.");
+            setMessage("Đã gửi lời mời.");
             setInviteEmail("");
             setShowInviteForm(false);
         } catch (error) {
             console.error("Failed to invite member:", error);
-            alert("Failed to invite member");
+            toast.error("Không gửi được lời mời.");
         }
     };
 
@@ -470,12 +471,12 @@ useEffect(() => {
 ) => {
 
         if (!isTeamLeader) {
-        alert("Only the team leader can remove members.");
+        toast.error("Chỉ đội trưởng mới có quyền xoá thành viên.");
         return;
     }
 
     if (!teamId) {
-        alert("Team information is not available.");
+        toast.error("Chưa tải được thông tin đội.");
         return;
     }
 
@@ -504,10 +505,10 @@ useEffect(() => {
             }))
         );
 
-        setMessage(`${memberName} removed from the team.`);
+        setMessage(`Đã xoá ${memberName} khỏi đội.`);
     } catch (error) {
         console.error("Failed to remove team member:", error);
-        alert("Failed to remove team member.");
+        toast.error("Không xoá được thành viên.");
     }
 };
 
@@ -548,7 +549,7 @@ useEffect(() => {
             }
         }
 
-        setMessage("Team invitation accepted successfully.");
+        setMessage("Đã chấp nhận lời mời vào đội.");
     } catch (error) {
         console.error(
             "Failed to accept team invitation:",
@@ -567,7 +568,7 @@ useEffect(() => {
                 )
             );
 
-            setMessage("Team invitation rejected successfully.");
+            setMessage("Đã từ chối lời mời.");
         } catch (error) {
             console.error(
                 "Failed to reject team invitation:",
@@ -579,27 +580,27 @@ useEffect(() => {
     const handleRegisterTrack = async () => {
 
         if (!isTeamLeader) {
-            alert("Only the team leader can register a track.");
+            toast.error("Chỉ đội trưởng mới có quyền đăng ký hạng mục.");
             return;
         }
 
         if (!teamId) {
-            alert("Team information is not available.");
+            toast.error("Chưa tải được thông tin đội.");
             return;
         }
 
         if (registeredTrack) {
-            alert("Team has already registered for a track");
+            toast.error("Đội đã đăng ký hạng mục rồi.");
             return;
         }
 
         if (members.length < 3) {
-            alert("Team must have at least 3 members to register for a track");
+            toast.error("Đội phải có ít nhất 3 thành viên mới đăng ký hạng mục được.");
             return;
         }
 
         if (!selectedTrack) {
-            alert("Please select a track");
+            toast.error("Vui lòng chọn hạng mục.");
             return;
         }
 
@@ -610,21 +611,21 @@ useEffect(() => {
 
             const track = tracks.find((item) => item.id === selectedTrack);
             setRegisteredTrack(track?.name || selectedTrack);
-            alert("Track registered successfully");
+            toast.success("Đăng ký hạng mục thành công.");
         } catch (error) {
             console.error("Failed to register track:", error);
-            alert("Failed to register track");
+            toast.error("Không đăng ký được hạng mục.");
         }
     };
 
     const handleSubmitProject = async () => {
         if (!teamId || !currentRound) {
-            alert("Team or round information is not available.");
+            toast.error("Chưa tải được thông tin đội hoặc vòng thi.");
             return;
         }
 
         if (!registeredTrack) {
-            alert("Please register for a track first");
+            toast.error("Vui lòng đăng ký hạng mục trước khi nộp bài.");
             return;
         }
 
@@ -633,7 +634,7 @@ useEffect(() => {
             !demoUrl.trim() ||
             !reportSlideUrl.trim()
         ) {
-            alert("Please fill in all submission links");
+            toast.error("Vui lòng điền đủ các đường dẫn nộp bài.");
             return;
         }
 
@@ -654,8 +655,8 @@ useEffect(() => {
             !isValidUrl(demoUrl) ||
             !isValidUrl(reportSlideUrl)
         ) {
-            alert(
-                "Please enter valid URLs starting with http:// or https://"
+            toast.error(
+                "Đường dẫn phải bắt đầu bằng http:// hoặc https://"
             );
             return;
         }
@@ -684,10 +685,10 @@ useEffect(() => {
             setSubmissionLoadError(false);
             setShowSubmissionForm(false);
 
-            alert("Submission successful");
+            toast.success("Nộp bài thành công.");
         } catch (error) {
             console.error("Failed to submit project:", error);
-            alert("Failed to submit project");
+            toast.error("Không nộp được bài. Vui lòng thử lại.");
         }
     };
 
@@ -699,14 +700,14 @@ return (
                 <div className="brand-icon">🏆</div>
                 <div>
                     <h2>Hackathon</h2>
-                    <span>Management</span>
+                    <span>Quản lý</span>
                 </div>
             </div>
 
             <nav className="sidebar-menu">
                 <button className="sidebar-item active">
                     <span>👥</span>
-                    My Team
+                    Đội của tôi
                 </button>
 
                 <button className="sidebar-item">
@@ -717,7 +718,7 @@ return (
 
             <button className="sidebar-logout">
                 <span>↪</span>
-                Logout
+                Đăng xuất
             </button>
         </aside>
 
@@ -736,9 +737,9 @@ return (
                     <div className="dashboard-section">
                         <div className="section-header">
                             <div>
-                                <h1>Team Invitations</h1>
+                                <h1>Lời mời vào đội</h1>
                                 <p>
-                                    Review invitations sent to this account.
+                                    Xem các lời mời gửi tới tài khoản này.
                                 </p>
                             </div>
                         </div>
@@ -758,7 +759,7 @@ return (
                                             </div>
 
                                             <h3>
-                                                Team Invitation
+                                                Lời mời vào đội
                                             </h3>
 
                                             <p>
@@ -769,7 +770,7 @@ return (
                                             <div className="invitation-detail">
                                                 <p>
                                                     <strong>
-                                                        Team:
+                                                        Đội:
                                                     </strong>{" "}
                                                     {
                                                         invitation.teamName
@@ -793,7 +794,7 @@ return (
                                                         )
                                                     }
                                                 >
-                                                    Reject
+                                                    Từ chối
                                                 </button>
 
                                                 <button
@@ -804,7 +805,7 @@ return (
                                                         )
                                                     }
                                                 >
-                                                    Accept
+                                                    Chấp nhận
                                                 </button>
                                             </div>
                                         </div>
@@ -816,7 +817,7 @@ return (
                                 <div className="empty-icon">
                                     📭
                                 </div>
-                                <h3>No Invitations</h3>
+                                <h3>Không có lời mời</h3>
                                 <p>
                                     You don't have any pending team
                                     invitations.
@@ -828,10 +829,10 @@ return (
                     <div className="dashboard-section">
                         <div className="section-header main-heading">
                             <div>
-                                <h1>My Team</h1>
+                                <h1>Đội của tôi</h1>
                                 <p>
-                                    Create your team and start preparing
-                                    for the hackathon.
+                                    Tạo đội và bắt đầu chuẩn bị cho
+                                    cuộc thi.
                                 </p>
                             </div>
                         </div>
@@ -844,12 +845,12 @@ return (
             </div>
 
             <h2>
-                You don't have a team yet
+                Bạn chưa có đội nào
             </h2>
 
             <p>
-                Create a team to participate
-                in the hackathon.
+                Tạo một đội để tham gia
+                cuộc thi.
             </p>
 
             <button
@@ -859,7 +860,7 @@ return (
                     setShowCreateForm(true);
                 }}
             >
-                + Create Team
+                + Tạo đội
             </button>
         </>
     ) : (
@@ -873,7 +874,7 @@ return (
                     }`}
                 >
                     <span>1</span>
-                    <p>Team</p>
+                    <p>Đội</p>
                 </div>
 
                 <div className="wizard-line" />
@@ -886,7 +887,7 @@ return (
                     }`}
                 >
                     <span>2</span>
-                    <p>Members</p>
+                    <p>Thành viên</p>
                 </div>
 
                 <div className="wizard-line" />
@@ -899,21 +900,21 @@ return (
                     }`}
                 >
                     <span>3</span>
-                    <p>Confirm</p>
+                    <p>Xác nhận</p>
                 </div>
             </div>
 
             {createTeamStep === 1 && (
                 <div className="wizard-content">
-                    <h3>Team Information</h3>
+                    <h3>Thông tin đội</h3>
 
                     <p>
-                        Choose a name for your team.
+                        Đặt tên cho đội của bạn.
                     </p>
 
 
                     <div className="form-group">
-                        <label>Event</label>
+                        <label>Sự kiện</label>
     <select
         value={selectedEventId}
         onChange={(e) =>
@@ -936,11 +937,11 @@ return (
 </div>
 
                     <div className="form-group">
-                        <label>Team Name</label>
+                        <label>Tên đội</label>
 
                         <input
                             type="text"
-                            placeholder="Enter team name"
+                            placeholder="Nhập tên đội"
                             value={teamName}
                             onChange={(e) =>
                                 setTeamName(
@@ -960,7 +961,7 @@ return (
                                 setSelectedPeople([]);
                             }}
                         >
-                            Cancel
+                            Huỷ
                         </button>
 
                         <button
@@ -981,7 +982,7 @@ return (
 
             {createTeamStep === 2 && (
                 <div className="wizard-content">
-                    <h3>Add Members</h3>
+                    <h3>Thêm thành viên</h3>
 
                     <p>
                         Invite members to join your
@@ -1023,7 +1024,7 @@ return (
 
             {createTeamStep === 3 && (
                 <div className="wizard-content">
-                    <h3>Confirm Team</h3>
+                    <h3>Xác nhận đội</h3>
 
                     <p>
                         Review your team information
@@ -1032,20 +1033,20 @@ return (
 
                     <div className="wizard-summary">
                         <div className="wizard-summary-row">
-                            <span>Team Name</span>
+                            <span>Tên đội</span>
                             <strong>
                                 {teamName}
                             </strong>
                         </div>
 
                         <div className="wizard-summary-row">
-                            <span>Team Leader</span>
+                            <span>Đội trưởng</span>
                             <strong>You</strong>
                         </div>
 
                         <div className="wizard-summary-row">
                             <span>
-                                Invited Members
+                                Thành viên đã mời
                             </span>
                             <strong>
                                 {
@@ -1094,7 +1095,7 @@ return (
                                 handleCreateTeam
                             }
                         >
-                            Create Team
+                            Tạo đội
                         </button>
                     </div>
                 </div>
@@ -1160,7 +1161,7 @@ return (
 
                                     <div className="overview-info">
                                         <span className="small-label">
-                                            Current Round
+                                            Vòng thi hiện tại
                                         </span>
 
                                         <h2>{currentRound.name}</h2>
@@ -1188,10 +1189,10 @@ return (
 
         <div className="overview-info">
             <span className="small-label">
-                Current Round
+                Vòng thi hiện tại
             </span>
 
-            <h2>Not available yet</h2>
+            <h2>Chưa có</h2>
 
             <p>
                 Register for a track to view the
@@ -1266,7 +1267,7 @@ return (
                         )
                     }
                 >
-                    Remove
+                    Xoá
                 </button>
             )}
         </div>
@@ -1276,7 +1277,7 @@ return (
                                 {invitations.length > 0 && (
                                     <div className="pending-section">
                                         <h3>
-                                            Pending Invitations
+                                            Lời mời đang chờ
                                         </h3>
 
                                         {invitations.map(
@@ -1311,12 +1312,12 @@ return (
                                 {isTeamLeader && showInviteForm && (
                                     <div className="dashboard-form invite-dashboard-form">
                                         <label>
-                                            Member Email
+                                            Email thành viên
                                         </label>
 
                                         <input
                                             type="email"
-                                            placeholder="Enter member email"
+                                            placeholder="Nhập email thành viên"
                                             value={inviteEmail}
                                             onChange={(e) =>
                                                 setInviteEmail(
@@ -1337,7 +1338,7 @@ return (
                                                     );
                                                 }}
                                             >
-                                                Cancel
+                                                Huỷ
                                             </button>
 
                                             <button
@@ -1346,7 +1347,7 @@ return (
                                                     handleInviteMember
                                                 }
                                             >
-                                                Send Invitation
+                                                Gửi lời mời
                                             </button>
                                         </div>
                                     </div>
@@ -1359,7 +1360,7 @@ return (
         <div>
             <h2>🎯 Track Registration</h2>
             <p>
-                Choose a track for your team.
+                Chọn hạng mục dự thi cho đội.
             </p>
         </div>
     </div>
@@ -1397,7 +1398,7 @@ return (
                         tracks.length === 0
                     }
                 >
-                    Register for Track
+                    Đăng ký hạng mục
                 </button>
 
                 {members.length < 3 && (
@@ -1414,7 +1415,7 @@ return (
                 </div>
 
                 <div>
-                    <p>Track Registration</p>
+                    <p>Đăng ký hạng mục</p>
                     <strong>
                         Waiting for the team leader to
                         register a track.
@@ -1429,7 +1430,7 @@ return (
             </div>
 
             <div>
-                <p>Registered Track</p>
+                <p>Hạng mục đã đăng ký</p>
                 <strong>
                     {registeredTrack}
                 </strong>
@@ -1454,15 +1455,15 @@ return (
                                 <div className="submission-alert warning">
                                     <div className="alert-icon">⚠</div>
                                     <div>
-                                        <strong>Failed to load submission</strong>
-                                        <p>Submission data could not be loaded.</p>
+                                        <strong>Không tải được bài nộp</strong>
+                                        <p>Không tải được dữ liệu bài nộp.</p>
                                     </div>
                                 </div>
                             ) : submissionStatus === "PENDING" ? (
                                 <div className="submission-alert danger">
                                     <div className="alert-icon">!</div>
                                     <div>
-                                        <strong>Not submitted</strong>
+                                        <strong>Chưa nộp</strong>
                                         <p>
                                             Your team has not submitted the project
                                             for this round yet.
@@ -1473,7 +1474,7 @@ return (
                                 <div className="submission-alert danger">
                                     <div className="alert-icon">!</div>
                                     <div>
-                                        <strong>Missing submission</strong>
+                                        <strong>Chưa nộp bài</strong>
                                         <p>
                                             The deadline has passed and no submission
                                             was found.
@@ -1484,9 +1485,9 @@ return (
                                 <div className="submission-alert warning">
                                     <div className="alert-icon">⚠</div>
                                     <div>
-                                        <strong>Submitted late</strong>
+                                        <strong>Nộp trễ hạn</strong>
                                         <p>
-                                            Your project was submitted after the deadline.
+                                            Bài của đội được nộp sau hạn.
                                         </p>
                                     </div>
                                 </div>
@@ -1494,9 +1495,9 @@ return (
                                 <div className="submission-alert success">
                                     <div className="alert-icon">✓</div>
                                     <div>
-                                        <strong>Submitted on time</strong>
+                                        <strong>Nộp đúng hạn</strong>
                                         <p>
-                                            Your project was submitted before the deadline.
+                                            Bài của đội được nộp trước hạn.
                                         </p>
                                     </div>
                                 </div>
@@ -1539,7 +1540,7 @@ return (
                                     <div className="dashboard-form submission-dashboard-form">
                                         <div className="form-group">
                                             <label>
-                                                Repository URL
+                                                Đường dẫn mã nguồn
                                             </label>
 
                                             <input
@@ -1559,7 +1560,7 @@ return (
 
                                         <div className="form-group">
                                             <label>
-                                                Demo URL
+                                                Đường dẫn bản chạy thử
                                             </label>
 
                                             <input
@@ -1577,7 +1578,7 @@ return (
 
                                         <div className="form-group">
                                             <label>
-                                                Report/Slide URL
+                                                Đường dẫn báo cáo / slide
                                             </label>
 
                                             <input
@@ -1604,7 +1605,7 @@ return (
                                                     )
                                                 }
                                             >
-                                                Cancel
+                                                Huỷ
                                             </button>
 
                                             <button
@@ -1613,7 +1614,7 @@ return (
                                                     handleSubmitProject
                                                 }
                                             >
-                                                Submit
+                                                Nộp bài
                                             </button>
                                         </div>
                                     </div>
@@ -1623,7 +1624,7 @@ return (
                                 <div className="submitted-links">
                                     <div>
                                         <span>
-                                            Repository
+                                            Mã nguồn
                                         </span>
                                         <a
                                             href={repositoryUrl}
@@ -1647,7 +1648,7 @@ return (
 
                                     <div>
                                         <span>
-                                            Report/Slide
+                                            Báo cáo / Slide
                                         </span>
                                         <a
                                             href={
