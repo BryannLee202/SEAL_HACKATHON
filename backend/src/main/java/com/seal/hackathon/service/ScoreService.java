@@ -26,7 +26,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -79,16 +81,39 @@ public class ScoreService {
 
         boolean judgeCalibrated = isJudgeCalibrated(submission, judgeUserId);
 
-        List<Score> results = request.items().stream().map(item -> {
-            Criterion criterion = criterionRepository.findById(item.criterionId())
-                    .orElseThrow(() -> ApiException.notFound("Không tìm thấy tiêu chí"));
-            if (criterion.getRound() == null || !criterion.getRound().getId().equals(roundId)) {
+        // Đọc TIÊU CHÍ của vòng thi và ĐIỂM CŨ của giám khảo này, mỗi thứ một
+        // truy vấn, thay vì hỏi lại cho từng tiêu chí trong vòng lặp.
+        //
+        // Trước đây mỗi mục tốn 2 câu (findById tiêu chí + tìm điểm cũ), nên
+        // một lượt chấm 5 tiêu chí là 10 câu — trên màn chấm điểm, nhân với số
+        // bài nộp mà giám khảo lướt qua. Đây cũng chính là cách CalibrationService
+        // đã gom, nay làm nốt cho đường chấm điểm chính.
+        //
+        // Đọc tiêu chí theo VÒNG THI (không phải theo id gửi lên) còn giữ luôn
+        // được luật "tiêu chí phải thuộc vòng thi của bài nộp": id lạ đơn giản
+        // là không có trong bản đồ.
+        Map<UUID, Criterion> tieuChiCuaVong = criterionRepository.findByRoundId(roundId).stream()
+                .collect(Collectors.toMap(Criterion::getId, c -> c));
+
+        Map<UUID, Score> diemDaCham = scoreRepository
+                .findBySubmissionIdAndJudgeId(submissionId, judgeUserId).stream()
+                .collect(Collectors.toMap(sc -> sc.getCriterion().getId(), sc -> sc, (a, b) -> a));
+
+        List<Score> results = new ArrayList<>();
+        for (ScoreItemRequest item : request.items()) {
+            Criterion criterion = tieuChiCuaVong.get(item.criterionId());
+            if (criterion == null) {
+                // Gộp hai trường hợp cũ thành một thông báo: tiêu chí không tồn
+                // tại, hoặc tồn tại nhưng thuộc vòng thi khác. Cả hai đều là
+                // "không dùng được cho bài nộp này".
                 throw ApiException.badRequest("Tiêu chí không thuộc vòng thi của bài nộp này");
             }
             validateScoreRange(item, criterion);
 
-            Score score = scoreRepository.findBySubmissionIdAndJudgeIdAndCriterionId(submissionId, judgeUserId, item.criterionId())
-                    .orElseGet(() -> Score.builder().submission(submission).judge(judge).criterion(criterion).build());
+            Score score = diemDaCham.get(item.criterionId());
+            if (score == null) {
+                score = Score.builder().submission(submission).judge(judge).criterion(criterion).build();
+            }
             BigDecimal oldValue = score.getScoreValue();
             boolean isNew = score.getId() == null;
 
@@ -103,8 +128,11 @@ public class ScoreService {
                     isNew ? AuditAction.SCORE_CREATE : (request.finalized() ? AuditAction.SCORE_FINALIZE : AuditAction.SCORE_UPDATE),
                     "Score", score.getId(), oldValue, score.getScoreValue());
 
-            return score;
-        }).collect(Collectors.toList());
+            // Cùng một tiêu chí gửi lặp trong một lượt thì lần sau ghi đè lên
+            // bản ghi vừa lưu, không dựng thêm bản ghi mới rồi vỡ ràng buộc.
+            diemDaCham.put(item.criterionId(), score);
+            results.add(score);
+        }
 
         return results.stream().map(ScoreResponse::from).collect(Collectors.toList());
     }

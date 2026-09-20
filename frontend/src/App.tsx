@@ -1,5 +1,23 @@
-import MyTeam from "./pages/team/MyTeam";
-import Mentor from "./pages/mentor/Mentor";
+import { lazy, Suspense } from "react";
+import { StateFeedback } from "@/components/ui/StateFeedback";
+
+// Tach goi theo route: chi cac trang CONG KHAI (landing, dang nhap, dang ky)
+// duoc goi kem goi chinh, vi do la thu nguoi dung thay dau tien. Moi trang
+// phia sau dang nhap tai theo nhu cau.
+//
+// Truoc day toan bo ung dung nam trong mot goi 449 kB: khach vao xem bang xep
+// hang cong khai van phai tai ca man cham diem, tab quan tri va trang doi thi
+// - nhung thu ho khong bao gio mo.
+const VotingPage = lazy(() => import("./pages/public/VotingPage").then(m => ({ default: m.VotingPage })));
+const RankingPage = lazy(() => import("./pages/public/RankingPage").then(m => ({ default: m.RankingPage })));
+const DashboardPage = lazy(() => import("./pages/DashboardPage").then(m => ({ default: m.DashboardPage })));
+const JudgePage = lazy(() => import("./pages/judge/JudgePage").then(m => ({ default: m.JudgePage })));
+const MyTeam = lazy(() => import("./pages/team/MyTeam"));
+const Mentor = lazy(() => import("./pages/mentor/Mentor"));
+const EventsPage = lazy(() => import("@/pages/EventsPage"));
+const EventDetailPage = lazy(() => import("@/pages/EventDetailPage"));
+const AuditLogPage = lazy(() => import("./pages/coordinator/AuditLogPage"));
+const UsersApprovalPage = lazy(() => import("./pages/coordinator/UsersApprovalPage"));
 
 import { BrowserRouter, Navigate, Route, Routes, useParams } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
@@ -7,22 +25,14 @@ import { ThemeProvider } from "./context/ThemeContext";
 import { LanguageProvider } from "./context/LanguageContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { LandingPage } from "./pages/LandingPage";
-import { VotingPage } from "./pages/public/VotingPage";
-import { RankingPage } from "./pages/public/RankingPage";
 import { LoginPage } from "./pages/LoginPage";
-import { DashboardPage } from "./pages/DashboardPage";
-import { JudgePage } from "./pages/judge/JudgePage";
 import { NotFoundPage } from "./pages/NotFound";
-import EventsPage from "@/pages/EventsPage";
-import EventDetailPage from "@/pages/EventDetailPage";
 import { DEFAULT_TAB } from "@/pages/tabConfig";
 import { ToastContainer } from "./components/Toast";
 import { MascotChatDrawer } from "./components/MascotChatDrawer";
-import AuditLogPage from "./pages/coordinator/AuditLogPage";
 import "@/styles/global.css";
 import "@/styles/team-mentor.css";
 import { RegisterPage } from "./pages/RegisterPage";
-import UsersApprovalPage from "./pages/coordinator/UsersApprovalPage";
 
 // /coordinator/events/:eventId (khong co doan tab) -> nhay ve tab mac dinh.
 // Tach thanh component rieng de khong lam roi doan :eventId khi resolve duong dan.
@@ -33,6 +43,9 @@ function DefaultTabRedirect() {
 
 function AppRoutes() {
   return (
+    <Suspense
+      fallback={<StateFeedback state="loading" title="Đang tải trang..." />}
+    >
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/vote" element={<VotingPage />} />
@@ -118,6 +131,7 @@ function AppRoutes() {
 
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
+    </Suspense>
   );
 }
 

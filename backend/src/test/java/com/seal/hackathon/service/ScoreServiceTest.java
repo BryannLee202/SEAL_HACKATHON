@@ -103,15 +103,14 @@ class ScoreServiceTest {
 
     @Test
     void submitScores_shouldThrowBadRequest_whenCriterionDoesNotBelongToRound() {
-        Round otherRound = Round.builder().build();
-        otherRound.setId(UUID.randomUUID());
-        criterion.setRound(otherRound);
-
+        // Tieu chi nay thuoc vong thi khac, nen no KHONG nam trong
+        // findByRoundId cua vong chua bai nop -> bi tu choi.
         ScoreBatchRequest request = new ScoreBatchRequest(
                 List.of(new ScoreItemRequest(criterionId, BigDecimal.valueOf(8), null)), false);
         when(judgeAssignmentService.isJudgeAssignedToRound(judgeId, roundId)).thenReturn(true);
         when(userRepository.findById(judgeId)).thenReturn(Optional.of(judge));
-        when(criterionRepository.findById(criterionId)).thenReturn(Optional.of(criterion));
+        when(criterionRepository.findByRoundId(roundId)).thenReturn(List.of());
+        when(scoreRepository.findBySubmissionIdAndJudgeId(submissionId, judgeId)).thenReturn(List.of());
 
         assertThatThrownBy(() -> scoreService.submitScores(submissionId, request, judgeId))
                 .isInstanceOf(ApiException.class)
@@ -124,7 +123,8 @@ class ScoreServiceTest {
                 List.of(new ScoreItemRequest(criterionId, BigDecimal.valueOf(11), null)), false);
         when(judgeAssignmentService.isJudgeAssignedToRound(judgeId, roundId)).thenReturn(true);
         when(userRepository.findById(judgeId)).thenReturn(Optional.of(judge));
-        when(criterionRepository.findById(criterionId)).thenReturn(Optional.of(criterion));
+        when(criterionRepository.findByRoundId(roundId)).thenReturn(List.of(criterion));
+        when(scoreRepository.findBySubmissionIdAndJudgeId(submissionId, judgeId)).thenReturn(List.of());
 
         assertThatThrownBy(() -> scoreService.submitScores(submissionId, request, judgeId))
                 .isInstanceOf(ApiException.class)
@@ -137,7 +137,8 @@ class ScoreServiceTest {
                 List.of(new ScoreItemRequest(criterionId, BigDecimal.valueOf(-1), null)), false);
         when(judgeAssignmentService.isJudgeAssignedToRound(judgeId, roundId)).thenReturn(true);
         when(userRepository.findById(judgeId)).thenReturn(Optional.of(judge));
-        when(criterionRepository.findById(criterionId)).thenReturn(Optional.of(criterion));
+        when(criterionRepository.findByRoundId(roundId)).thenReturn(List.of(criterion));
+        when(scoreRepository.findBySubmissionIdAndJudgeId(submissionId, judgeId)).thenReturn(List.of());
 
         assertThatThrownBy(() -> scoreService.submitScores(submissionId, request, judgeId))
                 .isInstanceOf(ApiException.class)
@@ -150,9 +151,8 @@ class ScoreServiceTest {
                 List.of(new ScoreItemRequest(criterionId, BigDecimal.valueOf(8), "Tot")), true);
         when(judgeAssignmentService.isJudgeAssignedToRound(judgeId, roundId)).thenReturn(true);
         when(userRepository.findById(judgeId)).thenReturn(Optional.of(judge));
-        when(criterionRepository.findById(criterionId)).thenReturn(Optional.of(criterion));
-        when(scoreRepository.findBySubmissionIdAndJudgeIdAndCriterionId(submissionId, judgeId, criterionId))
-                .thenReturn(Optional.empty());
+        when(criterionRepository.findByRoundId(roundId)).thenReturn(List.of(criterion));
+        when(scoreRepository.findBySubmissionIdAndJudgeId(submissionId, judgeId)).thenReturn(List.of());
         when(scoreRepository.save(any(Score.class))).thenAnswer(invocation -> {
             Score score = invocation.getArgument(0);
             score.setId(UUID.randomUUID());
@@ -164,5 +164,99 @@ class ScoreServiceTest {
         assertThat(responses).hasSize(1);
         assertThat(responses.get(0).scoreValue()).isEqualByComparingTo(BigDecimal.valueOf(8));
         assertThat(responses.get(0).finalized()).isTrue();
+    }
+
+    // ---------------------------------------------------------------
+    // Gom truy van cho duong cham diem
+    //
+    // Truoc day moi muc ton 2 cau (findById tieu chi + tim diem cu), nen mot
+    // luot cham 5 tieu chi la 10 cau - nhan voi so bai nop ma giam khao luot
+    // qua tren man cham diem.
+    // ---------------------------------------------------------------
+
+    private Criterion tieuChi(String ten) {
+        Criterion c = Criterion.builder().round(round).name(ten).maxScore(BigDecimal.TEN).build();
+        c.setId(UUID.randomUUID());
+        return c;
+    }
+
+    @org.junit.jupiter.api.Test
+    @org.junit.jupiter.api.DisplayName("submitScores: 8 tieu chi van chi hai truy van doc (chan N+1)")
+    void submitScores_ChiHaiTruyVanDoc() {
+        List<Criterion> tieuChis = new java.util.ArrayList<>();
+        List<ScoreItemRequest> muc = new java.util.ArrayList<>();
+        for (int i = 0; i < 8; i++) {
+            Criterion c = tieuChi("Tieu chi " + i);
+            tieuChis.add(c);
+            muc.add(new ScoreItemRequest(c.getId(), BigDecimal.valueOf(7), null));
+        }
+
+        when(judgeAssignmentService.isJudgeAssignedToRound(judgeId, roundId)).thenReturn(true);
+        when(userRepository.findById(judgeId)).thenReturn(Optional.of(judge));
+        when(criterionRepository.findByRoundId(roundId)).thenReturn(tieuChis);
+        when(scoreRepository.findBySubmissionIdAndJudgeId(submissionId, judgeId)).thenReturn(List.of());
+        when(scoreRepository.save(any(Score.class))).thenAnswer(inv -> {
+            Score sc = inv.getArgument(0);
+            if (sc.getId() == null) sc.setId(UUID.randomUUID());
+            return sc;
+        });
+
+        var ketQua = scoreService.submitScores(submissionId, new ScoreBatchRequest(muc, false), judgeId);
+
+        assertThat(ketQua).hasSize(8);
+        org.mockito.Mockito.verify(criterionRepository, org.mockito.Mockito.times(1)).findByRoundId(roundId);
+        org.mockito.Mockito.verify(scoreRepository, org.mockito.Mockito.times(1))
+                .findBySubmissionIdAndJudgeId(submissionId, judgeId);
+        // Duong cu khong duoc dung toi nua.
+        org.mockito.Mockito.verify(criterionRepository, org.mockito.Mockito.never()).findById(any());
+        org.mockito.Mockito.verify(scoreRepository, org.mockito.Mockito.never())
+                .findBySubmissionIdAndJudgeIdAndCriterionId(any(), any(), any());
+    }
+
+    @org.junit.jupiter.api.Test
+    @org.junit.jupiter.api.DisplayName("submitScores: cham lai thi CAP NHAT diem cu, khong chen ban ghi moi")
+    void submitScores_ChamLaiThiCapNhat() {
+        Score diemCu = Score.builder().submission(submission).judge(judge).criterion(criterion)
+                .scoreValue(BigDecimal.valueOf(5)).build();
+        diemCu.setId(UUID.randomUUID());
+
+        when(judgeAssignmentService.isJudgeAssignedToRound(judgeId, roundId)).thenReturn(true);
+        when(userRepository.findById(judgeId)).thenReturn(Optional.of(judge));
+        when(criterionRepository.findByRoundId(roundId)).thenReturn(List.of(criterion));
+        when(scoreRepository.findBySubmissionIdAndJudgeId(submissionId, judgeId)).thenReturn(List.of(diemCu));
+        when(scoreRepository.save(any(Score.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        scoreService.submitScores(submissionId, new ScoreBatchRequest(
+                List.of(new ScoreItemRequest(criterionId, BigDecimal.valueOf(9), "Sua lai")), false), judgeId);
+
+        var daLuu = org.mockito.ArgumentCaptor.forClass(Score.class);
+        org.mockito.Mockito.verify(scoreRepository).save(daLuu.capture());
+        assertThat(daLuu.getValue().getId()).isEqualTo(diemCu.getId());
+        assertThat(daLuu.getValue().getScoreValue()).isEqualByComparingTo(BigDecimal.valueOf(9));
+    }
+
+    @org.junit.jupiter.api.Test
+    @org.junit.jupiter.api.DisplayName("submitScores: gui lap cung tieu chi trong mot luot thi chi mot ban ghi")
+    void submitScores_LapTieuChiTrongMotLuot() {
+        when(judgeAssignmentService.isJudgeAssignedToRound(judgeId, roundId)).thenReturn(true);
+        when(userRepository.findById(judgeId)).thenReturn(Optional.of(judge));
+        when(criterionRepository.findByRoundId(roundId)).thenReturn(List.of(criterion));
+        when(scoreRepository.findBySubmissionIdAndJudgeId(submissionId, judgeId)).thenReturn(List.of());
+        when(scoreRepository.save(any(Score.class))).thenAnswer(inv -> {
+            Score sc = inv.getArgument(0);
+            if (sc.getId() == null) sc.setId(UUID.randomUUID());
+            return sc;
+        });
+
+        scoreService.submitScores(submissionId, new ScoreBatchRequest(List.of(
+                new ScoreItemRequest(criterionId, BigDecimal.valueOf(8), null),
+                new ScoreItemRequest(criterionId, BigDecimal.valueOf(6), null)), false), judgeId);
+
+        var daLuu = org.mockito.ArgumentCaptor.forClass(Score.class);
+        org.mockito.Mockito.verify(scoreRepository, org.mockito.Mockito.times(2)).save(daLuu.capture());
+        var luot = daLuu.getAllValues();
+        assertThat(luot.get(1).getId())
+                .as("lan thu hai phai ghi de len ban ghi vua tao")
+                .isEqualTo(luot.get(0).getId());
     }
 }
