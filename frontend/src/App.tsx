@@ -6,6 +6,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { LanguageProvider } from "./context/LanguageContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { LandingPage } from "./pages/LandingPage";
 import { VotingPage } from "./pages/public/VotingPage";
 import { RankingPage } from "./pages/public/RankingPage";
@@ -129,7 +130,12 @@ export default function App() {
           <AuthProvider>
             <ToastContainer />
             <MascotChatDrawer />
-            <AppRoutes />
+            {/* Đặt quanh AppRoutes chứ không quanh cả cây: một trang lỗi thì
+                khung ứng dụng, thanh thông báo và trợ lý vẫn còn, người dùng
+                bấm sang mục khác được thay vì nhìn trang trắng. */}
+            <ErrorBoundary>
+              <AppRoutes />
+            </ErrorBoundary>
           </AuthProvider>
         </LanguageProvider>
       </ThemeProvider>
