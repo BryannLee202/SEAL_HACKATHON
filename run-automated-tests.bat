@@ -28,7 +28,7 @@ echo [THANH CONG] Ma tran RTM: 27/27 Use Cases dat 100%% hop le!
 echo.
 
 :: 3. Kiem thu Backend Spring Boot (JUnit 5 / Java 21)
-echo [2/4] Dang chay toan bo 94 bai kiem thu Backend Spring Boot...
+echo [2/4] Dang chay toan bo 194 bai kiem thu Backend Spring Boot...
 cd backend
 call mvnw.cmd test
 if %ERRORLEVEL% neq 0 (
@@ -72,7 +72,7 @@ echo.
 echo ===============================================================================
 echo   TONG KET: TAT CA CAC BO KIEM THU CUA HE THONG DEU DAT 100%% XANH!
 echo   - Ma tran RTM: 27/27 Use Cases hop le tren dia (108 tep)
-echo   - Backend Unit Tests: 94 tests PASS (Spring Boot 4.1.0 / Java 21)
+echo   - Backend Unit Tests: 194 tests PASS (Spring Boot 4.1.0 / Java 21)
 echo   - Frontend Vitest Tests: 101 tests PASS (React 19 / Vitest 4.1.10)
 echo   - TypeScript: 0 errors
 echo   - AI Defensive Fallback: San sang van hanh

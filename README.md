@@ -103,12 +103,13 @@ Hệ thống được thiết kế theo mô hình **3-Tier Architecture tách bi
 ### BFF (Backend-For-Frontend)
 - **Framework**: NestJS / Node.js 22 LTS
 - **Bảo mật**: `cookie-parser`, `csurf` double-submit, HTTP-Proxy middleware, Helmet
+- **Testing**: Jest (19 tests pass)
 
 ### Backend
-- **Framework**: Spring Boot 3.x, Java 21 LTS
+- **Framework**: Spring Boot 4.1, Java 21 LTS
 - **Bảo mật**: Spring Security 6, JJWT (HMAC-SHA256), BCrypt Password Hashing
 - **ORM & DB**: Spring Data JPA, Hibernate ORM, Flyway Migration
-- **Testing**: JUnit 5, Mockito, Spring Boot Test (94 tests pass)
+- **Testing**: JUnit 5, Mockito, Spring Boot Test (194 tests pass)
 
 ### DevOps & Cơ sở hạ tầng
 - **Database**: PostgreSQL 16 Alpine
@@ -146,7 +147,7 @@ Dự án cung cấp sẵn tệp kịch bản tự động hóa cho hệ điều 
    run-automated-tests.bat
    ```
    - Tự động chạy Ma trận RTM (27/27 Use Cases)
-   - Tự động chạy 94 bài kiểm thử Backend (JUnit 5 / Java 21)
+   - Tự động chạy 194 bài kiểm thử Backend (JUnit 5 / Java 21)
    - Tự động chạy 101 bài kiểm thử Frontend (Vitest / React 19)
    - Tự động kiểm tra cú pháp TypeScript & Bundle production (0 errors)
 
