@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class RblExportService {
@@ -51,9 +52,23 @@ public class RblExportService {
                 .setHeader("judge_alias", "judge_type", "judge_calibrated", "submission_alias", "criterion_name", "score_value")
                 .build())) {
 
+            // Lay diem cua MOI bai nop trong MOT cau truy van thay vi moi bai mot
+            // cau. Vong chung ket 6 doi truoc day ton 6 cau; neu su kien co 60
+            // doi thi la 60 cau, moi cau mot vong di ve co so du lieu.
+            //
+            // scoreRepository.findBySubmissionIdIn() von da co san trong
+            // ScoreRepository, chi la cho nay khong dung toi.
+            List<UUID> submissionIds = submissions.stream()
+                    .map(Submission::getId)
+                    .collect(Collectors.toList());
+
+            Map<UUID, List<Score>> scoresBySubmission = scoreRepository.findBySubmissionIdIn(submissionIds)
+                    .stream()
+                    .collect(Collectors.groupingBy(score -> score.getSubmission().getId()));
+
             for (Submission submission : submissions) {
                 String subAlias = submissionAlias.computeIfAbsent(submission.getId(), id -> "S" + (submissionAlias.size() + 1));
-                List<Score> scores = scoreRepository.findBySubmissionId(submission.getId());
+                List<Score> scores = scoresBySubmission.getOrDefault(submission.getId(), List.of());
                 for (Score score : scores) {
                     if (!score.isFinalized()) {
                         continue;
