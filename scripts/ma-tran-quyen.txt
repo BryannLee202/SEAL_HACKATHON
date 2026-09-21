@@ -1,0 +1,119 @@
+# Ma tran phan quyen KY VONG cua SHMS.
+#
+# Vi sao can tep nay: truoc day ma tran chi nam trong dau nguoi ra soat. Ket
+# qua la `GET /api/calibration-rounds/{id}/distribution` khong he co
+# @PreAuthorize suot mot thoi gian dai — mentor goi duoc, trong khi endpoint
+# anh em cua no la /rbl/variance thi tra 403. Khong ai thay, vi khong co gi
+# de doi chieu.
+#
+# Bo kiem doc tep nay roi doi chieu voi ket qua goi that. Them endpoint moi
+# ma quen them dong -> bao THIEU DONG. Doi @PreAuthorize ma quen sua ky vong
+# -> bao LECH.
+#
+# Cot: PHUONG_THUC  DUONG_DAN  BTC  GK  MENTOR  TS  KHACH
+#   BTC   = coordinator@demo.local   (Ban to chuc)
+#   GK    = judge1@demo.local        (Giam khao)
+#   MENTOR= mentor1@demo.local
+#   TS    = leader@demo.local        (Thi sinh / doi truong)
+#   KHACH = khong dang nhap
+#
+# Gia tri:
+#   CHO = duoc vao   -> ma tra ve KHONG duoc la 401/403
+#   CAM = bi chan    -> ma tra ve PHAI la 401 hoac 403
+#   SAU = chan o tang service theo tai nguyen cu the (vi du: chi doi truong
+#         cua DOI DO, chi giam khao duoc phan cong VONG DO). Phep quet goi
+#         bang UUID khong ton tai nen luon cham 404 truoc khi toi phep kiem
+#         — khong ket luan duoc, bo qua o day va da co unit test rieng.
+#         Rieng cot KHACH van la CAM that su: Spring Security chan truoc.
+#
+# Phep quet goi moi endpoint bang UUID khong ton tai va than rong {}, nen
+# khong co gi bi tao hay xoa that.
+
+GET    /api/admin/audit-logs                                      CHO    CAM    CAM    CAM    CAM
+GET    /api/admin/audit-logs/recent                               CHO    CAM    CAM    CAM    CAM
+GET    /api/admin/users/approved                                  CHO    CAM    CAM    CAM    CAM
+POST   /api/admin/users/guest-judges                              CHO    CAM    CAM    CAM    CAM
+GET    /api/admin/users/pending                                   CHO    CAM    CAM    CAM    CAM
+POST   /api/admin/users/{userId}/approval                         CHO    CAM    CAM    CAM    CAM
+POST   /api/ai/rubric-feedback/suggest                            CHO    CHO    CHO    CAM    CAM
+GET    /api/ai/status                                             CHO    CHO    CHO    CAM    CAM
+POST   /api/ai/submissions/{submissionId}/analyze                 SAU    SAU    SAU    SAU    CAM
+POST   /api/auth/login                                            CHO    CHO    CHO    CHO    CHO
+GET    /api/auth/me                                               CHO    CHO    CHO    CHO    CAM
+POST   /api/auth/refresh                                          CHO    CHO    CHO    CHO    CHO
+POST   /api/auth/register                                         CHO    CHO    CHO    CHO    CHO
+GET    /api/calibration-rounds/{calibrationRoundId}/distribution  CHO    CAM    CAM    CAM    CAM
+PUT    /api/calibration-rounds/{calibrationRoundId}/scores        CAM    CHO    CAM    CAM    CAM
+PATCH  /api/calibration-rounds/{calibrationRoundId}/status        CHO    CAM    CAM    CAM    CAM
+GET    /api/criteria-templates                                    CHO    CHO    CHO    CHO    CAM
+POST   /api/criteria-templates                                    CHO    CAM    CAM    CAM    CAM
+GET    /api/criteria-templates/{id}                               CHO    CHO    CHO    CHO    CAM
+POST   /api/criteria-templates/{id}/criteria                      CHO    CAM    CAM    CAM    CAM
+DELETE /api/criteria-templates/{id}/criteria/{criterionId}        CHO    CAM    CAM    CAM    CAM
+POST   /api/disqualifications                                     CHO    CAM    CAM    CAM    CAM
+GET    /api/events                                                CHO    CHO    CHO    CHO    CAM
+POST   /api/events                                                CHO    CAM    CAM    CAM    CAM
+GET    /api/events/{eventId}/calibration-rounds                   CHO    CHO    CAM    CAM    CAM
+POST   /api/events/{eventId}/calibration-rounds                   CHO    CAM    CAM    CAM    CAM
+GET    /api/events/{eventId}/disqualifications                    CHO    CAM    CAM    CAM    CAM
+GET    /api/events/{eventId}/prizes                               CHO    CAM    CAM    CAM    CAM
+POST   /api/events/{eventId}/prizes                               CHO    CAM    CAM    CAM    CAM
+POST   /api/events/{eventId}/prizes/auto-assign                   CHO    CAM    CAM    CAM    CAM
+GET    /api/events/{eventId}/rounds                               CHO    CHO    CHO    CHO    CAM
+POST   /api/events/{eventId}/rounds                               CHO    CAM    CAM    CAM    CAM
+GET    /api/events/{eventId}/teams                                CHO    CAM    CAM    CAM    CAM
+POST   /api/events/{eventId}/teams                                CHO    CHO    CHO    CHO    CAM
+GET    /api/events/{eventId}/tracks                               CHO    CHO    CHO    CHO    CAM
+POST   /api/events/{eventId}/tracks                               CHO    CAM    CAM    CAM    CAM
+GET    /api/events/{id}                                           CHO    CHO    CHO    CHO    CAM
+PUT    /api/events/{id}                                           CHO    CAM    CAM    CAM    CAM
+PATCH  /api/events/{id}/status                                    CHO    CAM    CAM    CAM    CAM
+POST   /api/invites/{inviteId}/accept                             SAU    SAU    SAU    SAU    CAM
+POST   /api/invites/{inviteId}/decline                            SAU    SAU    SAU    SAU    CAM
+GET    /api/me/invites                                            CHO    CHO    CHO    CHO    CAM
+GET    /api/me/teams                                              CHO    CHO    CHO    CHO    CAM
+GET    /api/mentor/teams                                          CAM    CAM    CHO    CAM    CAM
+POST   /api/prizes/{prizeId}/revoke                               CHO    CAM    CAM    CAM    CAM
+GET    /api/public/rankings/events                                CHO    CHO    CHO    CHO    CHO
+GET    /api/public/rankings/events/{eventId}/rounds               CHO    CHO    CHO    CHO    CHO
+GET    /api/public/rankings/rounds/{roundId}                      CHO    CHO    CHO    CHO    CHO
+GET    /api/public/rankings/rounds/{roundId}/export               CHO    CHO    CHO    CHO    CHO
+GET    /api/public/voting/events                                  CHO    CHO    CHO    CHO    CHO
+GET    /api/public/voting/events/{eventId}/tracks                 CHO    CHO    CHO    CHO    CHO
+GET    /api/public/voting/tracks/{trackId}/my-vote                CHO    CHO    CHO    CHO    CHO
+GET    /api/public/voting/tracks/{trackId}/tallies                CHO    CHO    CHO    CHO    CHO
+GET    /api/public/voting/tracks/{trackId}/teams                  CHO    CHO    CHO    CHO    CHO
+DELETE /api/public/voting/tracks/{trackId}/votes                  CHO    CHO    CHO    CHO    CHO
+POST   /api/public/voting/tracks/{trackId}/votes                  CHO    CHO    CHO    CHO    CHO
+GET    /api/rounds/{roundId}                                      CHO    CHO    CHO    CHO    CAM
+PUT    /api/rounds/{roundId}                                      CHO    CAM    CAM    CAM    CAM
+GET    /api/rounds/{roundId}/criteria                             CHO    CHO    CHO    CHO    CAM
+POST   /api/rounds/{roundId}/criteria                             CHO    CAM    CAM    CAM    CAM
+DELETE /api/rounds/{roundId}/criteria/{criterionId}               CHO    CAM    CAM    CAM    CAM
+PUT    /api/rounds/{roundId}/criteria/{criterionId}               CHO    CAM    CAM    CAM    CAM
+GET    /api/rounds/{roundId}/judges                               CHO    CAM    CAM    CAM    CAM
+POST   /api/rounds/{roundId}/judges                               CHO    CAM    CAM    CAM    CAM
+POST   /api/rounds/{roundId}/publish-results                      CHO    CAM    CAM    CAM    CAM
+GET    /api/rounds/{roundId}/rankings                             SAU    SAU    SAU    SAU    CAM
+POST   /api/rounds/{roundId}/rankings/compute                     CHO    CAM    CAM    CAM    CAM
+GET    /api/rounds/{roundId}/rankings/export                      SAU    SAU    SAU    SAU    CAM
+GET    /api/rounds/{roundId}/rankings/export.xlsx                 SAU    SAU    SAU    SAU    CAM
+GET    /api/rounds/{roundId}/rbl/export.csv                       CHO    CAM    CAM    CAM    CAM
+GET    /api/rounds/{roundId}/rbl/variance                         CHO    CAM    CAM    CAM    CAM
+GET    /api/rounds/{roundId}/submissions                          SAU    SAU    SAU    SAU    CAM
+GET    /api/submissions/{submissionId}                            SAU    SAU    SAU    SAU    CAM
+GET    /api/submissions/{submissionId}/scores                     SAU    SAU    SAU    SAU    CAM
+PUT    /api/submissions/{submissionId}/scores                     CAM    CHO    CAM    CAM    CAM
+GET    /api/teams/{teamId}                                        SAU    SAU    SAU    SAU    CAM
+POST   /api/teams/{teamId}/invites                                SAU    SAU    SAU    SAU    CAM
+DELETE /api/teams/{teamId}/members/{userId}                       SAU    SAU    SAU    SAU    CAM
+GET    /api/teams/{teamId}/messages                               SAU    SAU    SAU    SAU    CAM
+POST   /api/teams/{teamId}/messages                               SAU    SAU    SAU    SAU    CAM
+POST   /api/teams/{teamId}/register-track                         SAU    SAU    SAU    SAU    CAM
+GET    /api/teams/{teamId}/rounds/{roundId}/submission            SAU    SAU    SAU    SAU    CAM
+PUT    /api/teams/{teamId}/rounds/{roundId}/submission            SAU    SAU    SAU    SAU    CAM
+GET    /api/teams/{teamId}/rounds/{roundId}/submission/status     SAU    SAU    SAU    SAU    CAM
+DELETE /api/tracks/{trackId}                                      CHO    CAM    CAM    CAM    CAM
+GET    /api/tracks/{trackId}                                      CHO    CHO    CHO    CHO    CAM
+PUT    /api/tracks/{trackId}                                      CHO    CAM    CAM    CAM    CAM
+POST   /api/tracks/{trackId}/mentors                              CHO    CAM    CAM    CAM    CAM
