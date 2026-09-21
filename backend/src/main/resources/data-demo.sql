@@ -3,7 +3,7 @@ INSERT INTO app_user (id, created_at, updated_at, full_name, email, password_has
 VALUES (
     '10000000-0000-0000-0000-000000000001',
     CURRENT_TIMESTAMP, CURRENT_TIMESTAMP,
-    'Demo Coordinator',
+    'Ban Tổ Chức Demo',
     'coordinator@demo.local',
     '$2a$10$R1VsPPKvp46JANEngp/4c.37STCKsYGl2M6NX8Wymc8fXyZIyKmvi',
     'FPT_STUDENT',
@@ -15,7 +15,7 @@ INSERT INTO app_user (id, created_at, updated_at, full_name, email, password_has
 VALUES (
     '10000000-0000-0000-0000-000000000002',
     CURRENT_TIMESTAMP, CURRENT_TIMESTAMP,
-    'Judge One',
+    'Giám Khảo Một',
     'judge1@demo.local',
     '$2a$10$R1VsPPKvp46JANEngp/4c.37STCKsYGl2M6NX8Wymc8fXyZIyKmvi',
     'FPT_STUDENT',
@@ -27,7 +27,7 @@ INSERT INTO app_user (id, created_at, updated_at, full_name, email, password_has
 VALUES (
     '10000000-0000-0000-0000-000000000003',
     CURRENT_TIMESTAMP, CURRENT_TIMESTAMP,
-    'Judge Two',
+    'Giám Khảo Hai',
     'judge2@demo.local',
     '$2a$10$R1VsPPKvp46JANEngp/4c.37STCKsYGl2M6NX8Wymc8fXyZIyKmvi',
     'FPT_STUDENT',
@@ -41,7 +41,7 @@ INSERT INTO app_user (id, created_at, updated_at, full_name, email, password_has
 VALUES (
     '10000000-0000-0000-0000-000000000004',
     CURRENT_TIMESTAMP, CURRENT_TIMESTAMP,
-    'Mentor One',
+    'Mentor Chuyên Môn',
     'mentor1@demo.local',
     '$2a$10$R1VsPPKvp46JANEngp/4c.37STCKsYGl2M6NX8Wymc8fXyZIyKmvi',
     'FPT_STUDENT',
@@ -57,7 +57,7 @@ INSERT INTO app_user (id, created_at, updated_at, full_name, email, password_has
 VALUES (
     '10000000-0000-0000-0000-000000000005',
     CURRENT_TIMESTAMP, CURRENT_TIMESTAMP,
-    'Demo Team Leader',
+    'Đội Trưởng Demo',
     'leader@demo.local',
     '$2a$10$R1VsPPKvp46JANEngp/4c.37STCKsYGl2M6NX8Wymc8fXyZIyKmvi',
     'FPT_STUDENT',
