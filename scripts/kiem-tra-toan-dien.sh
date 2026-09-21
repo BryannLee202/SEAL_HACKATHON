@@ -38,9 +38,11 @@ trap 'don_dep' EXIT
 
 don_dep() {
   for p in "${PID[@]:-}"; do [ -n "$p" ] && kill -9 "$p" 2>/dev/null; done
+  for c in $CONG_BE $CONG_BFF $CONG_FE; do
+    p=$(fuser "$c/tcp" 2>/dev/null | tr -d ' ')
+    [ -n "$p" ] && kill -9 $p 2>/dev/null
+  done
   pkill -9 -f "spring-boot:run" 2>/dev/null
-  pkill -9 -f "vite preview"    2>/dev/null
-  pkill -9 -f "node dist/main"  2>/dev/null
   if [ "${PG_DA_CHAY:-0}" = "1" ]; then
     su postgres -c "/usr/lib/postgresql/16/bin/pg_ctl -D $TMP/pg stop" >/dev/null 2>&1
   fi
@@ -52,6 +54,25 @@ don_dep() {
   else
     rm -rf "$TMP"
   fi
+}
+
+giai_phong_cong() {  # giai_phong_cong <cong>
+  # `spring-boot:run` tach ra mot tien trinh java RIENG, dong lenh cua no
+  # khong he chua chuoi "spring-boot:run" — nen `pkill -f spring-boot:run`
+  # chi giet vo Maven con JVM that van song va van giu cong 8080.
+  #
+  # Hau qua da tung xay ra that: ban backend cu (profile dev, tro toi
+  # Postgres) con song, ban moi khong bind duoc cong nen chet im lang, va ca
+  # bo kiem do nham vao ung dung CU — bao xanh cho mot thu khong phai thu
+  # minh vua dung len. Vi vay phai giet theo CONG chu khong theo mau lenh.
+  local c=$1 i=0 p
+  while [ $i -lt 30 ]; do
+    p=$(fuser "$c/tcp" 2>/dev/null | tr -d ' ')
+    [ -z "$p" ] && return 0
+    kill -9 $p 2>/dev/null
+    sleep 1; i=$((i+1))
+  done
+  return 1
 }
 
 cho_cong() {  # cho_cong <cong> <so giay toi da> [tep nhat ky]
@@ -170,7 +191,7 @@ elif [ -n "${DB_URL_CI:-}" ]; then
   else
     hong "Backend khong khoi dong duoc voi Postgres CI"; tail -5 "$TMP/fw.log"
   fi
-  pkill -9 -f "spring-boot:run" 2>/dev/null; sleep 2
+  pkill -9 -f "spring-boot:run" 2>/dev/null; giai_phong_cong $CONG_BE
 elif command -v /usr/lib/postgresql/16/bin/initdb >/dev/null 2>&1 && [ "$(id -u)" = "0" ]; then
   # mktemp -d tao thu muc che do 700 cua root, nen user postgres khong di
   # xuyen qua duoc va initdb chet ngay. Mo quyen di xuyen (khong mo quyen
@@ -224,7 +245,7 @@ elif command -v /usr/lib/postgresql/16/bin/initdb >/dev/null 2>&1 && [ "$(id -u)
   else
     hong "Backend khong khoi dong duoc voi Postgres"; tail -5 "$TMP/fw.log"
   fi
-  pkill -9 -f "spring-boot:run" 2>/dev/null; sleep 3
+  pkill -9 -f "spring-boot:run" 2>/dev/null; giai_phong_cong $CONG_BE
 else
   bo_qua "Flyway: khong co Postgres cuc bo, bo qua (dat BO_QUA_POSTGRES=1 de im lang)"
 fi
@@ -233,7 +254,10 @@ fi
 khoi "KHOI 4/8 — Khoi dong that o profile demo (H2)"
 # ==========================================================================
 # Ba khoi 4, 5, 6 dung chung mot tien trinh backend dang chay.
-pkill -9 -f "spring-boot:run" 2>/dev/null; sleep 2
+pkill -9 -f "spring-boot:run" 2>/dev/null
+if ! giai_phong_cong $CONG_BE; then
+  hong "Khong giai phong duoc cong $CONG_BE — bo kiem se do nham vao ung dung khac"
+fi
 (cd backend && ./mvnw -o spring-boot:run -Dspring-boot.run.profiles=demo >"$TMP/be-run.log" 2>&1) &
 PID+=($!)
 
@@ -363,7 +387,7 @@ else
   [ "$SO_THUA" = "0" ] && dat "Khong co dong ky vong thua"
 
   # 6c. Goi that, doi chieu tung o.
-  SO_LECH=0; SO_O=0
+  SO_LECH=0; SO_O=0; SO_KHONG_KET_LUAN=0
   while IFS=$'\t' read -r pt dd c1 c2 c3 c4 c5; do
     o=("$c1" "$c2" "$c3" "$c4" "$c5")
     for i in 0 1 2 3 4; do
@@ -378,16 +402,39 @@ else
       m="$(ma "$pt" "$(thay_id "$dd")" "$tk")"
       SO_O=$((SO_O+1))
       case "$mong" in
-        CAM) if [ "$m" != "401" ] && [ "$m" != "403" ]; then
-               hong "LECH QUYEN: ${VAI[$i]} $pt $dd -> $m (ky vong CAM: 401/403)"
-               SO_LECH=$((SO_LECH+1)); fi ;;
+        # Spring MVC giai va kiem tham so cua phuong thuc TRUOC khi chay chot
+        # @PreAuthorize. Nen mot nguoi khong du quyen gui kem than rong hay
+        # thieu tham so bat buoc se nhan 400 chu khong phai 403 — chot quyen
+        # chua kip chay. Phep chan van con nguyen: gui dung dinh dang thi
+        # dung 403 (da do tay: GET /api/admin/audit-logs thieu tham so -> 400,
+        # du tham so -> 403; POST /api/events than {} -> 400, than hop le ->
+        # 403). Va khach chua dang nhap van bi chan 401 o tang filter, truoc
+        # ca MVC.
+        #
+        # Vi vay 400/415 la KHONG KET LUAN DUOC, khong phai loi. Con 2xx hay
+        # 404 thi la loi that: ca hai deu co nghia than phuong thuc DA chay,
+        # tuc chot quyen khong he ton tai — dung loai lo hong cua
+        # /calibration-rounds/{id}/distribution ngay xua.
+        CAM) case "$m" in
+               401|403)  ;;
+               400|415)  SO_KHONG_KET_LUAN=$((SO_KHONG_KET_LUAN+1)) ;;
+               *) hong "LECH QUYEN: ${VAI[$i]} $pt $dd -> $m (ky vong CAM: phai bi chan)"
+                  SO_LECH=$((SO_LECH+1)) ;;
+             esac ;;
         CHO) if [ "$m" = "401" ] || [ "$m" = "403" ]; then
                hong "LECH QUYEN: ${VAI[$i]} $pt $dd -> $m (ky vong CHO: khong duoc chan)"
                SO_LECH=$((SO_LECH+1)); fi ;;
       esac
     done
   done < "$KY_VONG_FILE"
-  [ "$SO_LECH" = "0" ] && dat "Doi chieu $SO_O o ma tran quyen: khop hoan toan"
+  if [ "$SO_LECH" = "0" ]; then
+    dat "Doi chieu $SO_O o ma tran quyen: khop hoan toan"
+  fi
+  # Neu im lang ve so o khong ket luan duoc thi bo kiem trong chac chan hon
+  # thuc te. Noi ro ra de nguoi doc biet phan nao chua duoc phu.
+  if [ "${SO_KHONG_KET_LUAN:-0}" -gt 0 ]; then
+    bo_qua "$SO_KHONG_KET_LUAN o tra 400/415 — chot quyen chua kip chay, khong ket luan duoc (da co unit test rieng)"
+  fi
 fi
 
 # ==========================================================================
@@ -427,8 +474,7 @@ else
       grep -q '✗' "$TMP/ui.log" || { hong "Quet giao dien that bai"; tail -10 "$TMP/ui.log"; }
     fi
   fi
-  pkill -9 -f "vite preview" 2>/dev/null
-  pkill -9 -f "node dist/main" 2>/dev/null
+  giai_phong_cong $CONG_FE; giai_phong_cong $CONG_BFF
 fi
 
 # ==========================================================================

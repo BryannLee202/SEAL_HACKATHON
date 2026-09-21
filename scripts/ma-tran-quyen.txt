@@ -20,6 +20,15 @@
 # Gia tri:
 #   CHO = duoc vao   -> ma tra ve KHONG duoc la 401/403
 #   CAM = bi chan    -> ma tra ve PHAI la 401 hoac 403
+#   Luu y ve CAM: Spring MVC giai va kiem tham so cua phuong thuc TRUOC khi
+#   chay chot @PreAuthorize. Nen goi bang than rong {} hay thieu tham so bat
+#   buoc thi nguoi khong du quyen nhan 400 chu khong phai 403 — chot quyen
+#   chua kip chay. Phep chan van con nguyen (gui dung dinh dang thi dung
+#   403), va khach chua dang nhap van bi chan 401 ngay o tang filter. Vi vay
+#   bo kiem coi 400/415 la KHONG KET LUAN DUOC va dem rieng, chu khong bao
+#   loi; con 2xx hoac 404 thi bao loi that, vi ca hai deu co nghia than
+#   phuong thuc DA chay, tuc chot quyen khong he ton tai.
+#
 #   SAU = chan o tang service theo tai nguyen cu the (vi du: chi doi truong
 #         cua DOI DO, chi giam khao duoc phan cong VONG DO). Phep quet goi
 #         bang UUID khong ton tai nen luon cham 404 truoc khi toi phep kiem
