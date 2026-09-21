@@ -15,13 +15,20 @@
  * Chay: node scripts/kiem-tra-giao-dien.mjs [goc_frontend]
  * Thoat 0 neu sach, 1 neu co van de. In moi van de ra stdout.
  */
-import { chromium } from "playwright";
 import fs from "node:fs";
 import path from "node:path";
+import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 
 const GOC_FE = process.argv[2] || "http://localhost:3000";
 const THU_MUC = path.dirname(fileURLToPath(import.meta.url));
+
+// playwright duoc cai o frontend/node_modules, con tep nay nam o scripts/.
+// ESM giai ten goi theo vi tri CUA TEP chu khong theo thu muc lam viec, nen
+// `import ... from "playwright"` that bai du da cd sang frontend/. Phai neu
+// ro diem xuat phat cua phep giai ten.
+const nap = createRequire(path.join(THU_MUC, "..", "frontend", "package.json"));
+const { chromium } = nap("playwright");
 
 const MAT_KHAU = "Demo@123456";
 
@@ -60,9 +67,14 @@ function nghiTiengAnh(text) {
   return tu.length >= 3 && tu.length === cau.split(/\s+/).length;
 }
 
-/** Khoa dich chua dich: ham t() tra chinh khoa ra man hinh. */
+/**
+ * Khoa dich chua dich: ham t() tra chinh khoa ra man hinh.
+ *
+ * MOI doan ngan cach boi dau cham phai bat dau bang chu cai. Neu khong thi
+ * chuoi phien ban kieu "v1.2.3" o chan trang cung bi bao nham la khoa dich.
+ */
 function laKhoaDich(text) {
-  return /^[a-z][a-zA-Z0-9]*(\.[a-zA-Z0-9]+)+$/.test(text.trim());
+  return /^[a-z][a-zA-Z0-9]*(\.[a-zA-Z][a-zA-Z0-9]*)+$/.test(text.trim());
 }
 
 async function chuChuaDich(page) {
@@ -93,7 +105,30 @@ async function dangNhap(page, email) {
   ]);
 }
 
-const trinhDuyet = await chromium.launch();
+/**
+ * Playwright doi dung ban Chromium khop voi phien ban thu vien cua no. Tren
+ * may da co san mot ban khac (vi du anh Docker cai truoc), no bao thieu
+ * trinh duyet va bat chay `npx playwright install` — tai lai ca tram MB moi
+ * lan. Neu tim thay ban co san thi dung luon; dat DUONG_CHROMIUM de chi ro.
+ */
+function timChromium() {
+  if (process.env.DUONG_CHROMIUM) return process.env.DUONG_CHROMIUM;
+  const ungVien = ["/opt/pw-browsers/chromium/chrome-linux/chrome"];
+  for (const thu of fs.existsSync("/opt/pw-browsers") ? fs.readdirSync("/opt/pw-browsers") : []) {
+    if (thu.startsWith("chromium-")) ungVien.push(`/opt/pw-browsers/${thu}/chrome-linux/chrome`);
+  }
+  return ungVien.find((d) => fs.existsSync(d)) || null;
+}
+
+let trinhDuyet;
+try {
+  trinhDuyet = await chromium.launch();
+} catch (e) {
+  const duong = timChromium();
+  if (!duong) throw e;
+  console.log(`  (dung Chromium co san: ${duong})`);
+  trinhDuyet = await chromium.launch({ executablePath: duong });
+}
 
 for (const { vai, email, trang } of LO_TRINH) {
   const boi = await trinhDuyet.newContext();
@@ -106,9 +141,24 @@ for (const { vai, email, trang } of LO_TRINH) {
 
   const loiJs = [];
   page.on("pageerror", (e) => loiJs.push(String(e.message)));
-  page.on("console", (m) => { if (m.type() === "error") loiJs.push(m.text()); });
+
+  // Khong nghe kenh console cho "Failed to load resource": Chromium ghi dong
+  // do cho MOI phan hoi 4xx/5xx nhung khong kem duong dan, nen doc mot minh
+  // thi khong biet cai gi hong. Nghe thang kenh response de co ca ma lan
+  // duong dan.
+  page.on("console", (m) => {
+    if (m.type() === "error" && !m.text().startsWith("Failed to load resource")) {
+      loiJs.push(m.text());
+    }
+  });
   page.on("response", (r) => {
-    if (r.status() >= 500) loiJs.push(`HTTP ${r.status()} ${r.url()}`);
+    if (r.status() < 400) return;
+    // Khach chua dang nhap: AuthContext goi /api/auth/me ngay lan tai dau de
+    // biet co phien cu hay khong, va 401 o day la cau tra loi DUNG — ma
+    // nguon bat va xu ly tuong minh, khong chuyen huong di dau. Dem no la
+    // loi thi moi trang cong khai deu do oan.
+    if (vai === "KHACH" && r.status() === 401 && r.url().endsWith("/api/auth/me")) return;
+    loiJs.push(`HTTP ${r.status()} ${r.request().method()} ${r.url()}`);
   });
 
   try {

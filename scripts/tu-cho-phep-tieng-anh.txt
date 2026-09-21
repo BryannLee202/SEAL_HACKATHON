@@ -8,3 +8,6 @@ SEAL Hackathon Management System
 SEAL Hackathon Management
 Research-Based Learning
 name@example.com
+# Ten to chuc tren trang chu — giu nguyen vi la ten rieng.
+SEAL Research Lab
+Google Developer Student Clubs
