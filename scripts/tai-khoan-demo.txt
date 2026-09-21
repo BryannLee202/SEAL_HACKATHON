@@ -1,0 +1,12 @@
+# Tai khoan demo duoc README cong bo. Bo kiem tra dang nhap TOAN BO danh sach
+# nay tren CA HAI duong nap du lieu (H2 cua profile demo va Postgres cua
+# profile dev). Bo du lieu tung lech giua hai duong: data-demo.sql thieu
+# leader, V006 thieu mentor1 - moi duong thieu mot tai khoan khac nhau, va
+# khong ai phat hien cho toi khi thu dang nhap tung cai.
+#
+# Dinh dang: email|mat_khau
+coordinator@demo.local|Demo@123456
+judge1@demo.local|Demo@123456
+judge2@demo.local|Demo@123456
+mentor1@demo.local|Demo@123456
+leader@demo.local|Demo@123456
