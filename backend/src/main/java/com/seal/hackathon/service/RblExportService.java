@@ -19,6 +19,7 @@ import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -93,11 +94,24 @@ public class RblExportService {
         return writer.toString();
     }
 
+    /**
+     * Loại giám khảo (nội bộ / khách mời) của một người trong một vòng thi.
+     *
+     * Phải lọc bỏ null TRƯỚC khi gọi findFirst(): Stream.findFirst() ném
+     * NullPointerException nếu phần tử đầu tiên là null, chứ không trả về
+     * Optional rỗng như trực giác mách bảo.
+     *
+     * Cột judge_type cho phép NULL (V001__init_schema.sql dòng 28) và bộ dữ
+     * liệu demo không điền nó cho các dòng JUDGE/ROUND. Nên trước khi vá,
+     * GET /api/rounds/{id}/rbl/export.csv trả 500 ngay trên dữ liệu demo —
+     * đo trực tiếp trên hệ thống đang chạy, không phải suy luận.
+     */
     private JudgeType resolveJudgeType(UUID judgeId, UUID roundId) {
         return roleAssignmentRepository.findByRoleNameAndScopeTypeAndScopeId(RoleName.JUDGE, ScopeType.ROUND, roundId)
                 .stream()
-                .filter(a -> a.getUser().getId().equals(judgeId))
+                .filter(a -> a.getUser() != null && a.getUser().getId().equals(judgeId))
                 .map(UserRoleAssignment::getJudgeType)
+                .filter(Objects::nonNull)
                 .findFirst()
                 .orElse(null);
     }
