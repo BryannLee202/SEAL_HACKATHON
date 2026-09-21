@@ -114,7 +114,7 @@ function Mentor() {
 
                             <div className="overview-info">
                                 <span className="small-label">
-                                    Assigned Track
+                                    Hạng mục phụ trách
                                 </span>
 
                                 <h2>
@@ -124,7 +124,7 @@ function Mentor() {
                                 <p>
                                     {assignedTrackName
                                         ? "Ban dang huong dan cac doi trong hang muc nay."
-                                        : "Ban chua duoc phan cong hang muc nao."}
+                                        : "Bạn chưa được phân công hạng mục nào."}
                                 </p>
                             </div>
                         </section>
@@ -155,7 +155,7 @@ function Mentor() {
                     <section className="dashboard-card mentor-dashboard-card">
                         <div className="card-heading-row">
                             <div>
-                                <h2>👥 Teams</h2>
+                                <h2>👥 Đội thi</h2>
 
                                 <p>
                                     View team details and give
@@ -167,13 +167,13 @@ function Mentor() {
                         <div className="mentor-dashboard-list">
     {loadingTeams ? (
         <div className="mentor-empty-state">
-            <p>Dang tai danh sach doi...</p>
+            <p>Đang tải danh sách đội...</p>
         </div>
     ) : teams.length === 0 ? (
         <div className="mentor-empty-state">
-            <p>Ban chua duoc phan cong doi nao.</p>
+            <p>Bạn chưa được phân công đội nào.</p>
             <p className="muted">
-                Dieu phoi vien can phan cong ban vao mot hang muc truoc.
+                Điều phối viên cần phân công bạn vào một hạng mục trước.
             </p>
         </div>
     ) : (
@@ -201,7 +201,7 @@ function Mentor() {
                     setSelectedTeam(team)
                 }
             >
-                View Team
+                Xem đội
             </button>
         </div>
     ))
@@ -212,7 +212,7 @@ function Mentor() {
                         <section className="dashboard-card mentor-detail-card">
                             <div className="card-heading-row">
                                 <div>
-                                    <h2>Team Detail</h2>
+                                    <h2>Thông tin đội</h2>
 
                                     <p>
                                         Team information and
@@ -226,14 +226,14 @@ function Mentor() {
                                         setSelectedTeam(null)
                                     }
                                 >
-                                    Close
+                                    Đóng
                                 </button>
                             </div>
 
                             <div className="mentor-detail-overview">
                                 <div>
                                     <span className="small-label">
-                                        Team Name
+                                        Tên đội
                                     </span>
 
                                     <h3>
@@ -243,7 +243,7 @@ function Mentor() {
 
                                 <div>
                                     <span className="small-label">
-                                        Members
+                                        Thành viên
                                     </span>
 
                                     <h3>
@@ -253,7 +253,7 @@ function Mentor() {
                             </div>
 
                             <div className="mentor-members-section">
-                                <h3>Members</h3>
+                                <h3>Thành viên</h3>
 
                                 <div className="mentor-member-list">
                                     {selectedTeam.members.map((member) => (
@@ -275,7 +275,7 @@ function Mentor() {
                             </div>
 
                             {loadingMessages ? (
-                                <p className="muted">Dang tai tin nhan...</p>
+                                <p className="muted">Đang tải tin nhắn...</p>
                             ) : (
                                 <FeedbackThread
                                     teamName={selectedTeam.name}

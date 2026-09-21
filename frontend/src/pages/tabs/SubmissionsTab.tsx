@@ -55,7 +55,7 @@ export default function SubmissionsTab({ event }: TabProps) {
               <tr>
                 <th>Đội thi</th>
                 <th>Hạng mục</th>
-                <th>Repository</th>
+                <th>Mã nguồn</th>
                 <th>Demo / Slide</th>
                 <th>Nộp lúc</th>
                 <th>Trạng thái</th>

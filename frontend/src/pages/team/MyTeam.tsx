@@ -993,7 +993,7 @@ return (
                                 setCreateTeamStep(2)
                             }
                         >
-                            Next
+                            Tiếp theo
                         </button>
                     </div>
                 </div>
@@ -1026,7 +1026,7 @@ return (
                                 setCreateTeamStep(1)
                             }
                         >
-                            Back
+                            Quay lại
                         </button>
 
                         <button
@@ -1035,7 +1035,7 @@ return (
                                 setCreateTeamStep(3)
                             }
                         >
-                            Next
+                            Tiếp theo
                         </button>
                     </div>
                 </div>
@@ -1105,7 +1105,7 @@ return (
                                 setCreateTeamStep(2)
                             }
                         >
-                            Back
+                            Quay lại
                         </button>
 
                         <button

@@ -58,7 +58,7 @@ function FeedbackThread({
                 </div>
 
                 <div>
-                    <h3>Feedback</h3>
+                    <h3>Trao đổi</h3>
                     <p>
                         Conversation with{" "}
                         <strong>{teamName}</strong>
@@ -73,7 +73,7 @@ function FeedbackThread({
                             💬
                         </div>
 
-                        <h4>No feedback yet</h4>
+                        <h4>Chưa có trao đổi nào</h4>
 
                         <p>
                             Send feedback to {teamName} to start

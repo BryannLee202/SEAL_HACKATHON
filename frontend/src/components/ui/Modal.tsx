@@ -81,7 +81,7 @@ export function Modal({
               type="button"
               className="modal-close-btn"
               onClick={onClose}
-              aria-label="Dong hop thoai"
+              aria-label="Đóng hộp thoại"
               data-testid="modal-close-button"
             >
               &times;
