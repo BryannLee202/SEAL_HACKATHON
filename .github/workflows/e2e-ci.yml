@@ -1,0 +1,108 @@
+# =============================================================================
+# E2E CI — CHAY THAT ung dung roi do, khong chi bien dich
+# =============================================================================
+# Vi sao co workflow nay: bon workflow con lai deu chi bien dich va chay unit
+# test. KHONG cai nao khoi dong ung dung. Hau qua la moi loi nghiem trong tim
+# duoc trong dot ra soat thang 9/2026 deu lot qua CI sach se:
+#
+#   - Ban to chuc khong tao noi su kien (mot truong kieu nguyen thuy lam
+#     Jackson tu choi ca request) -> chi lo ra khi goi API that
+#   - Doi truong khong moi noi thanh vien (doc sai nguon vai tro) -> chi lo ra
+#     khi mo trinh duyet
+#   - GET /api/rounds/{id}/rbl/export.csv tra 500 -> chi lo ra khi quet het
+#     88 endpoint
+#   - `npm run lint` cua BFF chua he chay duoc -> chi lo ra khi goi no
+#
+# Workflow nay chay scripts/kiem-tra-toan-dien.sh: dung that ba tang len,
+# dang nhap that, quet that 88 endpoint, doi chieu ma tran phan quyen va mo
+# Chromium di het moi trang cua moi vai.
+# =============================================================================
+
+name: "E2E CI"
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e2e-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  kiem-tra-toan-dien:
+    name: Chay that va do
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    # Flyway phai duoc kiem tren Postgres that chu khong phai H2: cac
+    # migration dung cu phap rieng cua Postgres (gen_random_uuid, pgcrypto)
+    # nen chay tren H2 khong noi len duoc gi.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: shms
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout ma nguon
+        uses: actions/checkout@v4
+
+      - name: Cai dat JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Cai dat Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Cai dependency frontend
+        working-directory: frontend
+        run: npm ci
+
+      - name: Cai dependency BFF
+        working-directory: bff
+        run: npm ci
+
+      # Bo kiem mo trinh duyet that de doc DOM — jsdom khong thay duoc chuoi
+      # tieng Anh con sot hay loi JavaScript luc chay.
+      - name: Cai Chromium cho Playwright
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+
+      - name: Chay bo kiem tra toan dien
+        env:
+          DB_URL_CI: jdbc:postgresql://localhost:5432/shms
+          DB_USERNAME_CI: postgres
+          DB_PASSWORD_CI: postgres
+        run: bash scripts/kiem-tra-toan-dien.sh
+
+      # Log cua ba tien trinh la thu duy nhat giai thich duoc mot lan chay do,
+      # nen giu lai ke ca khi buoc tren that bai.
+      - name: Giu lai log khi that bai
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: log-e2e
+          path: /tmp/tmp.*/
+          if-no-files-found: ignore
+          retention-days: 7

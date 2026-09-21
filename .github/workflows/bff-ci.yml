@@ -4,8 +4,11 @@
 # Trigger: moi PR vao main va push len main co sua doi trong bff/
 # Actions:
 #   1. Cai dependency dung theo bff/package-lock.json (npm ci)
-#   2. Bien dich TypeScript sang dist/ (npm run build)
-#   3. Chay toan bo bo kiem thu unit test Jest (npm test)
+#   2. Lint (eslint) — buoc nay tung bi thieu, nen `npm run lint` cua BFF
+#      chua he chay duoc mot lan nao suot thoi gian dai: khong co tep cau
+#      hinh eslint va khong ai biet, vi CI khong bao gio goi no.
+#   3. Bien dich TypeScript sang dist/ (npm run build)
+#   4. Chay toan bo bo kiem thu unit test Jest (npm test)
 #
 # Muc dich: Dam bao tang BFF giu vung hop dong API, co che cookie httpOnly,
 # bao ve CSRF Guard va khong bi loi bien dich khi phat trien tiep.
@@ -56,6 +59,9 @@ jobs:
 
       - name: Cai dat dependencies
         run: npm ci
+
+      - name: Lint
+        run: npm run lint
 
       - name: Bien dich TypeScript
         run: npm run build
