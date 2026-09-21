@@ -7,8 +7,8 @@
 **Nền Tảng Quản Lý, Chấm Thi Chuyên Môn Đa Tiêu Chí & Nghiên Cứu Đánh Giá (RBL) Toàn Diện**
 
 [![CI / Build Status](https://img.shields.io/badge/Build-Passing-10b981?style=for-the-badge&logo=github-actions)](https://github.com/BryannLee202/SEAL_HACKATHON)
-[![Frontend Tests](https://img.shields.io/badge/Frontend%20Tests-101%2F101%20Pass%20(100%25)-10b981?style=for-the-badge&logo=vitest)](./frontend)
-[![Backend Tests](https://img.shields.io/badge/Backend%20Tests-98%20Pass%20(100%25)-10b981?style=for-the-badge&logo=junit5)](./backend)
+[![Frontend Tests](https://img.shields.io/badge/Frontend%20Tests-146%2F146%20Pass%20(100%25)-10b981?style=for-the-badge&logo=vitest)](./frontend)
+[![Backend Tests](https://img.shields.io/badge/Backend%20Tests-424%20Pass%20(100%25)-10b981?style=for-the-badge&logo=junit5)](./backend)
 [![Docker Support](https://img.shields.io/badge/Docker%20Compose-Ready-38bdf8?style=for-the-badge&logo=docker)](./docker-compose.yml)
 [![Architecture](https://img.shields.io/badge/Architecture-3--Tier%20BFF-bc7155?style=for-the-badge)](./docs/03-architecture)
 
@@ -97,7 +97,7 @@ Hệ thống được thiết kế theo mô hình **3-Tier Architecture tách bi
 - **Framework**: React 19, TypeScript 5, Vite 8
 - **Routing & State**: React Router 7, React Context API, Axios Client
 - **Trợ lý Thông minh & i18n**: AI Knowledge Engine Mock, Bilingual Localization Engine (`vi`/`en`), Theme Context
-- **Testing**: Vitest, React Testing Library, jsdom (101/101 tests pass 100%)
+- **Testing**: Vitest, React Testing Library, jsdom (146/146 tests pass 100%)
 - **Styling & Motion**: Modern CSS Variables, Glassmorphism, BEM, CSS Keyframe Animations (Pitch/Roll/Soar Flight Physics)
 
 ### BFF (Backend-For-Frontend)
@@ -109,7 +109,7 @@ Hệ thống được thiết kế theo mô hình **3-Tier Architecture tách bi
 - **Framework**: Spring Boot 4.1, Java 21 LTS
 - **Bảo mật**: Spring Security 6, JJWT (HMAC-SHA256), BCrypt Password Hashing
 - **ORM & DB**: Spring Data JPA, Hibernate ORM, Flyway Migration
-- **Testing**: JUnit 5, Mockito, Spring Boot Test (194 tests pass)
+- **Testing**: JUnit 5, Mockito, Spring Boot Test (424 tests pass)
 
 ### DevOps & Cơ sở hạ tầng
 - **Database**: PostgreSQL 16 Alpine
@@ -147,8 +147,8 @@ Dự án cung cấp sẵn tệp kịch bản tự động hóa cho hệ điều 
    run-automated-tests.bat
    ```
    - Tự động chạy Ma trận RTM (27/27 Use Cases)
-   - Tự động chạy 194 bài kiểm thử Backend (JUnit 5 / Java 21)
-   - Tự động chạy 101 bài kiểm thử Frontend (Vitest / React 19)
+   - Tự động chạy 424 bài kiểm thử Backend (JUnit 5 / Java 21)
+   - Tự động chạy 146 bài kiểm thử Frontend (Vitest / React 19)
    - Tự động kiểm tra cú pháp TypeScript & Bundle production (0 errors)
 
 ---
@@ -222,7 +222,7 @@ Dữ liệu mẫu đã được nạp sẵn qua các file migration (`V006__demo
 Dự án áp dụng quy trình kiểm thử tự động nghiêm ngặt nhằm đảm bảo độ tin cậy phần mềm:
 
 ```bash
-# 1. Chạy 101 unit tests Frontend (Pass 100%)
+# 1. Chạy 146 unit tests Frontend (Pass 100%)
 cd frontend
 npm test -- --run
 

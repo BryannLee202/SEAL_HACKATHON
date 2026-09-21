@@ -5,6 +5,41 @@ Dinh dang nhat ky tuan thu chat che theo chuan [Keep a Changelog](https://keepac
 
 ---
 
+## [1.8.0] - 2026-09-21
+
+### Fixed (Sua loi)
+- **Ban to chuc khong tao duoc su kien tu giao dien (PR #106)**:
+  - `EventRequest.rblEnabled` la kieu nguyen thuy `boolean`. Jackson phai goi ham dung chuan cua record voi du moi thanh phan, nen mot truong khong duoc gui len thanh `null` va khong ep duoc ve kieu nguyen thuy - toan bo yeu cau bi tu choi. Form tao su kien o `EventsPage.tsx` dong 210 khong gui truong nay.
+- **Doi truong khong lam duoc gi tren trang doi thi (PR #108)**:
+  - `MyTeam.tsx` tinh `isTeamLeader` bang `hasRole("TEAM_LEADER")`, nhung khong mot cho nao trong backend gan vai tro do. Moi thanh vien, xoa thanh vien va dang ky hang muc deu bi chan voi tat ca moi nguoi, kem thong bao "Chi doi truong moi co quyen..." ma chinh doi truong cung nhan duoc. Nay doc tu `team_member.role_in_team`.
+- **Loi do phia goi sai tra ve 500 thay vi 400 (PR #105)**:
+  - Thieu tham so bat buoc, UUID sai dinh dang va than yeu cau khong phai JSON deu roi vao bo bat `Exception.class` va tra 500.
+- **Xuat CSV nghien cuu RBL tra 500 tren du lieu demo (PR #112)**:
+  - `Stream.findFirst()` nem `NullPointerException` neu phan tu dau tien la null. Cot `judge_type` cho phep NULL va bo du lieu demo khong dien no.
+- **`/api/auth/me` tra 200 than rong cho khach vang lai (PR #111)**:
+  - Axios bien than rong thanh chuoi rong nen `AuthContext` dat `user = ""` thay vi `null`, lam phep kiem `userRef.current !== null` thanh true voi nguoi chua tung dang nhap.
+- **Pho diem hieu chuan va danh sach phien lo cho moi vai tro (PR #98, #107)**:
+  - `/api/calibration-rounds/{id}/distribution` khong co guard nao; do thuc te mentor doc duoc 200 trong khi `/rbl/variance` chan 403.
+- **N+1 khi liet ke doi (PR #99)** va **tren duong cham diem (PR #100)**:
+  - 6 doi sinh ra 6 cau `team_member`; mot luot cham 3 tieu chi ton 11 cau select. Nay con 1 va 7.
+- **Lenh lint cua BFF chua tung chay duoc (PR #112)**:
+  - Co script va du goi nhung khong co file cau hinh ESLint nao.
+- **Chuoi tieng Anh va tieng Viet khong dau o giao dien (PR #102, #108, #109, #112)**:
+  - `MyTeam.tsx` 82 chuoi, `Mentor.tsx` 11 chuoi, cong `PersonPicker`, `FeedbackThread`, `Modal`, `SubmissionsTab` va hai khoa trong `translations.ts`.
+
+### Added (Them moi)
+- **Lop kiem thu phan quyen o tang controller - 23/23 controller (PR #104, #105, #106, #107, #111)**:
+  - Test service goi thang vao phuong thuc Java nen `@PreAuthorize` khong he chay; mot endpoint quen dan annotation van xanh het moi test service. Do la cach lo hong `/api/ai/.../analyze` va `/distribution` tung lot luoi.
+  - Bao gom ma tran 15 endpoint quan tri x 4 vai tro, 15 duong ghi cau truc cuoc thi, va luat khong lo diem truoc gio cong bo.
+- **Kiem thu tang len 424 backend / 146 frontend / 19 BFF**.
+- **Cau hinh ESLint cho BFF (PR #112)**, **ErrorBoundary va `ApiError` giu ma HTTP (PR #101)**, **tach goi frontend theo route (PR #100)**: goi chinh 449 kB -> 352 kB.
+
+### Changed (Thay doi)
+- **Cap nhat so lieu kiem thu trong tai lieu (PR #113)**:
+  - README, badge dau trang va `run-automated-tests.bat` con ghi 194 backend / 101 frontend, rieng badge backend ghi 98.
+
+---
+
 ## [1.7.0] - 2026-09-20
 
 ### Fixed (Sua loi)
