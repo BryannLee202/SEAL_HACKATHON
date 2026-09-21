@@ -156,4 +156,62 @@ class RblExportServiceTest {
         assertThat(csv).contains("judge_alias");
         assertThat(csv).contains("criterion_name");
     }
+
+    // ---------------------------------------------------------------
+    // judge_type de trong
+    //
+    // Cot judge_type cho phep NULL (V001__init_schema.sql dong 28) va bo du
+    // lieu demo KHONG dien no cho cac dong JUDGE/ROUND. Truoc khi va,
+    // GET /api/rounds/{id}/rbl/export.csv tra 500 ngay tren du lieu demo.
+    //
+    // Nguyen nhan tinh te: Stream.findFirst() NEM NullPointerException neu
+    // phan tu dau tien la null, chu khong tra Optional rong nhu truc giac mach
+    // bao. map(getJudgeType) sinh ra null, findFirst() vap ngay.
+    //
+    // Bon test cu khong bat duoc vi chung deu dung judgeLaNoiBo() - luon dat
+    // judgeType = INTERNAL.
+    // ---------------------------------------------------------------
+
+    private void judgeKhongCoLoai() {
+        UserRoleAssignment a = new UserRoleAssignment();
+        a.setUser(judge);
+        a.setRoleName(RoleName.JUDGE);
+        a.setScopeType(ScopeType.ROUND);
+        a.setScopeId(roundId);
+        // judgeType de nguyen null - dung nhu du lieu demo.
+        when(roleAssignmentRepository.findByRoleNameAndScopeTypeAndScopeId(
+                RoleName.JUDGE, ScopeType.ROUND, roundId)).thenReturn(List.of(a));
+    }
+
+    @Test
+    @DisplayName("judge_type de trong thi van xuat duoc, khong no NullPointerException")
+    void exportAnonymizedCsv_JudgeTypeDeTrong() {
+        Submission bai = submission();
+        when(submissionRepository.findByRoundId(roundId)).thenReturn(List.of(bai));
+        when(scoreRepository.findBySubmissionIdIn(anyList()))
+                .thenReturn(List.of(score(bai, "Sang tao", "8.0", true)));
+        judgeKhongCoLoai();
+
+        String csv = rblExportService.exportAnonymizedCsv(roundId);
+
+        // Van ra file, o judge_type de trong.
+        assertThat(csv).contains("judge_alias");
+        assertThat(csv).contains("Sang tao");
+        assertThat(csv).contains("8.0");
+    }
+
+    @Test
+    @DisplayName("Giam khao khong co dong phan cong nao thi cung khong no")
+    void exportAnonymizedCsv_KhongCoDongPhanCong() {
+        Submission bai = submission();
+        when(submissionRepository.findByRoundId(roundId)).thenReturn(List.of(bai));
+        when(scoreRepository.findBySubmissionIdIn(anyList()))
+                .thenReturn(List.of(score(bai, "Sang tao", "8.0", true)));
+        when(roleAssignmentRepository.findByRoleNameAndScopeTypeAndScopeId(
+                RoleName.JUDGE, ScopeType.ROUND, roundId)).thenReturn(List.of());
+
+        String csv = rblExportService.exportAnonymizedCsv(roundId);
+
+        assertThat(csv).contains("Sang tao");
+    }
 }

@@ -63,7 +63,7 @@ function PersonPicker({
             <div className="person-picker-input">
                 <input
                     type="email"
-                    placeholder="Enter member email"
+                    placeholder="Nhập email thành viên"
                     value={email}
                     onChange={(e) => {
                         setEmail(e.target.value);
@@ -121,14 +121,14 @@ function PersonPicker({
                                     )
                                 }
                             >
-                                Remove
+                                Xoá
                             </button>
                         </div>
                     ))}
                 </div>
             ) : (
                 <p className="person-picker-empty">
-                    No members selected yet.
+                    Chưa chọn thành viên nào.
                 </p>
             )}
 
