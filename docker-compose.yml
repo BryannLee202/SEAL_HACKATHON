@@ -2,6 +2,8 @@ services:
   postgres:
     image: postgres:16-alpine
     container_name: seal-postgres
+    ports:
+      - "5433:5432"
     environment:
       POSTGRES_DB: seal_hackathon
       POSTGRES_USER: seal_admin

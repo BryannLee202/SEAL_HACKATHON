@@ -31,6 +31,7 @@
 // mentorId/mentorName/teamCount — đúng những trường @/types đang đọc.
 
 import { http } from "@/api/http";
+import { api } from "@/api/client";
 import { mockApi } from "@/api/mockData";
 import type {
   EventAssignments,
@@ -53,15 +54,23 @@ const USE_MOCK = import.meta.env.VITE_USE_MOCK !== "false";
 
 export const eventsApi = {
   // ---- Events --------------------------------------------------------
-  list: (): Promise<HackathonEvent[]> =>
-  USE_MOCK
-    ? mockApi.listEvents()
-    : http.get("/events"),
+  list: async (): Promise<HackathonEvent[]> => {
+    try {
+      const res = await api.get<HackathonEvent[]>("/api/events");
+      return res.data;
+    } catch {
+      return USE_MOCK ? mockApi.listEvents() : [];
+    }
+  },
 
-get: (eventId: string): Promise<HackathonEvent> =>
-  USE_MOCK
-    ? mockApi.getEvent(eventId)
-    : http.get(`/events/${eventId}`),
+  get: async (eventId: string): Promise<HackathonEvent> => {
+    try {
+      const res = await api.get<HackathonEvent>(`/api/events/${eventId}`);
+      return res.data;
+    } catch {
+      return mockApi.getEvent(eventId);
+    }
+  },
 
   create: (input: EventInput): Promise<HackathonEvent> =>
     USE_MOCK ? mockApi.createEvent(input) : http.post("/coordinator/events", input),
@@ -76,10 +85,14 @@ get: (eventId: string): Promise<HackathonEvent> =>
     USE_MOCK ? mockApi.changeEventStatus(eventId, status) : http.patch(`/coordinator/events/${eventId}/status`, { status }),
 
   // ---- Tracks ----------------------------------------------------------
-  listTracks: (eventId: string): Promise<Track[]> =>
-  USE_MOCK
-    ? mockApi.listTracks(eventId)
-    : http.get(`/events/${eventId}/tracks`),
+  listTracks: async (eventId: string): Promise<Track[]> => {
+    try {
+      const res = await api.get<Track[]>(`/api/events/${eventId}/tracks`);
+      return res.data;
+    } catch {
+      return USE_MOCK ? mockApi.listTracks(eventId) : [];
+    }
+  },
 
   listMentorDirectory: (): Promise<MentorRef[]> =>
     USE_MOCK ? mockApi.listMentorDirectory() : http.get("/coordinator/directory/mentors"),
@@ -123,10 +136,14 @@ get: (eventId: string): Promise<HackathonEvent> =>
       : http.patch(`/coordinator/events/${eventId}/teams/${teamId}/status`, { status }),
 
   // ---- Rounds ----------------------------------------------------------
-  listRounds: (eventId: string): Promise<Round[]> =>
-  USE_MOCK
-    ? mockApi.listRounds(eventId)
-    : http.get(`/events/${eventId}/rounds`),
+  listRounds: async (eventId: string): Promise<Round[]> => {
+    try {
+      const res = await api.get<Round[]>(`/api/events/${eventId}/rounds`);
+      return res.data;
+    } catch {
+      return USE_MOCK ? mockApi.listRounds(eventId) : [];
+    }
+  },
 
   listJudgeDirectory: (): Promise<JudgeRef[]> =>
     USE_MOCK ? mockApi.listJudgeDirectory() : http.get("/coordinator/directory/judges"),
