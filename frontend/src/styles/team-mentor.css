@@ -138,26 +138,61 @@ select {
 }
 
 .overview-icon {
-    width: 72px;
-    height: 72px;
-
+    width: 64px;
+    height: 64px;
     flex-shrink: 0;
-
     display: flex;
     align-items: center;
     justify-content: center;
-
     border-radius: 50%;
-
-    font-size: 30px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .overview-icon.blue {
-    background: #e8f1ff;
+    background: rgba(37, 99, 235, 0.1);
+    color: #2563eb;
 }
 
 .overview-icon.green {
-    background: #e4f8ef;
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+[data-theme="dark"] .overview-icon.blue {
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+}
+
+[data-theme="dark"] .overview-icon.green {
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+}
+
+.team-overview-card:hover .overview-icon,
+.tm-round-card:hover .overview-icon {
+    transform: scale(1.05);
+}
+
+.heading-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-primary, #2563eb);
+    margin-right: 8px;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+.inline-icon {
+    display: inline-block;
+    vertical-align: -3px;
+    margin-right: 4px;
+}
+
+.card-heading-row h2 {
+    display: flex;
+    align-items: center;
+    margin: 0 0 4px;
 }
 
 .overview-info {
@@ -474,25 +509,44 @@ select {
 
     border: 1px solid #cdeedc;
     border-radius: 12px;
-
     background: #effbf5;
 }
 
 .registered-icon {
     width: 42px;
     height: 42px;
-
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-
     border-radius: 50%;
-
-    background: #2ca86c;
-
+    background: #10b981;
     color: white;
-    font-size: 20px;
-    font-weight: 700;
+}
+
+.registered-icon.waiting {
+    background: rgba(245, 158, 11, 0.15);
+    color: #d97706;
+}
+
+.registered-icon.success {
+    background: #10b981;
+    color: #ffffff;
+}
+
+[data-theme="dark"] .registered-dashboard {
+    background: rgba(16, 185, 129, 0.08);
+    border-color: rgba(16, 185, 129, 0.2);
+}
+
+[data-theme="dark"] .registered-icon.waiting {
+    background: rgba(245, 158, 11, 0.2);
+    color: #fbbf24;
+}
+
+[data-theme="dark"] .registered-icon.success {
+    background: #059669;
+    color: #ffffff;
 }
 
 .registered-dashboard p {
@@ -573,21 +627,20 @@ select {
 }
 
 .alert-icon {
-    width: 38px;
-    height: 38px;
-
+    width: 36px;
+    height: 36px;
     flex-shrink: 0;
-
     display: flex;
     align-items: center;
     justify-content: center;
-
     border-radius: 50%;
-
     background: currentColor;
     color: white;
+}
 
-    font-weight: 800;
+.alert-icon svg {
+    color: white;
+    stroke: white;
 }
 
 .submission-action {
@@ -692,7 +745,7 @@ select {
     margin: 0 auto 18px;
     border-radius: 50%;
     background: var(--color-surface-2, #eef2ff);
-    font-size: 32px;
+    color: var(--color-primary, #2563eb);
 }
 
 .invitation-grid {
@@ -707,18 +760,13 @@ select {
 .card-icon {
     width: 55px;
     height: 55px;
-
     display: flex;
     align-items: center;
     justify-content: center;
-
     margin: 0 auto 12px;
-
     border-radius: 50%;
-
-    background: #edf2ff;
-
-    font-size: 24px;
+    background: var(--color-surface-2, #edf2ff);
+    color: var(--color-primary, #2563eb);
 }
 
 .invitation-detail {
