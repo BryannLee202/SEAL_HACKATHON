@@ -85,25 +85,21 @@ function Mentor() {
     }
 
     return (
-        <div className="team-dashboard">
-            <main className="team-main">
-                <div className="team-content">
-                    {error && (
-                        <div className="alert error" role="alert">
-                            {error}
-                        </div>
-                    )}
+        <div className="mentor-page">
+            <div className="topbar">
+                <div>
+                    <h1 className="page-title">Mentor</h1>
+                    <p className="page-subtitle">
+                        Manage teams and provide feedback for your assigned track.
+                    </p>
+                </div>
+            </div>
 
-                    <div className="section-header main-heading">
-                        <div>
-                            <h1>Mentor</h1>
-
-                            <p>
-                                Manage teams and provide feedback
-                                for your assigned track.
-                            </p>
-                        </div>
-                    </div>
+            {error && (
+                <div className="alert error" role="alert" style={{ marginBottom: 20 }}>
+                    {error}
+                </div>
+            )}
 
 
                     <div className="overview-grid">
@@ -286,8 +282,6 @@ function Mentor() {
                             )}
                         </section>
                     )}
-                </div>
-            </main>
         </div>
     );
 }
