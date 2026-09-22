@@ -27,3 +27,11 @@ backend.zip
 
 __pycache__/
 *.pyc
+
+# Ban sao tam de chay bo kiem tra toan dien.
+#
+# Bash doc tep kich ban theo vi tri byte trong luc chay, nen sua
+# scripts/kiem-tra-toan-dien.sh khi no dang chay se lam lech phan con lai va
+# sinh loi cu phap giua chung. Vi vay khi can vua chay vua sua, ta chay mot
+# ban sao va giu ban goc de chinh.
+scripts/.chay-thu.sh
