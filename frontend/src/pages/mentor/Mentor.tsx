@@ -5,6 +5,7 @@ import {
     type FeedbackMessage,
     type MentorTeam,
 } from "@/api/mentorApi";
+import { IconUsers } from "@/components/icons";
 
 function Mentor() {
     const [teams, setTeams] = useState<MentorTeam[]>([]);
@@ -101,64 +102,79 @@ function Mentor() {
                 </div>
             )}
 
-
-                    <div className="overview-grid">
-                        <section className="dashboard-card team-overview-card">
-                            <div className="overview-icon blue">
-                                🎯
-                            </div>
-
-                            <div className="overview-info">
-                                <span className="small-label">
-                                    Hạng mục phụ trách
-                                </span>
-
-                                <h2>
-                                    {assignedTrackName ?? "Chua duoc phan cong"}
-                                </h2>
-
-                                <p>
-                                    {assignedTrackName
-                                        ? "Ban dang huong dan cac doi trong hang muc nay."
-                                        : "Bạn chưa được phân công hạng mục nào."}
-                                </p>
-                            </div>
-                        </section>
-
-                        <section className="dashboard-card tm-round-card">
-                            <div className="overview-icon green">
-                                👥
-                            </div>
-
-                            <div className="overview-info">
-                                <span className="small-label">
-                                    Teams
-                                </span>
-
-                                <h2>
-                                    {loadingTeams ? "..." : `${teams.length} doi`}
-                                </h2>
-
-                                <p>
-                                    Teams currently assigned to
-                                    your track.
-                                </p>
-                            </div>
-                        </section>
+            <div className="overview-grid">
+                <section className="dashboard-card team-overview-card team-hero-card">
+                    <div className="card-media-thumb mentor-thumb">
+                        <img src="/images/feat-research.jpg" alt="Track" className="card-thumb-img" />
+                        <div className="card-thumb-overlay" />
+                        <span className="card-thumb-badge">TRACK</span>
                     </div>
 
-                    {/* Teams list */}
-                    <section className="dashboard-card mentor-dashboard-card">
-                        <div className="card-heading-row">
-                            <div>
-                                <h2>👥 Đội thi</h2>
-
-                                <p>
-                                    View team details and give
-                                    feedback.
-                                </p>
-                            </div>
+                    <div className="overview-info">
+                        <div className="overview-info-header">
+                            <span className="small-label">
+                                Hạng mục phụ trách
+                            </span>
+                            <span className={`status-pill ${assignedTrackName ? "active" : "muted"}`}>
+                                <span className="status-dot" /> {assignedTrackName ? "Đang phụ trách" : "Chờ phân công"}
+                            </span>
                         </div>
+
+                        <h2>
+                            {assignedTrackName ?? "Chưa được phân công"}
+                        </h2>
+
+                        <p>
+                            {assignedTrackName
+                                ? "Bạn đang hướng dẫn các đội trong hạng mục này."
+                                : "Bạn chưa được phân công hạng mục nào."}
+                        </p>
+                    </div>
+                </section>
+
+                <section className="dashboard-card tm-round-card round-hero-card">
+                    <div className="card-media-thumb team-thumb">
+                        <img src="/images/role-team.jpg" alt="Teams" className="card-thumb-img" />
+                        <div className="card-thumb-overlay" />
+                        <span className="card-thumb-badge">TEAMS</span>
+                    </div>
+
+                    <div className="overview-info">
+                        <div className="overview-info-header">
+                            <span className="small-label">
+                                Đội thi phụ trách
+                            </span>
+                            <span className="status-pill active">
+                                <span className="status-dot" /> {loadingTeams ? "..." : `${teams.length} đội`}
+                            </span>
+                        </div>
+
+                        <h2>
+                            {loadingTeams ? "..." : `${teams.length} đội thi`}
+                        </h2>
+
+                        <p>
+                            Các đội thi trực thuộc hạng mục bạn phụ trách.
+                        </p>
+                    </div>
+                </section>
+            </div>
+
+            {/* Teams list */}
+            <section className="dashboard-card mentor-dashboard-card">
+                <div className="card-heading-row">
+                    <div>
+                        <h2>
+                            <IconUsers className="heading-icon" width={22} height={22} />
+                            Đội thi
+                        </h2>
+
+                        <p>
+                            View team details and give
+                            feedback.
+                        </p>
+                    </div>
+                </div>
 
                         <div className="mentor-dashboard-list">
     {loadingTeams ? (

@@ -7,10 +7,8 @@ import { useLanguage } from "@/context/LanguageContext";
 import { toast } from "@/components/Toast";
 import {
     IconUsers,
-    IconLock,
     IconTarget,
     IconFileText,
-    IconCalendar,
     IconClock,
     IconMail,
     IconCheck,
@@ -798,8 +796,11 @@ function MyTeam() {
                     <div className="dashboard-section">
                         {!showCreateForm ? (
                             <div className="dashboard-card empty-card team-empty-state">
-                                <div className="empty-icon">
-                                    <IconUsers width={44} height={44} />
+                                <div className="empty-state-banner">
+                                    <img src="/images/role-team.jpg" alt="" className="empty-banner-img" />
+                                    <div className="empty-banner-overlay">
+                                        <span className="empty-banner-badge">HACKATHON TEAM</span>
+                                    </div>
                                 </div>
                                 <h2>{t("team.no_team_title")}</h2>
                                 <p>{t("team.no_team_desc")}</p>
@@ -1022,18 +1023,29 @@ function MyTeam() {
 
                         {/* Overview */}
                         <div className="overview-grid">
-                            <section className="dashboard-card team-overview-card">
-                                <div className="overview-icon blue">
-                                    <IconUsers width={32} height={32} />
+                            <section className="dashboard-card team-overview-card team-hero-card">
+                                <div className="card-media-thumb team-thumb">
+                                    <img src="/images/role-team.jpg" alt="Team" className="card-thumb-img" />
+                                    <div className="card-thumb-overlay" />
+                                    <span className="card-thumb-badge">TEAM</span>
                                 </div>
 
                                 <div className="overview-info">
+                                    <div className="overview-info-header">
+                                        <span className="small-label">
+                                            {isEn ? "Team Information" : "Thông tin đội"}
+                                        </span>
+                                        <span className="status-pill active">
+                                            <span className="status-dot" /> {isEn ? "Competing" : "Đang thi đấu"}
+                                        </span>
+                                    </div>
+
                                     <h2>{teamName}</h2>
 
                                     <p>
                                         {isEn ? "Members:" : "Thành viên:"}{" "}
                                         <strong>
-                                            {members.length} / 5
+                                            {members.length} / 5 ({Math.round((members.length / 5) * 100)}%)
                                         </strong>
                                     </p>
 
@@ -1053,41 +1065,55 @@ function MyTeam() {
                             </section>
 
                             {registeredTrack && currentRound ? (
-                                <section className="dashboard-card tm-round-card">
-                                    <div className="overview-icon green">
-                                        <IconCalendar width={32} height={32} />
+                                <section className="dashboard-card tm-round-card round-hero-card">
+                                    <div className="card-media-thumb round-thumb">
+                                        <img src="/images/feat-rounds.jpg" alt="Round" className="card-thumb-img" />
+                                        <div className="card-thumb-overlay" />
+                                        <span className="card-thumb-badge">STAGE</span>
                                     </div>
 
                                     <div className="overview-info">
-                                        <span className="small-label">
-                                            {isEn ? "Current Round" : "Vòng thi hiện tại"}
-                                        </span>
+                                        <div className="overview-info-header">
+                                            <span className="small-label">
+                                                {isEn ? "Current Round" : "Vòng thi hiện tại"}
+                                            </span>
+                                            <span className={`status-pill ${isDeadlinePassed ? "danger" : "live"}`}>
+                                                <span className="status-dot" /> {isDeadlinePassed ? (isEn ? "Closed" : "Đã đóng") : (isEn ? "Open" : "Đang mở")}
+                                            </span>
+                                        </div>
 
                                         <h2>{currentRound.name}</h2>
 
                                         <p>
                                             {isEn ? "Deadline:" : "Hạn nộp:"}{" "}
-                                            {new Date(
+                                            <strong>{new Date(
                                                 currentRound.submissionDeadline
-                                            ).toLocaleString()}
+                                            ).toLocaleString()}</strong>
                                         </p>
 
                                         <p className="countdown-text">
                                             <IconClock width={16} height={16} className="inline-icon" /> {isEn ? "Time Left:" : "Thời gian còn lại:"}{" "}
-                                            <strong>{timeLeft}</strong>
+                                            <strong className={isDeadlinePassed ? "countdown-urgent" : ""}>{timeLeft}</strong>
                                         </p>
                                     </div>
                                 </section>
                             ) : (
-                                <section className="dashboard-card tm-round-card">
-                                    <div className="overview-icon green">
-                                        <IconLock width={32} height={32} />
+                                <section className="dashboard-card tm-round-card round-hero-card locked">
+                                    <div className="card-media-thumb round-thumb locked">
+                                        <img src="/images/feat-rounds.jpg" alt="Round" className="card-thumb-img" />
+                                        <div className="card-thumb-overlay" />
+                                        <span className="card-thumb-badge">LOCKED</span>
                                     </div>
 
                                     <div className="overview-info">
-                                        <span className="small-label">
-                                            {isEn ? "Current Round" : "Vòng thi hiện tại"}
-                                        </span>
+                                        <div className="overview-info-header">
+                                            <span className="small-label">
+                                                {isEn ? "Current Round" : "Vòng thi hiện tại"}
+                                            </span>
+                                            <span className="status-pill muted">
+                                                {isEn ? "Not Started" : "Chờ mở cổng"}
+                                            </span>
+                                        </div>
 
                                         <h2>{isEn ? "Not Available" : "Chưa có"}</h2>
 
@@ -1333,25 +1359,32 @@ function MyTeam() {
                                         </div>
                                     )
                                 ) : (
-                                    <div className="registered-dashboard">
-                                        <div className="registered-icon success">
-                                            <IconCheck width={20} height={20} strokeWidth={2.5} />
+                                    <div className="registered-track-card">
+                                        <div className="registered-track-header">
+                                            <span className="registered-track-tag">
+                                                {isEn ? "Competition Track" : "Hạng mục thi đấu"}
+                                            </span>
+                                            <span className="registered-track-verified">
+                                                <IconCheck width={13} height={13} strokeWidth={2.8} /> {isEn ? "Confirmed" : "Đã xác nhận"}
+                                            </span>
                                         </div>
-
-                                        <div>
-                                            <p>{isEn ? "Registered Track" : "Hạng mục đã đăng ký"}</p>
-                                            <strong>
-                                                {registeredTrack}
-                                            </strong>
-                                        </div>
+                                        <h3 className="registered-track-name">{registeredTrack}</h3>
+                                        <p className="registered-track-hint">
+                                            {isEn
+                                                ? "Your team is officially registered and active in this track."
+                                                : "Đội đã hoàn tất đăng ký và sẵn sàng cho các vòng đánh giá."}
+                                        </p>
                                     </div>
                                 )}
                             </section>
                         </div>
 
                         <section className="dashboard-card submission-dashboard-card">
-                            <div className="card-heading-row">
-                                <div>
+                            <div className="submission-header-row">
+                                <div className="submission-thumb">
+                                    <img src="/images/feat-scoring.jpg" alt="Submission" className="submission-thumb-img" />
+                                </div>
+                                <div className="submission-header-text">
                                     <h2>
                                         <IconFileText className="heading-icon" width={22} height={22} />
                                         {isEn ? "Submission" : "Nộp bài"}
