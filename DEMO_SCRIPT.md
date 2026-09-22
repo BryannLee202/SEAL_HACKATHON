@@ -11,8 +11,8 @@
 
 ```powershell
 # Terminal 1: Backend
-cd D:/JavaTeam_project/JavaTeam/backend
-$env:JAVA_HOME='C:\Program Files\Java\jdk-25'
+cd <thu-muc-repo>/backend
+$env:JAVA_HOME='C:\Program Files\Java\jdk-21'
 $env:Path = "$env:JAVA_HOME\bin;$env:Path"
 $env:SPRING_PROFILES_ACTIVE='demo'
 mvnw.cmd spring-boot:run
@@ -21,14 +21,14 @@ mvnw.cmd spring-boot:run
 
 ```powershell
 # Terminal 2: BFF (đã chạy)
-cd D:/JavaTeam_project/JavaTeam/bff
+cd <thu-muc-repo>/bff
 npm run start:dev
 # Chờ đến: "SEAL Hackathon BFF listening on http://localhost:4000"
 ```
 
 ```powershell
 # Terminal 3: Frontend (đã chạy)
-cd D:/JavaTeam_project/JavaTeam/frontend
+cd <thu-muc-repo>/frontend
 $env:VITE_BFF_URL='http://localhost:4000'
 npx vite --host 0.0.0.0 --port 3001
 # Chờ đến: "ready in X ms" và "Local: http://localhost:3001/"
@@ -413,7 +413,7 @@ rm -r D:\JavaTeam_project\JavaTeam\backend\target\classes\db
 
 # Restart backend
 cd D:\JavaTeam_project\JavaTeam\backend
-$env:JAVA_HOME='C:\Program Files\Java\jdk-25'
+$env:JAVA_HOME='C:\Program Files\Java\jdk-21'
 $env:Path = "$env:JAVA_HOME\bin;$env:Path"
 $env:SPRING_PROFILES_ACTIVE='demo'
 mvnw.cmd spring-boot:run
