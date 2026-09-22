@@ -29,7 +29,7 @@ echo Vui long chon che do khoi dong phu hop:
 echo.
 echo   [1] KHOI DONG TRON GOI VOI DOCKER COMPOSE (Khuyen dung - 1 Click chay 4 Container ngam)
 echo   [2] KHOI DONG CUC BO (Local Dev - 3 cua so Terminal tu dong, khong can Docker)
-echo   [3] CHAY BO KIEM THU TU DONG (Automated Tests - 101 Vitest + 94 JUnit + RTM)
+echo   [3] CHAY BO KIEM THU TU DONG (Automated Tests - 146 Vitest + 424 JUnit + 19 Jest + RTM)
 echo   [4] DUNG TOAN BO CAC CONTAINER DOCKER (Stop Docker)
 echo   [5] Thoat
 echo.
