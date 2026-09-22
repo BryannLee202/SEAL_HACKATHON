@@ -1024,107 +1024,150 @@ function MyTeam() {
                         {/* Overview */}
                         <div className="overview-grid">
                             <section className="dashboard-card team-overview-card team-hero-card">
-                                <div className="card-media-thumb team-thumb">
-                                    <img src="/images/role-team.jpg" alt="Team" className="card-thumb-img" />
-                                    <div className="card-thumb-overlay" />
-                                    <span className="card-thumb-badge">TEAM</span>
+                                <div className="card-top-row">
+                                    <h3 className="card-section-title">{isEn ? "Team Overview" : "Tổng quan đội thi"}</h3>
+                                    <span className="status-pill active">
+                                        <span className="status-dot" /> {isEn ? "Competing" : "Đang thi đấu"}
+                                    </span>
                                 </div>
 
-                                <div className="overview-info">
-                                    <div className="overview-info-header">
-                                        <span className="small-label">
-                                            {isEn ? "Team Information" : "Thông tin đội"}
-                                        </span>
-                                        <span className="status-pill active">
-                                            <span className="status-dot" /> {isEn ? "Competing" : "Đang thi đấu"}
-                                        </span>
-                                    </div>
+                                <div className="team-wide-banner">
+                                    <svg viewBox="0 0 460 110" className="team-banner-svg" preserveAspectRatio="xMidYMid meet">
+                                        <defs>
+                                            <linearGradient id="banner-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                                <stop offset="0%" stopColor="#0f172a" />
+                                                <stop offset="50%" stopColor="#1e1b4b" />
+                                                <stop offset="100%" stopColor="#1e293b" />
+                                            </linearGradient>
+                                            <linearGradient id="badge-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                                <stop offset="0%" stopColor="#3b82f6" />
+                                                <stop offset="100%" stopColor="#1d4ed8" />
+                                            </linearGradient>
+                                            <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                                                <feGaussianBlur stdDeviation="6" result="blur" />
+                                                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                                            </filter>
+                                        </defs>
+                                        <rect width="460" height="110" rx="12" fill="url(#banner-grad)" />
+                                        <path d="M 0 55 Q 115 10 230 55 T 460 55" fill="none" stroke="rgba(99, 102, 241, 0.2)" strokeWidth="2" />
+                                        <path d="M 0 85 Q 115 40 230 85 T 460 85" fill="none" stroke="rgba(59, 130, 246, 0.15)" strokeWidth="1.5" />
+                                        <circle cx="50" cy="30" r="3" fill="#60a5fa" opacity="0.6" />
+                                        <circle cx="410" cy="80" r="3" fill="#818cf8" opacity="0.6" />
+                                        <circle cx="90" cy="80" r="2" fill="#38bdf8" opacity="0.4" />
+                                        <circle cx="370" cy="35" r="2.5" fill="#a78bfa" opacity="0.5" />
 
-                                    <h2>{teamName}</h2>
+                                        {/* Left teammate */}
+                                        <g transform="translate(65, 28)">
+                                            <circle cx="26" cy="18" r="14" fill="#3b82f6" opacity="0.25" />
+                                            <circle cx="26" cy="18" r="10" fill="#93c5fd" />
+                                            <rect x="8" y="34" width="36" height="24" rx="7" fill="#1e3a8a" opacity="0.85" />
+                                            <rect x="0" y="48" width="52" height="12" rx="3" fill="#334155" />
+                                            <rect x="16" y="42" width="20" height="10" rx="2" fill="#60a5fa" opacity="0.9" />
+                                        </g>
 
-                                    <p>
+                                        {/* Center Team Emblem */}
+                                        <g transform="translate(180, 14)">
+                                            <rect x="0" y="0" width="100" height="82" rx="14" fill="url(#badge-grad)" filter="url(#glow)" stroke="rgba(255,255,255,0.25)" strokeWidth="1.5" />
+                                            <path d="M 50 12 L 70 24 L 70 50 Q 50 72 50 72 Q 30 50 30 50 L 30 24 Z" fill="rgba(255,255,255,0.14)" stroke="#ffffff" strokeWidth="1.5" />
+                                            <text x="50" y="38" textAnchor="middle" fill="#ffffff" fontSize="10" fontWeight="800" letterSpacing="1.5">TEAM</text>
+                                            <text x="50" y="56" textAnchor="middle" fill="#93c5fd" fontSize="12" fontWeight="900" letterSpacing="0.8">
+                                                {teamName.length > 10 ? teamName.slice(0, 10).toUpperCase() : teamName.toUpperCase()}
+                                            </text>
+                                        </g>
+
+                                        {/* Right teammate */}
+                                        <g transform="translate(345, 28)">
+                                            <circle cx="26" cy="18" r="14" fill="#8b5cf6" opacity="0.25" />
+                                            <circle cx="26" cy="18" r="10" fill="#c4b5fd" />
+                                            <rect x="8" y="34" width="36" height="24" rx="7" fill="#4c1d95" opacity="0.85" />
+                                            <rect x="0" y="48" width="52" height="12" rx="3" fill="#334155" />
+                                            <rect x="16" y="42" width="20" height="10" rx="2" fill="#a78bfa" opacity="0.9" />
+                                        </g>
+                                    </svg>
+                                </div>
+
+                                <div className="team-stats-row">
+                                    <h2 className="team-display-name">{teamName}</h2>
+                                    <span className="team-capacity-text">
                                         {isEn ? "Members:" : "Thành viên:"}{" "}
                                         <strong>
                                             {members.length} / 5 ({Math.round((members.length / 5) * 100)}%)
                                         </strong>
-                                    </p>
+                                    </span>
+                                </div>
 
-                                    <div className="member-progress">
-                                        <div
-                                            className="member-progress-bar"
-                                            style={{
-                                                width: `${
-                                                    (members.length /
-                                                        5) *
-                                                    100
-                                                }%`,
-                                            }}
-                                        />
-                                    </div>
+                                <div className="member-progress">
+                                    <div
+                                        className="member-progress-bar"
+                                        style={{
+                                            width: `${(members.length / 5) * 100}%`,
+                                        }}
+                                    />
                                 </div>
                             </section>
 
-                            {registeredTrack && currentRound ? (
-                                <section className="dashboard-card tm-round-card round-hero-card">
-                                    <div className="card-media-thumb round-thumb">
-                                        <img src="/images/feat-rounds.jpg" alt="Round" className="card-thumb-img" />
-                                        <div className="card-thumb-overlay" />
-                                        <span className="card-thumb-badge">STAGE</span>
-                                    </div>
+                            <section className="dashboard-card tm-round-card round-hero-card">
+                                <div className="card-top-row">
+                                    <h3 className="card-section-title">{isEn ? "Current Round" : "Vòng thi hiện tại"}</h3>
+                                </div>
 
-                                    <div className="overview-info">
-                                        <div className="overview-info-header">
-                                            <span className="small-label">
-                                                {isEn ? "Current Round" : "Vòng thi hiện tại"}
-                                            </span>
-                                            <span className={`status-pill ${isDeadlinePassed ? "danger" : "live"}`}>
-                                                <span className="status-dot" /> {isDeadlinePassed ? (isEn ? "Closed" : "Đã đóng") : (isEn ? "Open" : "Đang mở")}
-                                            </span>
+                                <div className="round-stepper-banner">
+                                    <div className="stepper-track-line" />
+                                    <div className="stepper-stage completed">
+                                        <div className="stepper-node">
+                                            <IconCheck width={14} height={14} strokeWidth={3} />
                                         </div>
-
-                                        <h2>{currentRound.name}</h2>
-
-                                        <p>
-                                            {isEn ? "Deadline:" : "Hạn nộp:"}{" "}
-                                            <strong>{new Date(
-                                                currentRound.submissionDeadline
-                                            ).toLocaleString()}</strong>
-                                        </p>
-
-                                        <p className="countdown-text">
-                                            <IconClock width={16} height={16} className="inline-icon" /> {isEn ? "Time Left:" : "Thời gian còn lại:"}{" "}
-                                            <strong className={isDeadlinePassed ? "countdown-urgent" : ""}>{timeLeft}</strong>
-                                        </p>
-                                    </div>
-                                </section>
-                            ) : (
-                                <section className="dashboard-card tm-round-card round-hero-card locked">
-                                    <div className="card-media-thumb round-thumb locked">
-                                        <img src="/images/feat-rounds.jpg" alt="Round" className="card-thumb-img" />
-                                        <div className="card-thumb-overlay" />
-                                        <span className="card-thumb-badge">LOCKED</span>
+                                        <span className="stepper-label">{isEn ? "Registration" : "Đăng ký"}</span>
                                     </div>
 
-                                    <div className="overview-info">
-                                        <div className="overview-info-header">
-                                            <span className="small-label">
-                                                {isEn ? "Current Round" : "Vòng thi hiện tại"}
-                                            </span>
-                                            <span className="status-pill muted">
-                                                {isEn ? "Not Started" : "Chờ mở cổng"}
-                                            </span>
+                                    <div className={`stepper-stage ${registeredTrack ? "completed" : "active"}`}>
+                                        <div className="stepper-node">
+                                            {registeredTrack ? <IconCheck width={14} height={14} strokeWidth={3} /> : "2"}
                                         </div>
-
-                                        <h2>{isEn ? "Not Available" : "Chưa có"}</h2>
-
-                                        <p>
-                                            {isEn
-                                                ? "Register for a track to view current round and deadline."
-                                                : "Đăng ký hạng mục để xem vòng thi hiện tại và hạn nộp bài."}
-                                        </p>
+                                        <span className="stepper-label">{isEn ? "Preparation" : "Chuẩn bị"}</span>
                                     </div>
-                                </section>
-                            )}
+
+                                    <div className={`stepper-stage ${currentRound ? "active" : ""}`}>
+                                        <div className="stepper-node">
+                                            <span>3</span>
+                                        </div>
+                                        <span className="stepper-label">{currentRound?.name || (isEn ? "Round 1" : "Vòng 1")}</span>
+                                    </div>
+
+                                    <div className="stepper-stage final">
+                                        <div className="stepper-node final-node">
+                                            🏆
+                                        </div>
+                                        <span className="stepper-label">{isEn ? "Finals" : "Chung kết"}</span>
+                                    </div>
+                                </div>
+
+                                <div className="round-info-split">
+                                    <div>
+                                        <h2 className="round-display-name">
+                                            {currentRound ? currentRound.name : (isEn ? "Round Not Started" : "Chưa mở vòng thi")}
+                                        </h2>
+                                        <span className={`status-pill ${currentRound ? (isDeadlinePassed ? "danger" : "live") : "muted"}`}>
+                                            <span className="status-dot" />{" "}
+                                            {currentRound
+                                                ? (isDeadlinePassed ? (isEn ? "Closed" : "Đã đóng") : (isEn ? "Open" : "Đang mở"))
+                                                : (isEn ? "Pending Open" : "Chờ mở cổng")}
+                                        </span>
+                                    </div>
+
+                                    {timeLeft ? (
+                                        <div className={`countdown-box-badge ${isDeadlinePassed ? "expired" : ""}`}>
+                                            <IconClock width={18} height={18} className="inline-icon" />
+                                            <span>{timeLeft}</span>
+                                        </div>
+                                    ) : (
+                                        <div className="countdown-box-badge muted">
+                                            <IconClock width={18} height={18} className="inline-icon" />
+                                            <span>{isEn ? "No deadline" : "Chưa có hạn nộp"}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </section>
                         </div>
 
                         {/* Members + Track */}
@@ -1359,32 +1402,27 @@ function MyTeam() {
                                         </div>
                                     )
                                 ) : (
-                                    <div className="registered-track-card">
-                                        <div className="registered-track-header">
-                                            <span className="registered-track-tag">
-                                                {isEn ? "Competition Track" : "Hạng mục thi đấu"}
+                                    <div className="track-gradient-card">
+                                        <div className="track-gradient-info">
+                                            <span className="track-gradient-label">
+                                                {isEn ? "Track" : "Hạng mục dự thi"}
                                             </span>
-                                            <span className="registered-track-verified">
-                                                <IconCheck width={13} height={13} strokeWidth={2.8} /> {isEn ? "Confirmed" : "Đã xác nhận"}
-                                            </span>
+                                            <h3 className="track-gradient-name">{registeredTrack}</h3>
+                                            <p className="track-gradient-status">
+                                                {isEn ? "Officially confirmed for competition" : "Đã xác nhận dự thi chính thức"}
+                                            </p>
                                         </div>
-                                        <h3 className="registered-track-name">{registeredTrack}</h3>
-                                        <p className="registered-track-hint">
-                                            {isEn
-                                                ? "Your team is officially registered and active in this track."
-                                                : "Đội đã hoàn tất đăng ký và sẵn sàng cho các vòng đánh giá."}
-                                        </p>
+                                        <div className="track-gradient-check">
+                                            <IconCheck width={22} height={22} strokeWidth={3} />
+                                        </div>
                                     </div>
                                 )}
                             </section>
                         </div>
 
                         <section className="dashboard-card submission-dashboard-card">
-                            <div className="submission-header-row">
-                                <div className="submission-thumb">
-                                    <img src="/images/feat-scoring.jpg" alt="Submission" className="submission-thumb-img" />
-                                </div>
-                                <div className="submission-header-text">
+                            <div className="card-heading-row">
+                                <div>
                                     <h2>
                                         <IconFileText className="heading-icon" width={22} height={22} />
                                         {isEn ? "Submission" : "Nộp bài"}

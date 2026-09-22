@@ -104,59 +104,46 @@ function Mentor() {
 
             <div className="overview-grid">
                 <section className="dashboard-card team-overview-card team-hero-card">
-                    <div className="card-media-thumb mentor-thumb">
-                        <img src="/images/feat-research.jpg" alt="Track" className="card-thumb-img" />
-                        <div className="card-thumb-overlay" />
-                        <span className="card-thumb-badge">TRACK</span>
+                    <div className="card-top-row">
+                        <h3 className="card-section-title">Hạng mục phụ trách</h3>
+                        <span className={`status-pill ${assignedTrackName ? "active" : "muted"}`}>
+                            <span className="status-dot" /> {assignedTrackName ? "Đang phụ trách" : "Chờ phân công"}
+                        </span>
                     </div>
 
-                    <div className="overview-info">
-                        <div className="overview-info-header">
-                            <span className="small-label">
-                                Hạng mục phụ trách
-                            </span>
-                            <span className={`status-pill ${assignedTrackName ? "active" : "muted"}`}>
-                                <span className="status-dot" /> {assignedTrackName ? "Đang phụ trách" : "Chờ phân công"}
-                            </span>
+                    <div className="track-gradient-card" style={{ margin: "10px 0" }}>
+                        <div className="track-gradient-info">
+                            <span className="track-gradient-label">ASSIGNED TRACK</span>
+                            <h3 className="track-gradient-name">{assignedTrackName ?? "Chưa phân công"}</h3>
+                            <p className="track-gradient-status">
+                                {assignedTrackName
+                                    ? "Bạn đang hướng dẫn và hỗ trợ chuyên môn các đội thuộc hạng mục này."
+                                    : "Điều phối viên sẽ phân công hạng mục cho bạn sớm."}
+                            </p>
                         </div>
-
-                        <h2>
-                            {assignedTrackName ?? "Chưa được phân công"}
-                        </h2>
-
-                        <p>
-                            {assignedTrackName
-                                ? "Bạn đang hướng dẫn các đội trong hạng mục này."
-                                : "Bạn chưa được phân công hạng mục nào."}
-                        </p>
                     </div>
                 </section>
 
                 <section className="dashboard-card tm-round-card round-hero-card">
-                    <div className="card-media-thumb team-thumb">
-                        <img src="/images/role-team.jpg" alt="Teams" className="card-thumb-img" />
-                        <div className="card-thumb-overlay" />
-                        <span className="card-thumb-badge">TEAMS</span>
+                    <div className="card-top-row">
+                        <h3 className="card-section-title">Đội thi phụ trách</h3>
+                        <span className="status-pill active">
+                            <span className="status-dot" /> {loadingTeams ? "..." : `${teams.length} đội thi`}
+                        </span>
                     </div>
 
-                    <div className="overview-info">
-                        <div className="overview-info-header">
-                            <span className="small-label">
-                                Đội thi phụ trách
-                            </span>
-                            <span className="status-pill active">
-                                <span className="status-dot" /> {loadingTeams ? "..." : `${teams.length} đội`}
-                            </span>
-                        </div>
-
-                        <h2>
-                            {loadingTeams ? "..." : `${teams.length} đội thi`}
+                    <div className="team-stats-row" style={{ marginTop: "auto", marginBottom: "12px" }}>
+                        <h2 className="team-display-name">
+                            {loadingTeams ? "Đang tải..." : `${teams.length} Đội tham gia`}
                         </h2>
-
-                        <p>
-                            Các đội thi trực thuộc hạng mục bạn phụ trách.
-                        </p>
+                        <span className="team-capacity-text">
+                            {assignedTrackName ? `Hạng mục: ${assignedTrackName}` : "Chờ phân công"}
+                        </span>
                     </div>
+
+                    <p style={{ margin: 0, color: "#64748b", fontSize: "14px" }}>
+                        Theo dõi tiến độ, trao đổi tin nhắn và hướng dẫn hoàn thiện dự án.
+                    </p>
                 </section>
             </div>
 
