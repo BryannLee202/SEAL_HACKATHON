@@ -81,7 +81,7 @@ cho_cong() {  # cho_cong <cong> <so giay toi da> [tep nhat ky]
     curl -s -o /dev/null --max-time 2 "http://localhost:$c/" 2>/dev/null && return 0
     # Spring Boot chet han thi cho tiep la vo ich: khong co tep nhat ky de
     # doc thi phai doi du 180 giay roi moi bao loi, che mat nguyen nhan that.
-    if [ -n "$nk" ] && grep -q "APPLICATION FAILED TO START\|Error starting ApplicationContext" "$nk" 2>/dev/null; then
+    if [ -n "$nk" ] && grep -q "APPLICATION FAILED TO START\|Error starting ApplicationContext\|BUILD FAILURE" "$nk" 2>/dev/null; then
       return 1
     fi
     sleep 1; i=$((i+1))
@@ -92,6 +92,21 @@ cho_cong() {  # cho_cong <cong> <so giay toi da> [tep nhat ky]
 # UUID khong ton tai trong bat ky bang nao: moi phep quet deu goi bang id nay
 # nen khong co ban ghi that nao bi doc, sua hay xoa.
 ID_GIA="00000000-0000-4000-8000-000000000000"
+
+# Maven chay ONLINE theo mac dinh. Truoc day co -o duoc go cung vao moi lenh
+# vi kho ~/.m2 tren may phat trien da am san, chay offline thi nhanh va khoi
+# phu thuoc mang. Nhung tren CI thi kho LUON thieu thu gi do, va thieu cai
+# nao thi chi lo ra khi goi dung lenh can no:
+#
+#   backend-ci.yml tu truoc toi nay chi chay `./mvnw test`, nen bo nho dem
+#   cua no co surefire nhung KHONG co maven-clean-plugin (khoi 1 can) va
+#   khong co spring-boot-buildpack-platform (khoi 3 va 4 can de chay
+#   spring-boot:run). Ket qua lan chay dau tien tren CI: khoi 1 hong, khoi 2
+#   xanh, khoi 3 va 4 hong — dung ba cho co lenh maven khac `test`.
+#
+# Dat MVN_OFFLINE=1 khi muon chay nhanh tren may da co du kho cuc bo.
+MVN_OFFLINE_CO=""
+[ "${MVN_OFFLINE:-0}" = "1" ] && MVN_OFFLINE_CO="-o"
 
 ma() {  # ma <PHUONG_THUC> <duong dan> [token]
   local pt=$1 dd=$2 tk=${3:-}
@@ -121,7 +136,7 @@ khoi "KHOI 1/8 — Bien dich sach ca ba tang"
 # ==========================================================================
 rm -rf backend/target frontend/dist bff/dist
 
-if (cd backend && ./mvnw -o -q clean test-compile) >"$TMP/be-build.log" 2>&1; then
+if (cd backend && ./mvnw $MVN_OFFLINE_CO -q clean test-compile) >"$TMP/be-build.log" 2>&1; then
   dat "backend bien dich sach tu target/ rong"
 else
   hong "backend KHONG bien dich duoc — xem $TMP/be-build.log"; tail -5 "$TMP/be-build.log"
@@ -161,7 +176,7 @@ process.exit(p.scripts && p.scripts['$lenh'] ? 0 : 1)") 2>/dev/null; then
   done
 done
 
-if (cd backend && ./mvnw -o -q test) >"$TMP/be-test.log" 2>&1; then
+if (cd backend && ./mvnw $MVN_OFFLINE_CO -q test) >"$TMP/be-test.log" 2>&1; then
   SO_TEST_BE=$(grep -ho 'tests="[0-9]*"' backend/target/surefire-reports/TEST-*.xml 2>/dev/null | grep -o '[0-9]*' | paste -sd+ | bc)
   dat "backend: $SO_TEST_BE test, 0 loi"
 else
@@ -179,17 +194,36 @@ if [ "${BO_QUA_POSTGRES:-0}" = "1" ]; then
   bo_qua "Flyway: bo qua theo BO_QUA_POSTGRES=1"
 elif [ -n "${DB_URL_CI:-}" ]; then
   # CI cung cap san mot Postgres qua service container.
-  if (cd backend && DB_URL="$DB_URL_CI" DB_USERNAME="${DB_USERNAME_CI:-postgres}" \
-        DB_PASSWORD="${DB_PASSWORD_CI:-postgres}" \
-        timeout 300 ./mvnw -o -q spring-boot:run -Dspring-boot.run.profiles=dev) \
-        >"$TMP/fw.log" 2>&1 &
-  then :; fi
+  PG_USER="${DB_USERNAME_CI:-postgres}"; PG_PASS="${DB_PASSWORD_CI:-postgres}"
+
+  # Suy ra URL kieu libpq tu URL kieu JDBC de khoi phai khai hai lan:
+  #   jdbc:postgresql://localhost:5432/shms -> postgresql://user:pass@localhost:5432/shms
+  PSQL_URL="$(printf '%s' "$DB_URL_CI" \
+     | sed -E "s#^jdbc:postgresql://#postgresql://$PG_USER:$PG_PASS@#")"
+
+  (cd backend && DB_URL="$DB_URL_CI" DB_USERNAME="$PG_USER" DB_PASSWORD="$PG_PASS" \
+     timeout 300 ./mvnw $MVN_OFFLINE_CO spring-boot:run -Dspring-boot.run.profiles=dev \
+     >"$TMP/fw.log" 2>&1) &
   PID+=($!)
   if cho_cong $CONG_BE 180 "$TMP/fw.log"; then
-    grep -qi "checksum\|Validate failed" "$TMP/fw.log" \
-      && hong "Flyway bao sai checksum" || dat "Flyway ap dung sach tren Postgres (CI)"
+    SO_MG=$(psql "$PSQL_URL" -tAc "SELECT count(*) FROM flyway_schema_history WHERE success" 2>/dev/null)
+    SO_TEP=$(ls backend/src/main/resources/db/migration/V*.sql 2>/dev/null | wc -l)
+    if [ "${SO_MG:-0}" = "$SO_TEP" ]; then
+      dat "Flyway: $SO_MG/$SO_TEP migration ap dung sach tren Postgres (CI)"
+    else
+      hong "Flyway (CI): chi ${SO_MG:-0}/$SO_TEP migration thanh cong"
+    fi
+    grep -qi "checksum\|Validate failed" "$TMP/fw.log" && hong "Flyway bao sai checksum"
+
+    # Cung phep kiem tai khoan nhu nhanh cuc bo: bo du lieu tung lech giua
+    # data-demo.sql (H2) va V006 (Postgres), moi duong thieu mot tai khoan.
+    while IFS='|' read -r em mk; do
+      [ -z "$em" ] && continue
+      if [ -n "$(token "$em" "$mk")" ]; then dat "Postgres CI: $em dang nhap duoc"
+      else hong "Postgres CI: $em KHONG dang nhap duoc"; fi
+    done < <(grep -v '^[[:space:]]*#' scripts/tai-khoan-demo.txt)
   else
-    hong "Backend khong khoi dong duoc voi Postgres CI"; tail -5 "$TMP/fw.log"
+    hong "Backend khong khoi dong duoc voi Postgres CI"; tail -15 "$TMP/fw.log"
   fi
   pkill -9 -f "spring-boot:run" 2>/dev/null; giai_phong_cong $CONG_BE
 elif command -v /usr/lib/postgresql/16/bin/initdb >/dev/null 2>&1 && [ "$(id -u)" = "0" ]; then
@@ -221,7 +255,7 @@ elif command -v /usr/lib/postgresql/16/bin/initdb >/dev/null 2>&1 && [ "$(id -u)
 
   rm -rf backend/target/classes/db/migration
   (cd backend && DB_URL="jdbc:postgresql://localhost:$CONG_PG/shms" DB_USERNAME=postgres DB_PASSWORD=postgres \
-     ./mvnw -o spring-boot:run -Dspring-boot.run.profiles=dev >"$TMP/fw.log" 2>&1) &
+     ./mvnw $MVN_OFFLINE_CO spring-boot:run -Dspring-boot.run.profiles=dev >"$TMP/fw.log" 2>&1) &
   PID+=($!)
   if cho_cong $CONG_BE 180 "$TMP/fw.log"; then
     SO_MG=$(psql -h /tmp -p $CONG_PG -U postgres -d shms -tAc \
@@ -258,7 +292,7 @@ pkill -9 -f "spring-boot:run" 2>/dev/null
 if ! giai_phong_cong $CONG_BE; then
   hong "Khong giai phong duoc cong $CONG_BE — bo kiem se do nham vao ung dung khac"
 fi
-(cd backend && ./mvnw -o spring-boot:run -Dspring-boot.run.profiles=demo >"$TMP/be-run.log" 2>&1) &
+(cd backend && ./mvnw $MVN_OFFLINE_CO spring-boot:run -Dspring-boot.run.profiles=demo >"$TMP/be-run.log" 2>&1) &
 PID+=($!)
 
 if ! cho_cong $CONG_BE 180 "$TMP/be-run.log"; then
@@ -483,10 +517,18 @@ khoi "KHOI 8/8 — So trong tai lieu phai khop so that"
 # Huy hieu README tung ghi 98 test backend trong khi thuc te la 424. Con so
 # sai trong tai lieu la thu thay gio bao ve moi lo ra, nen kiem luon. Dem so
 # test THAT o ca ba tang roi doi chieu voi moi con so README noi la so test.
-SO_TEST_FE=$(grep -oE 'Tests +[0-9]+ passed' "$TMP/frontend-test.log" 2>/dev/null \
-              | grep -oE '[0-9]+' | tail -1)
-SO_TEST_BFF=$(grep -oE 'Tests: +[0-9]+ passed' "$TMP/bff-test.log" 2>/dev/null \
-              | grep -oE '[0-9]+' | tail -1)
+# Phai boc ma mau ANSI truoc khi doc so: chay tay thi dau ra di qua ong dan
+# nen vitest khong to mau va mau 'Tests +[0-9]+' khop binh thuong, con tren
+# CI thi no to mau va chen ma thoat vao GIUA chu 'Tests' va con so. Lan chay
+# dau tren CI vi vay in ra 'frontend=?' — phep kiem tu lang di mot tang ma
+# khong bao gi.
+dem_test() {  # dem_test <tep nhat ky> <bieu thuc>
+  [ -f "$1" ] || return 0
+  sed 's/\x1b\[[0-9;]*[mGKH]//g' "$1" \
+    | grep -oE "$2" | grep -oE '[0-9]+' | tail -1
+}
+SO_TEST_FE=$(dem_test "$TMP/frontend-test.log"  'Tests[: ]+[0-9]+ passed')
+SO_TEST_BFF=$(dem_test "$TMP/bff-test.log"      'Tests[: ]+[0-9]+ passed')
 
 KQ_SO="$(BE="${SO_TEST_BE:-}" FE="${SO_TEST_FE:-}" BFF="${SO_TEST_BFF:-}" python3 - <<'PYEOF'
 import os, re, sys
