@@ -120,11 +120,30 @@ Hệ thống được thiết kế theo mô hình **3-Tier Architecture tách bi
 ## 🚀 Hướng Dẫn Cài Đặt & Khởi Động (1-Click)
 
 ### Yêu Cầu Tiên Quyết
+- Đã cài đặt **Git**
 - Đã cài đặt **Docker Desktop** (khuyến nghị) hoặc:
   - **Node.js**: v20+ hoặc v22 LTS
   - **JDK**: Java 21 LTS
   - **Maven**: 3.9+
   - **PostgreSQL**: 16
+
+### Bước 0: Lấy mã nguồn bằng `git clone`
+
+```bash
+git clone https://github.com/BryannLee202/SEAL_HACKATHON.git
+cd SEAL_HACKATHON
+```
+
+**Đừng dùng nút "Download ZIP" trên GitHub.** Trình duyệt (Chrome, Edge...)
+quét mọi tệp `.zip` tải về theo *độ uy tín* — zip mới, ít lượt tải, có chứa
+tệp `.bat`/`.cmd` (script có thể chạy lệnh) gần như luôn bị gắn cờ "Virus
+detected" hay "Dangerous file", kể cả khi bên trong hoàn toàn sạch (repo
+này không có tệp thực thi lạ thường nào ngoài `backend/mvnw.cmd` — Maven
+Wrapper chuẩn của mọi dự án Spring Boot). Đây là cảnh báo dựa trên thống kê
+tải xuống, không phải quét mã độc hại thật. `git clone` tải qua giao thức
+Git chứ không phải tải tệp qua trình duyệt, nên không bao giờ bị quét kiểu
+này — và là cách chuẩn để làm việc với repo (giữ được lịch sử commit, tạo
+được nhánh, đẩy được PR).
 
 ---
 
@@ -174,7 +193,7 @@ Dự án cung cấp sẵn tệp kịch bản tự động hóa cho hệ điều 
 
 ---
 
-### Cách 2: Chạy Thủ Công Từng Tầng (Dành Cho Lập Trình Viên Dev/Debug)
+### Cách 3: Chạy Thủ Công Từng Tầng (Dành Cho Lập Trình Viên Dev/Debug)
 
 Mở 3 cửa sổ dòng lệnh (Terminal) theo thứ tự bắt buộc:
 
