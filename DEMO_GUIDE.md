@@ -131,20 +131,20 @@
 * **Cửa sổ thao tác**: Nhấn `Alt + Tab` sang **Cửa sổ 2** (Đội trưởng `leader@demo.local`)
 * **Mục tiêu**: Chứng minh quy trình đăng ký, quản lý thành viên và nộp bài chuẩn GitHub.
 
-#### Bước 2.1: Quản lý đội thi (`/app/team`)
+#### Bước 2.1: Quản lý đội thi (`/team`)
 * **Lời thoại Presenter**:
   > *"Tiếp theo là góc nhìn của thí sinh tham gia giải đấu. Đội trưởng Team Rocket đăng nhập vào hệ thống để theo dõi đội thi và nộp sản phẩm cho Vòng Chung Kết."*
 * **Thao tác Driver**:
-  - Mở trang **"Đội của tôi"** (`/app/team`).
+  - Mở trang **"Đội của tôi"** (`/team`).
   - Rê chuột chỉ vào danh sách thành viên đội thi (3 thành viên), trạng thái phê duyệt `ACTIVE`.
   - Giới thiệu tính năng gửi lời mời thành viên mới qua email sinh viên FPT hoặc trường ngoài.
 
-#### Bước 2.2: Nộp sản phẩm & Ghi nhận thời gian bất biến (`/app/submissions`)
+#### Bước 2.2: Nộp sản phẩm & Ghi nhận thời gian bất biến (`/team`)
 * **Lời thoại Presenter**:
   > *"Hệ thống chuẩn hóa hoàn toàn việc nộp bài thi theo phong cách phần mềm chuyên nghiệp: Thí sinh nộp link Git repository chứa mã nguồn, link video demo YouTube và link tài liệu kiến trúc hệ thống.*  
   > *Mỗi lượt nộp bài đều được hệ thống tự động đóng dấu thời gian (Timestamp) chính xác đến từng giây. Nếu nộp sau hạn chót (Deadline), hệ thống sẽ tự động bật cờ cảnh báo trễ hạn (`isLate`) cho Hội đồng giám khảo biết."*
 * **Thao tác Driver**:
-  - Vào phần **"Nộp bài thi"** (`/app/submissions`).
+  - Vào phần **"Nộp bài thi"** (`/team`).
   - Cho Thầy Cô thấy các trường dữ liệu: Link repo `https://github.com/demo/team-rocket`, video demo, mô tả giải pháp.
 
 ---
@@ -210,11 +210,11 @@
   3. Bấm nút **"Từ chối"** màu đỏ trên một tài khoản -> Modal xác nhận hiện lên cho phép nhập lý do từ chối (hoặc bấm Hủy).
   4. Bấm nút **"Duyệt tài khoản"** màu xanh -> Modal xác nhận màu xanh hiện lên, bấm Duyệt -> Tài khoản được duyệt ngay tức khắc và tự động chuyển sang tab "Đã duyệt".
 
-#### Bước 5.1: Thuật toán tính điểm ma trận & Xếp hạng tự động (`/app/coordinator`)
+#### Bước 5.1: Thuật toán tính điểm ma trận & Xếp hạng tự động (`/coordinator/events`)
 * **Lời thoại Presenter**:
   > *"Giờ đây, toàn quyền điều phối thuộc về Ban Tổ Chức. Thay vì phải sao chép điểm thủ công vào bảng tính Excel mất hàng giờ và dễ nhầm lẫn công thức, Ban Tổ Chức chỉ cần bấm 1 nút duy nhất."*
 * **Thao tác Driver**:
-  - Vào màn hình **"Điều phối"** (`/app/coordinator`).
+  - Vào màn hình **"Điều phối"** (`/coordinator/events`).
   - Chọn Vòng thi **"Vòng Chung Kết"**.
   - Bấm nút **"Tính toán bảng xếp hạng (Calculate Rankings)"**.
   - Hệ thống tự động tổng hợp điểm theo công thức:
@@ -228,13 +228,13 @@
   - Bấm nút **"Xuất Bảng Điểm (CSV / Excel)"**.
   - File bảng điểm chính thức được tải về máy tính ngay lập tức. Driver mở nhanh file hoặc chỉ vào thông báo tải thành công.
 
-#### Bước 5.3: Minh chứng Nhật Ký Kiểm Toán Bất Biến (`/app/audit` - BẢO MẬT ĐỈNH CAO!)
+#### Bước 5.3: Minh chứng Nhật Ký Kiểm Toán Bất Biến (`/coordinator/audit-logs` - BẢO MẬT ĐỈNH CAO!)
 * **Lời thoại Presenter**:
   > *"Và đây là minh chứng bảo mật mạnh mẽ nhất cho toàn bộ hệ thống: **Nhật ký kiểm toán (Audit Log Trail)**.*  
   > *Mọi thao tác chúng em vừa thực hiện từ đầu buổi demo — từ bình chọn khán giả, nộp bài thi, giám khảo chấm điểm, khóa điểm, đến tính toán xếp hạng — đều được hệ thống tự động ghi nhận vào Audit Log với thời gian thực, IP máy tính, Actor ID và loại hành động.*  
   > *Hệ thống thiết kế theo nguyên tắc Append-Only, tuyệt đối không cung cấp bất kỳ API nào cho phép chỉnh sửa hay xóa bản ghi kiểm toán này."*
 * **Thao tác Driver**:
-  - Vào màn hình **"Nhật ký kiểm toán"** (`/app/audit`).
+  - Vào màn hình **"Nhật ký kiểm toán"** (`/coordinator/audit-logs`).
   - Cuộn cho Thầy Cô thấy các dòng nhật ký vừa sinh ra: `SCORE_FINALIZE`, `RANKING_COMPUTE`, `VOTE_CAST`.
 
 ---

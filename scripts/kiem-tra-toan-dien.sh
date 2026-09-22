@@ -575,6 +575,44 @@ else
   while IFS= read -r d; do [ -n "$d" ] && hong "$d"; done <<< "$KQ_SO"
 fi
 
+# Duong dan trong tai lieu phai tro toi route co that.
+#
+# Vi sao co phep kiem nay: DEMO_GUIDE.md tung bao nguoi trinh bay mo
+# /app/team, /app/submissions, /app/coordinator va /app/audit — khong cai nao
+# ton tai trong App.tsx, tat ca roi vao trang NotFound. Day la tai lieu duoc
+# mo ra doc TRUOC MAT THAY luc bao ve.
+#
+# Dot sua tay dau tien chi quet dang "localhost:3000/..." nen bat duoc hai
+# cho va bo sot bon cho con lai viet duoi dang `/duong-dan` trong backtick.
+# Quet tay hai lan deu sot — nen dua han vao day.
+LECH_DUONG_DAN="$(python3 - <<'PYEOF'
+import re, glob, os
+
+route = set(re.findall(r'path="([^"]+)"', open("frontend/src/App.tsx", encoding="utf-8").read()))
+
+# Duong dan cua TANG SERVER, khong phai route cua trinh duyet: bo qua.
+#   /api/...          endpoint backend, da co khoi 5 va khoi 6 lo
+#   /actuator/health  Spring Boot Actuator, nam trong danh sach permitAll
+#   /swagger-ui...    springdoc, cung permitAll
+#   /health           HealthController cua BFF
+BO_QUA = ("/api/", "/actuator/", "/swagger-ui", "/v3/api-docs")
+loi = []
+for tep in sorted(glob.glob("*.md")):
+    for i, dong in enumerate(open(tep, encoding="utf-8"), 1):
+        for d in re.findall(r"`(/[a-z][a-z0-9/_:-]*)`", dong) + \
+                 re.findall(r"localhost:\d+(/[a-zA-Z0-9/_:-]*)", dong):
+            if d in route or d in ("/", "/health") or d.startswith(BO_QUA):
+                continue
+            loi.append(f"{tep}:{i} tro toi {d} — khong co route nay trong App.tsx")
+print("\n".join(sorted(set(loi))))
+PYEOF
+)"
+if [ -z "$LECH_DUONG_DAN" ]; then
+  dat "Moi duong dan trong tai lieu deu tro toi route co that"
+else
+  while IFS= read -r d; do [ -n "$d" ] && hong "$d"; done <<< "$LECH_DUONG_DAN"
+fi
+
 # Hai tu dien ngon ngu phai cung bo khoa: thieu mot ben thi ham t() tra ve
 # chinh khoa va man hinh hien "dashboard.title" thay vi chu tieng Viet.
 LECH_KHOA="$(cd frontend && npx tsx -e "
