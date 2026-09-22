@@ -5,6 +5,18 @@ import { eventsApi } from "@/api/events";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { toast } from "@/components/Toast";
+import {
+    IconUsers,
+    IconLock,
+    IconTarget,
+    IconFileText,
+    IconCalendar,
+    IconClock,
+    IconMail,
+    IconCheck,
+    IconAlertCircle,
+    IconAlertTriangle,
+} from "@/components/icons";
 
 type Member = {
     userId: string;
@@ -716,7 +728,7 @@ function MyTeam() {
                                             }
                                         >
                                             <div className="card-icon">
-                                                ✉️
+                                                <IconMail width={24} height={24} />
                                             </div>
 
                                             <h3>
@@ -773,7 +785,7 @@ function MyTeam() {
                         ) : (
                             <div className="dashboard-card empty-card">
                                 <div className="empty-icon">
-                                    📭
+                                    <IconMail width={36} height={36} />
                                 </div>
                                 <h3>{isEn ? "No Invitations" : "Không có lời mời"}</h3>
                                 <p>
@@ -786,7 +798,9 @@ function MyTeam() {
                     <div className="dashboard-section">
                         {!showCreateForm ? (
                             <div className="dashboard-card empty-card team-empty-state">
-                                <div className="empty-icon">👥</div>
+                                <div className="empty-icon">
+                                    <IconUsers width={44} height={44} />
+                                </div>
                                 <h2>{t("team.no_team_title")}</h2>
                                 <p>{t("team.no_team_desc")}</p>
                                 <button
@@ -1002,7 +1016,7 @@ function MyTeam() {
 
                         {message && (
                             <div className="success-message">
-                                ✅ {message}
+                                <IconCheck width={18} height={18} className="inline-icon" /> {message}
                             </div>
                         )}
 
@@ -1010,7 +1024,7 @@ function MyTeam() {
                         <div className="overview-grid">
                             <section className="dashboard-card team-overview-card">
                                 <div className="overview-icon blue">
-                                    👥
+                                    <IconUsers width={32} height={32} />
                                 </div>
 
                                 <div className="overview-info">
@@ -1041,7 +1055,7 @@ function MyTeam() {
                             {registeredTrack && currentRound ? (
                                 <section className="dashboard-card tm-round-card">
                                     <div className="overview-icon green">
-                                        📅
+                                        <IconCalendar width={32} height={32} />
                                     </div>
 
                                     <div className="overview-info">
@@ -1058,8 +1072,8 @@ function MyTeam() {
                                             ).toLocaleString()}
                                         </p>
 
-                                        <p>
-                                            ⏱ {isEn ? "Time Left:" : "Thời gian còn lại:"}{" "}
+                                        <p className="countdown-text">
+                                            <IconClock width={16} height={16} className="inline-icon" /> {isEn ? "Time Left:" : "Thời gian còn lại:"}{" "}
                                             <strong>{timeLeft}</strong>
                                         </p>
                                     </div>
@@ -1067,7 +1081,7 @@ function MyTeam() {
                             ) : (
                                 <section className="dashboard-card tm-round-card">
                                     <div className="overview-icon green">
-                                        🔒
+                                        <IconLock width={32} height={32} />
                                     </div>
 
                                     <div className="overview-info">
@@ -1093,7 +1107,10 @@ function MyTeam() {
                             <section className="dashboard-card">
                                 <div className="card-heading-row">
                                     <div>
-                                        <h2>👥 {isEn ? "Team Members" : "Thành viên đội"}</h2>
+                                        <h2>
+                                            <IconUsers className="heading-icon" width={22} height={22} />
+                                            {isEn ? "Team Members" : "Thành viên đội"}
+                                        </h2>
                                         <p>
                                             {isEn
                                                 ? `${members.length} of 5 members`
@@ -1176,7 +1193,7 @@ function MyTeam() {
                                                     }
                                                 >
                                                     <div className="member-avatar pending">
-                                                        ✉
+                                                        <IconMail width={16} height={16} />
                                                     </div>
 
                                                     <div className="member-name">
@@ -1243,7 +1260,10 @@ function MyTeam() {
                             <section className="dashboard-card">
                                 <div className="card-heading-row">
                                     <div>
-                                        <h2>🎯 {isEn ? "Track Registration" : "Đăng ký hạng mục"}</h2>
+                                        <h2>
+                                            <IconTarget className="heading-icon" width={22} height={22} />
+                                            {isEn ? "Track Registration" : "Đăng ký hạng mục"}
+                                        </h2>
                                         <p>
                                             {isEn
                                                 ? "Select a competition track for your team."
@@ -1298,8 +1318,8 @@ function MyTeam() {
                                         </div>
                                     ) : (
                                         <div className="registered-dashboard">
-                                            <div className="registered-icon">
-                                                ⏳
+                                            <div className="registered-icon waiting">
+                                                <IconClock width={20} height={20} />
                                             </div>
 
                                             <div>
@@ -1314,8 +1334,8 @@ function MyTeam() {
                                     )
                                 ) : (
                                     <div className="registered-dashboard">
-                                        <div className="registered-icon">
-                                            ✓
+                                        <div className="registered-icon success">
+                                            <IconCheck width={20} height={20} strokeWidth={2.5} />
                                         </div>
 
                                         <div>
@@ -1332,7 +1352,10 @@ function MyTeam() {
                         <section className="dashboard-card submission-dashboard-card">
                             <div className="card-heading-row">
                                 <div>
-                                    <h2>📄 {isEn ? "Submission" : "Nộp bài"}</h2>
+                                    <h2>
+                                        <IconFileText className="heading-icon" width={22} height={22} />
+                                        {isEn ? "Submission" : "Nộp bài"}
+                                    </h2>
                                     <p>
                                         {isEn
                                             ? "Submit your project for the current round."
@@ -1343,7 +1366,9 @@ function MyTeam() {
 
                             {submissionLoadError ? (
                                 <div className="submission-alert warning">
-                                    <div className="alert-icon">⚠</div>
+                                    <div className="alert-icon">
+                                        <IconAlertTriangle width={20} height={20} />
+                                    </div>
                                     <div>
                                         <strong>{isEn ? "Failed to load submission" : "Không tải được bài nộp"}</strong>
                                         <p>{isEn ? "Submission data could not be loaded." : "Không tải được dữ liệu bài nộp."}</p>
@@ -1351,7 +1376,9 @@ function MyTeam() {
                                 </div>
                             ) : submissionStatus === "PENDING" ? (
                                 <div className="submission-alert danger">
-                                    <div className="alert-icon">!</div>
+                                    <div className="alert-icon">
+                                        <IconAlertCircle width={20} height={20} />
+                                    </div>
                                     <div>
                                         <strong>{isEn ? "Not submitted" : "Chưa nộp"}</strong>
                                         <p>
@@ -1363,7 +1390,9 @@ function MyTeam() {
                                 </div>
                             ) : submissionStatus === "MISSING" ? (
                                 <div className="submission-alert danger">
-                                    <div className="alert-icon">!</div>
+                                    <div className="alert-icon">
+                                        <IconAlertCircle width={20} height={20} />
+                                    </div>
                                     <div>
                                         <strong>{isEn ? "Missing submission" : "Chưa nộp bài"}</strong>
                                         <p>
@@ -1375,7 +1404,9 @@ function MyTeam() {
                                 </div>
                             ) : submissionStatus === "LATE" ? (
                                 <div className="submission-alert warning">
-                                    <div className="alert-icon">⚠</div>
+                                    <div className="alert-icon">
+                                        <IconAlertTriangle width={20} height={20} />
+                                    </div>
                                     <div>
                                         <strong>{isEn ? "Submitted late" : "Nộp trễ hạn"}</strong>
                                         <p>
@@ -1387,7 +1418,9 @@ function MyTeam() {
                                 </div>
                             ) : (
                                 <div className="submission-alert success">
-                                    <div className="alert-icon">✓</div>
+                                    <div className="alert-icon">
+                                        <IconCheck width={20} height={20} strokeWidth={2.5} />
+                                    </div>
                                     <div>
                                         <strong>{isEn ? "Submitted on time" : "Nộp đúng hạn"}</strong>
                                         <p>
