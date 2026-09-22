@@ -53,37 +53,54 @@ if %ERRORLEVEL% neq 0 (
     goto START_LOCAL_DEMO
 )
 
-echo [DOCKER] Dang khoi dong 4 Container: Database, Backend, BFF Gateway, Frontend...
+echo [DOCKER] Dang dung 4 Container: Database, Backend, BFF Gateway, Frontend...
+echo          docker-compose.yml bat container sau cho khoe (healthy) container truoc
+echo          (Postgres -^> Backend -^> BFF -^> Frontend), nen LAN DAU chay co the mat
+echo          vai phut de tai/dung image + cho Backend khoi dong xong Flyway. Trong
+echo          luc do man hinh se KHONG in them dong nao - do la BINH THUONG, dung tat
+echo          cua so nay.
+echo.
 docker compose up -d
-if %ERRORLEVEL% equ 0 (
+if %ERRORLEVEL% neq 0 (
     echo.
-    echo ===============================================================================
-    echo   CONTAINER DOCKER DA DUOC KHOI DONG THANH CONG!
-    echo   - Frontend Web App:     http://localhost:3000
-    echo   - BFF Gateway (NestJS): http://localhost:4000
-    echo   - Backend Spring Boot:  http://localhost:8080
-    echo   - Swagger API Docs:     http://localhost:8080/swagger-ui.html
-    echo.
-    echo   Tai khoan Demo san sang (Mat khau chung: Demo@123456):
-    echo   - Ban to chuc:  coordinator@demo.local
-    echo   - Giam khao 1:  judge1@demo.local
-    echo   - Giam khao 2:  judge2@demo.local
-    echo   - Mentor:       mentor1@demo.local
-    echo   - Doi thi:      leader@demo.local
-    echo [THONG BAO] Che do Docker chay ngam 4 Container ben trong Docker Desktop.
-    echo             He thong KHONG tao them cac cua so CMD rieng de tranh lam roi man hinh.
-    echo             Trinh duyet Web vua duoc mo tu dong (de len tren cua so CMD nay).
-    echo.
-    echo             Neu ban muon nhin thay 3 cua so CMD chay chu tung dich vu, hay chon Che do [2]!
-    echo ===============================================================================
-    echo.
-    echo Dang tu dong mo trinh duyet truy cap Web App...
-    start http://localhost:3000
-) else (
-    echo.
-    echo [LOI] Khong the khoi dong Docker Compose!
-    echo Vui long kiem tra Docker Desktop hoac chon Che do [2] de chay cuc bo.
+    echo [LOI] Docker Compose khong dua duoc dich vu len!
+    echo Nguyen nhan thuong gap nhat: mot container khong "healthy" dung han - vi du
+    echo Backend cham Flyway lau hon du kien, hoac cong 3000/4000/8080/5432 dang bi
+    echo chuong trinh khac chiem. Xem chi tiet tung dich vu bang lenh:
+    echo     docker compose logs
+    echo Hoac chon Che do [2] de chay cuc bo, khong can Docker.
+    pause
+    goto :eof
 )
+
+echo.
+echo [DOCKER] Ca 4 container da bao khoe manh. Dang doi Frontend tra loi tren cong
+echo          3000 truoc khi mo trinh duyet (toi da 60 giay)...
+powershell -NoProfile -Command "$ok=$false; for($i=0;$i -lt 30;$i++){ try { $r = Invoke-WebRequest -UseBasicParsing -Uri 'http://localhost:3000/' -TimeoutSec 2; if ($r.StatusCode -eq 200) { $ok=$true; break } } catch {}; Start-Sleep -Seconds 2 }; if ($ok) { Write-Host '[OK] Frontend da tra loi.' } else { Write-Host '[CANH BAO] Frontend chua tra loi sau 60 giay - van mo trinh duyet, neu trang trang thi doi them roi bam F5, hoac xem: docker compose logs frontend' }"
+
+echo.
+echo ===============================================================================
+echo   HE THONG DOCKER DA SAN SANG!
+echo   - Frontend Web App:     http://localhost:3000
+echo   - BFF Gateway (NestJS): http://localhost:4000
+echo   - Backend Spring Boot:  http://localhost:8080
+echo   - Swagger API Docs:     http://localhost:8080/swagger-ui.html
+echo.
+echo   Tai khoan Demo san sang (Mat khau chung: Demo@123456):
+echo   - Ban to chuc:  coordinator@demo.local
+echo   - Giam khao 1:  judge1@demo.local
+echo   - Giam khao 2:  judge2@demo.local
+echo   - Mentor:       mentor1@demo.local
+echo   - Doi thi:      leader@demo.local
+echo [THONG BAO] Che do Docker chay ngam 4 Container ben trong Docker Desktop.
+echo             He thong KHONG tao them cac cua so CMD rieng de tranh lam roi man hinh.
+echo             Trinh duyet Web vua duoc mo tu dong (de len tren cua so CMD nay).
+echo.
+echo             Neu ban muon nhin thay 3 cua so CMD chay chu tung dich vu, hay chon Che do [2]!
+echo ===============================================================================
+echo.
+echo Dang tu dong mo trinh duyet truy cap Web App...
+start http://localhost:3000
 pause
 goto :eof
 
@@ -113,19 +130,19 @@ if not exist "frontend\node_modules" (
 )
 
 echo [1/3] Dang mo Terminal cho Backend Spring Boot (cong 8080, Profile Demo)...
+echo       (Lan dau chay se lau hon - Maven tai thu vien ve neu chua co san)
 start "SHMS [1] - Backend Spring Boot" cmd /k "cd /d "%~dp0backend" && mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=demo"
-
-timeout /t 6 /nobreak >nul
 
 echo [2/3] Dang mo Terminal cho BFF Gateway NestJS (cong 4000)...
 start "SHMS [2] - BFF Gateway NestJS" cmd /k "cd /d "%~dp0bff" && npm run start:dev"
 
-timeout /t 3 /nobreak >nul
-
 echo [3/3] Dang mo Terminal cho Frontend React 19 (cong 3000)...
 start "SHMS [3] - Frontend React 19" cmd /k "cd /d "%~dp0frontend" && npm run dev"
 
-timeout /t 2 /nobreak >nul
+echo.
+echo Dang doi Backend va BFF san sang truoc khi mo trinh duyet (toi da 90 giay)...
+echo Ba cua so CMD rieng se tiep tuc chay ben duoi de anh xem nhat ky tung dich vu.
+powershell -NoProfile -Command "$be=$false; $bff=$false; for($i=0;$i -lt 45;$i++){ if(-not $be){ try { $r=Invoke-WebRequest -UseBasicParsing -Uri 'http://localhost:8080/actuator/health' -TimeoutSec 2; if($r.StatusCode -eq 200){$be=$true; Write-Host '[OK] Backend da san sang (cong 8080)'} } catch {} }; if(-not $bff){ try { $r=Invoke-WebRequest -UseBasicParsing -Uri 'http://localhost:4000/health' -TimeoutSec 2; if($r.StatusCode -eq 200){$bff=$true; Write-Host '[OK] BFF da san sang (cong 4000)'} } catch {} }; if($be -and $bff){break}; Start-Sleep -Seconds 2 }; if(-not ($be -and $bff)){ Write-Host '[CANH BAO] Chua thay du Backend va BFF san sang sau 90 giay - xem lai 3 cua so CMD, co the Maven/npm van dang tai thu vien lan dau.' }"
 
 echo.
 echo ===============================================================================
