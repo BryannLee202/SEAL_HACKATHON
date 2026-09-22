@@ -55,10 +55,10 @@ Hệ thống được thiết kế theo mô hình **3-Tier Architecture tách bi
                                      ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                         CORE BACKEND SERVICES                           │
-│                      Spring Boot 3 + Java 21 (Port 8080)                │
-│   - Spring Security 6 + JJWT Filter                                     │
-│   - 29 Business Services + 24 REST Controllers                          │
-│   - Flyway Database Migration (V1 → V6)                                 │
+│                     Spring Boot 4.1 + Java 21 (Port 8080)               │
+│   - Spring Security 7 + JJWT Filter                                     │
+│   - 24 Business Services + 23 REST Controllers                          │
+│   - Flyway Database Migration (V1 → V9)                                 │
 │   - Thuật toán tính điểm Rubric có trọng số & Phân tích RBL Variance    │
 └────────────────────────────────────┬────────────────────────────────────┘
                                      │ JDBC / Connection Pooling
@@ -66,7 +66,7 @@ Hệ thống được thiết kế theo mô hình **3-Tier Architecture tách bi
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                            DATABASE LAYER                               │
 │                         PostgreSQL 16 (Port 5432)                       │
-│   - 21 Quan hệ thực thể (Relational Schema)                             │
+│   - 20 Quan hệ thực thể (Relational Schema)                             │
 │   - Toàn vẹn tham chiếu & Ràng buộc Audit Log bất biến                  │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
@@ -107,7 +107,7 @@ Hệ thống được thiết kế theo mô hình **3-Tier Architecture tách bi
 
 ### Backend
 - **Framework**: Spring Boot 4.1, Java 21 LTS
-- **Bảo mật**: Spring Security 6, JJWT (HMAC-SHA256), BCrypt Password Hashing
+- **Bảo mật**: Spring Security 7, JJWT (HMAC-SHA256), BCrypt Password Hashing
 - **ORM & DB**: Spring Data JPA, Hibernate ORM, Flyway Migration
 - **Testing**: JUnit 5, Mockito, Spring Boot Test (424 tests pass)
 
@@ -252,7 +252,7 @@ bash scripts/kiem-tra-toan-dien.sh
 |---|---|---|
 | 1 | Biên dịch sạch cả ba tầng từ thư mục `target/` rỗng | Lỗi chỉ lộ khi build lại từ đầu |
 | 2 | Chạy **mọi** lệnh npm được khai báo ở cả hai tầng Node | Lệnh không ai gọi bao giờ (`npm run lint` của BFF) |
-| 3 | Flyway V001–V008 trên **Postgres thật** + đăng nhập đủ tài khoản | Cú pháp riêng của Postgres, sai checksum, dữ liệu mẫu lệch giữa H2 và Postgres |
+| 3 | Flyway V001–V009 trên **Postgres thật** + đăng nhập đủ tài khoản | Cú pháp riêng của Postgres, sai checksum, dữ liệu mẫu lệch giữa H2 và Postgres |
 | 4 | Khởi động thật ở profile `demo`, đăng nhập từng tài khoản README công bố | Tài khoản có trong tài liệu nhưng không có trong dữ liệu |
 | 5 | Quét **toàn bộ 88 endpoint** (danh sách sinh từ mã nguồn), không cái nào được trả 5xx | Lỗi 500 ở endpoint không ai nghĩ tới |
 | 6 | Đối chiếu từng ô với ma trận phân quyền kỳ vọng `scripts/ma-tran-quyen.txt` | Endpoint quên `@PreAuthorize`, hoặc đổi quyền mà quên cập nhật kỳ vọng |
@@ -276,15 +276,18 @@ Biến môi trường để chạy nhanh khi cần: `BO_QUA_POSTGRES=1` (bỏ kh
 
 ```
 SEAL_HACKATHON/
-├── backend/                         # Core Backend Spring Boot 3
+├── backend/                         # Core Backend Spring Boot 4.1
 │   ├── src/main/java/com/seal/hackathon/
+│   │   ├── config/                  # SecurityConfig, CORS, cấu hình AI
+│   │   ├── controller/              # 23 REST Controllers
 │   │   ├── domain/                  # Entities, Enums (EventStatus, TeamStatus...)
+│   │   ├── dto/                     # Record request/response
+│   │   ├── exception/               # ApiException & GlobalExceptionHandler
 │   │   ├── repository/              # Spring Data JPA Repositories
-│   │   ├── service/                 # Business logic & Algorithms (RBL, Scoring...)
-│   │   ├── web/rest/                # 24 REST Controllers
-│   │   └── security/                # JWT Filter, RBAC Authorization
+│   │   ├── security/                # JWT Filter, RBAC Authorization
+│   │   └── service/                 # Business logic & Algorithms (RBL, Scoring...)
 │   └── src/main/resources/
-│       ├── db/migration/            # Flyway Migrations (V001 -> V006)
+│       ├── db/migration/            # Flyway Migrations (V001 -> V009)
 │       └── data-demo.sql            # Dữ liệu seed phục vụ demo
 ├── bff/                             # Backend-For-Frontend Proxy (NestJS)
 │   ├── src/                         # Auth proxy, Cookie httpOnly handler
@@ -298,6 +301,7 @@ SEAL_HACKATHON/
 │   │   └── pages/                   # 24 Màn hình (Landing, Vote, Ranking, Judge...)
 │   └── Dockerfile
 ├── docs/                            # Hồ sơ tài liệu kỹ thuật & kiến trúc ADR
+├── scripts/                         # Bộ kiểm tra toàn diện, ma trận quyền, truy xuất
 ├── docker-compose.yml               # File cấu hình triển khai 4 container
 ├── DEMO_GUIDE.md                    # Cẩm nang hướng dẫn chạy demo cho nhóm
 ├── DEFENSE_REPORT_AND_PITCH.md      # Báo cáo chức năng & Chiến lược bảo vệ đồ án A+

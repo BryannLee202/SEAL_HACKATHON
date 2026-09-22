@@ -86,7 +86,7 @@ Thời lượng lý tưởng: **10 – 12 phút**. Hãy dẫn dắt theo cấu t
   > *"Điểm đặc biệt nhất về mặt an ninh thông tin: Mọi thao tác chấm điểm vừa rồi đã được ghi nhận tự động vào Audit Log với đầy đủ IP, Thời gian và Hành động. Dữ liệu này là bất biến, bảo vệ tính liêm chính của giải thi."*
 
 ### Phút 11–12: Kết Luận & Thước Đo Chất Lượng Dự Án
-- Khẳng định tính ổn định: **101 unit tests Frontend đạt 100% pass**, 94 tests Backend, triển khai 1-click qua Docker Compose.
+- Khẳng định tính ổn định: **146 unit tests Frontend đạt 100% pass**, 424 tests Backend, triển khai 1-click qua Docker Compose.
 - Cảm ơn Hội đồng và sẵn sàng bước vào phần Hỏi & Đáp (Q&A).
 
 ---
@@ -162,8 +162,8 @@ Dưới đây là 12 câu hỏi "tủ" mà các thầy cô chuyên môn phản b
 ### ❓ Câu 9: Nhóm đã thực hiện kiểm thử phần mềm như thế nào để đảm bảo chất lượng?
 * **Đáp ăn điểm**:
   > *"Dạ, nhóm đã thiết lập hệ thống kiểm thử tự động toàn diện:*  
-  > *- **Frontend**: 101 unit tests viết bằng Vitest và React Testing Library bao phủ từ xác thực, bình chọn, bảng xếp hạng đến các tương tác UI (đạt tỷ lệ pass 100%).*  
-  > *- **Backend**: 94 tests tích hợp và unit tests bằng JUnit 5 & Mockito kiểm thử các luật nghiệp vụ tính điểm, phân quyền, và toàn vẹn dữ liệu.*  
+  > *- **Frontend**: 146 unit tests viết bằng Vitest và React Testing Library bao phủ từ xác thực, bình chọn, bảng xếp hạng đến các tương tác UI (đạt tỷ lệ pass 100%).*  
+  > *- **Backend**: 424 tests tích hợp và unit tests bằng JUnit 5 & Mockito kiểm thử các luật nghiệp vụ tính điểm, phân quyền, và toàn vẹn dữ liệu.*  
   > *- **DevOps**: Tích hợp Docker Healthcheck tự động giám sát tình trạng sống/chết của các container."*
 
 ---
@@ -198,8 +198,8 @@ Dưới đây là 12 câu hỏi "tủ" mà các thầy cô chuyên môn phản b
 ### ❓ Câu 14: Nhóm đã thực hiện kiểm thử (Testing) như thế nào để đảm bảo chất lượng phần mềm?
 * **Đáp ăn điểm**:
   > *"Dạ, nhóm đã thiết lập quy trình kiểm thử tự động toàn diện từ unit test đến integration test:*  
-  > *• **Frontend**: Đạt **101/101 unit tests pass 100%** sử dụng Vitest & React Testing Library, bao phủ toàn bộ Context, logic ưu tiên Dashboard, quyền hạn RBAC và các component trọng yếu.*  
-  > *• **Backend**: Bao phủ 94 bài kiểm thử JUnit 5 & Mockito cho các dịch vụ nghiệp vụ cốt lõi, xác thực Spring Security và tính toán ma trận điểm số.*  
+  > *• **Frontend**: Đạt **146/146 unit tests pass 100%** sử dụng Vitest & React Testing Library, bao phủ toàn bộ Context, logic ưu tiên Dashboard, quyền hạn RBAC và các component trọng yếu.*  
+  > *• **Backend**: Bao phủ 424 bài kiểm thử JUnit 5 & Mockito cho các dịch vụ nghiệp vụ cốt lõi, xác thực Spring Security và tính toán ma trận điểm số.*  
   > *• **Đóng gói**: Ứng dụng vượt qua khâu đóng gói Docker multi-stage build nghiêm ngặt, đảm bảo không có bất kỳ lỗi TypeScript hay runtime nào."*
 
 ---

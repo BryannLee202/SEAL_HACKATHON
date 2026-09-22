@@ -99,8 +99,31 @@ npm run build
 npm test
 ```
 
-Cả hai đều có CI tự chạy khi mở PR, nhưng chạy trước ở máy mình thì đỡ mất
-một vòng chờ.
+**BFF:**
+```bash
+cd bff
+npm run lint
+npm run build
+npm test
+```
+
+**Toàn hệ thống (khuyến nghị trước khi mở PR lớn):**
+```bash
+bash scripts/kiem-tra-toan-dien.sh
+```
+
+Lệnh này dựng thật cả ba tầng lên rồi đo: chạy mọi lệnh npm được khai báo,
+áp Flyway trên Postgres thật, đăng nhập từng tài khoản demo, quét toàn bộ 88
+endpoint xem có cái nào trả 5xx, đối chiếu ma trận phân quyền, và mở Chromium
+đi hết mọi trang của mọi vai. Nó thoát mã khác 0 nếu có bất kỳ vấn đề nào.
+
+Chạy nhanh khi cần: `BO_QUA_POSTGRES=1 BO_QUA_TRINH_DUYET=1 bash scripts/kiem-tra-toan-dien.sh`.
+
+Tất cả đều có CI tự chạy khi mở PR — kể cả bộ kiểm toàn diện, qua workflow
+`e2e-ci.yml` — nhưng chạy trước ở máy mình thì đỡ mất một vòng chờ.
+
+Lưu ý khi thêm endpoint mới: `scripts/ma-tran-quyen.txt` ghi quyền **kỳ vọng**
+cho từng endpoint. Thêm endpoint mà quên thêm dòng thì CI báo thiếu dòng.
 
 ---
 

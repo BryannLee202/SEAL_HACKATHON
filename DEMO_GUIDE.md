@@ -22,7 +22,7 @@
 |:---:|---|---|---|
 | **`[1]`** *(Mặc định / Enter)* | **Khởi động trọn gói Docker Compose** | **Khuyên dùng khi đi thi / Demo Thầy Cô** | Tự kích hoạt 4 Container ngầm (`Frontend`, `BFF`, `Backend`, `Database PostgreSQL`), không làm rối màn hình, tự động bật trình duyệt `http://localhost:3000`. |
 | **`[2]`** | **Khởi động Cục bộ (Local Mode)** | **Khi máy chưa bật Docker / Máy yếu / Cần sửa code** | Tự động mở 3 cửa sổ terminal riêng biệt. Sử dụng cơ sở dữ liệu in-memory H2 nạp sẵn dữ liệu demo từ `data-demo.sql`. Có tính năng hot-reload, sửa code giao diện/API cập nhật ngay. |
-| **`[3]`** | **Chạy Bộ Kiểm Thử Tự Động (Run Tests)** | **Khi Thầy Cô yêu cầu chứng minh chất lượng kiểm thử** | Tự động gọi `run-automated-tests.bat` để chạy 101 tests Vitest Frontend, 94 tests JUnit Backend và Ma trận RTM đạt 100% Xanh. |
+| **`[3]`** | **Chạy Bộ Kiểm Thử Tự Động (Run Tests)** | **Khi Thầy Cô yêu cầu chứng minh chất lượng kiểm thử** | Tự động gọi `run-automated-tests.bat` để chạy 146 tests Vitest Frontend, 424 tests JUnit Backend và Ma trận RTM đạt 100% Xanh. |
 | **`[4]`** | **Dừng toàn bộ Docker (Stop All)** | **Sau khi kết thúc buổi demo / Dọn dẹp RAM** | Thực thi `docker compose down`, tắt sạch các container và giải phóng RAM, CPU máy tính. |
 | **`[5]`** | **Thoát (Exit)** | **Khi muốn đóng console** | Tắt màn hình dòng lệnh mà không thay đổi trạng thái các dịch vụ đang chạy. |
 
@@ -37,8 +37,8 @@
 - Driver chỉ cần **nhấp đúp chuột mở file `run-automated-tests.bat`**.
 - Hệ thống tự động thực thi và hiển thị kết quả 100% XANH tuyệt đối qua 4 tầng:
   1. **Ma trận RTM (Traceability)**: 27/27 Use Cases đối soát chuẩn xác giữa yêu cầu và mã nguồn.
-  2. **Backend Unit Tests**: Toàn bộ **94 bài kiểm thử** (Spring Boot 3 / JUnit 5) đạt `BUILD SUCCESS`.
-  3. **Frontend Tests**: Toàn bộ **101 bài kiểm thử** (React 19 / Vitest) đạt `101 passed (100%)`.
+  2. **Backend Unit Tests**: Toàn bộ **424 bài kiểm thử** (Spring Boot 4.1 / JUnit 5) đạt `BUILD SUCCESS`.
+  3. **Frontend Tests**: Toàn bộ **146 bài kiểm thử** (React 19 / Vitest) đạt `146 passed (100%)`.
   4. **TypeScript & Bundler**: Trình biên dịch báo cáo `CLEAN (0 errors)` sẵn sàng production.
 - Đây chính là **"vũ khí hủy diệt"** giúp nhóm khẳng định tiêu chuẩn kỹ thuật phần mềm vượt trội!
 
@@ -52,9 +52,9 @@
 | Cửa sổ | Chế độ mở | Đăng nhập tài khoản | Màn hình mở sẵn | Mục đích demo |
 |:---:|---|---|---|---|
 | **Cửa sổ 1** | Chrome thường | *(Không đăng nhập)* | `http://localhost:3000` | Demo Trang chủ, Dark Mode, Song ngữ, Trợ lý AI SEAL Bot, Bình chọn khán giả (`/vote`), Bảng xếp hạng (`/rankings`) |
-| **Cửa sổ 2** | Profile 1 hoặc Ẩn danh 1 | `leader@demo.local` / `Demo@123456` | `http://localhost:3000/app/team` | Demo góc nhìn Đội trưởng: Xem thành viên, nộp link Git repo, slide, tài liệu demo |
+| **Cửa sổ 2** | Profile 1 hoặc Ẩn danh 1 | `leader@demo.local` / `Demo@123456` | `http://localhost:3000/team` | Demo góc nhìn Đội trưởng: Xem thành viên, nộp link Git repo, slide, tài liệu demo |
 | **Cửa sổ 3** | Profile 2 hoặc Ẩn danh 2 | `judge1@demo.local` / `Demo@123456` | `http://localhost:3000/judge` | Demo góc nhìn Giám khảo: Vòng hiệu chuẩn RBL, chấm điểm ma trận tiêu chí có trọng số, khóa điểm |
-| **Cửa sổ 4** | Profile 3 hoặc Ẩn danh 3 | `coordinator@demo.local` / `Demo@123456` | `http://localhost:3000/app/coordinator` | Demo góc nhìn Ban Tổ Chức: Tính xếp hạng tự động, thăng hạng Top N, xuất CSV/Excel, soi Audit Log |
+| **Cửa sổ 4** | Profile 3 hoặc Ẩn danh 3 | `coordinator@demo.local` / `Demo@123456` | `http://localhost:3000/coordinator/events` | Demo góc nhìn Ban Tổ Chức: Tính xếp hạng tự động, thăng hạng Top N, xuất CSV/Excel, soi Audit Log |
 
 👉 *Khi thuyết trình, Driver chỉ cần dùng tổ hợp phím **`Alt + Tab`** để chuyển đổi giữa 4 cửa sổ trong tích tắc!*
 
@@ -244,7 +244,7 @@
   > *"Kính thưa Quý Thầy Cô trong Hội đồng, tóm lại hệ thống SEAL Hackathon Management System của nhóm chúng em tự hào đạt được 3 giá trị cốt lõi:*  
   > *1. **Về mặt kỹ thuật**: Áp dụng kiến trúc 3 tầng bảo mật BFF che giấu token, tích hợp Trợ lý AI và hỗ trợ Song ngữ toàn diện.*  
   > *2. **Về mặt học thuật**: Ứng dụng thành công nghiên cứu hiệu chuẩn RBL và phân tích phương sai liên đánh giá viên ICC.*  
-  > *3. **Về mặt chất lượng phần mềm**: Đạt tỷ lệ kiểm thử tự động **101/101 tests Frontend pass 100%**, 94 tests Backend, triển khai 1-click Docker Compose sẵn sàng đưa vào vận hành thực tế.*  
+  > *3. **Về mặt chất lượng phần mềm**: Đạt tỷ lệ kiểm thử tự động **146/146 tests Frontend pass 100%**, 424 tests Backend, triển khai 1-click Docker Compose sẵn sàng đưa vào vận hành thực tế.*  
   > *Nhóm chúng em xin chân thành cảm ơn Thầy Cô đã lắng nghe và rất mong nhận được những câu hỏi góp ý từ Hội đồng!"*
 * **Thao tác Driver**:
   - Chuyển màn hình về Trang chủ lung linh với linh vật robot, sẵn sàng thao tác bất kỳ màn hình nào Thầy Cô yêu cầu kiểm tra.
