@@ -82,9 +82,9 @@ export const translations = {
     // Team & Team Creation
     "team.title": "Đội của tôi",
     "team.subtitle": "Quản lý đội thi và chuẩn bị cho các vòng thi.",
-    "team.no_team_title": "Bạn chưa có đội thi nào",
+    "team.no_team_title": "Bạn chưa có đội nào",
     "team.no_team_desc": "Hãy tạo một đội thi mới hoặc đợi lời mời từ trưởng nhóm để tham gia cuộc thi.",
-    "team.create_btn": "Tạo đội thi mới",
+    "team.create_btn": "Tạo đội",
     "team.wizard.step1": "Thông tin đội",
     "team.wizard.step2": "Thành viên",
     "team.wizard.step3": "Xác nhận",

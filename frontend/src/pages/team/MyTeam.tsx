@@ -3,6 +3,7 @@ import PersonPicker from "../../components/PersonPicker";
 import { teamApi } from "@/api/teamApi";
 import { eventsApi } from "@/api/events";
 import { useAuth } from "@/context/AuthContext";
+import { useLanguage } from "@/context/LanguageContext";
 import { toast } from "@/components/Toast";
 
 type Member = {
@@ -41,6 +42,8 @@ type EventOption = {
 
 function MyTeam() {
     const { user, refreshPermissions } = useAuth();
+    const { t, language } = useLanguage();
+    const isEn = language === "en";
 
     const [hasTeam, setHasTeam] = useState(false);
     const [teamName, setTeamName] = useState("");
@@ -48,399 +51,354 @@ function MyTeam() {
     const [eventId, setEventId] = useState("");
     const [events, setEvents] = useState<EventOption[]>([]);
     const [selectedEventId, setSelectedEventId] = useState("");
-
     const [showCreateForm, setShowCreateForm] = useState(false);
     const [createTeamStep, setCreateTeamStep] = useState(1);
     const [selectedPeople, setSelectedPeople] = useState<string[]>([]);
-
-    const [showInviteForm, setShowInviteForm] = useState(false);
-    const [inviteEmail, setInviteEmail] = useState("");
+    const [isInvitedUser, setIsInvitedUser] = useState(false);
 
     const [members, setMembers] = useState<Member[]>([]);
 
     /**
      * Đội trưởng hay không đọc từ vai trò TRONG ĐỘI, không phải vai trò hệ thống.
-     *
-     * Trước đây dòng này là `hasRole("TEAM_LEADER")`. Nhưng không một chỗ nào
-     * trong backend gán vai trò TEAM_LEADER cho ai: AuthService.register() chỉ
-     * gán TEAM_MEMBER, và TeamService.create() không gán gì thêm — dù ghi chú ở
-     * AuthService dòng 74 nói là "granted implicitly when they create a team".
-     *
-     * Nên isTeamLeader LUÔN false, và ba việc chính của đội trưởng — mời thành
-     * viên, xoá thành viên, đăng ký hạng mục — bị chặn với tất cả mọi người,
-     * kèm thông báo "Chỉ đội trưởng mới có quyền..." mà chính đội trưởng cũng
-     * nhận được.
-     *
-     * Vai trò trong đội vốn đã nằm sẵn ở team_member.role_in_team và backend đã
-     * trả về; đọc thẳng từ đó vừa đúng vừa không cần thêm gì ở phía máy chủ.
+     * Vai trò trong đội nằm ở team_member.role_in_team và backend trả về "Leader".
      */
     const isTeamLeader = members.some(
-        (m) => m.userId === user?.userId && m.role === "Leader",
+        (m) => m.userId === user?.userId && m.role === "Leader"
     );
 
     const [invitations, setInvitations] = useState<Invitation[]>([]);
+    const [incomingInvitations, setIncomingInvitations] = useState<IncomingInvitation[]>([]);
+    const [showInviteForm, setShowInviteForm] = useState(false);
+    const [inviteEmail, setInviteEmail] = useState("");
 
-    // Incoming team invitations
-    const [incomingInvitations, setIncomingInvitations] =
-        useState<IncomingInvitation[]>([]);
-
-    // Invitation view state
-    const isInvitedUser = incomingInvitations.length > 0;
-
-    // Notification message
-    const [message, setMessage] = useState("");
-
-    // Track
+    const [tracks, setTracks] = useState<Track[]>([]);
     const [selectedTrack, setSelectedTrack] = useState("");
     const [registeredTrack, setRegisteredTrack] = useState("");
-    const [tracks, setTracks] = useState<Track[]>([]);
 
-    // Submission
-    const [showSubmissionForm, setShowSubmissionForm] =
-        useState(false);
+    const [_rounds, setRounds] = useState<Round[]>([]);
+    const [currentRound, setCurrentRound] = useState<Round | null>(null);
+    const [timeLeft, setTimeLeft] = useState("");
+    const [isDeadlinePassed, setIsDeadlinePassed] = useState(false);
 
+    const [submissionStatus, setSubmissionStatus] = useState<
+        "PENDING" | "ON_TIME" | "LATE" | "MISSING" | null
+    >(null);
+    const [submitted, setSubmitted] = useState(false);
+    const [submissionLoadError, setSubmissionLoadError] = useState(false);
+    const [showSubmissionForm, setShowSubmissionForm] = useState(false);
     const [repositoryUrl, setRepositoryUrl] = useState("");
     const [demoUrl, setDemoUrl] = useState("");
     const [reportSlideUrl, setReportSlideUrl] = useState("");
 
-    const [submitted, setSubmitted] = useState(false);
+    const [message, setMessage] = useState("");
 
-    const [submissionLoadError, setSubmissionLoadError] =
-        useState(false);
-
-    const [submissionStatus, setSubmissionStatus] =
-        useState<"PENDING" | "ON_TIME" | "LATE" | "MISSING">(
-            "PENDING"
-        );
-
-    const [currentRound, setCurrentRound] =
-        useState<Round | null>(null);
-
-    const [timeLeft, setTimeLeft] = useState("");
-
-    const [isDeadlinePassed, setIsDeadlinePassed] =
-        useState(false);
-
+    // 1. Tải đội hiện tại
     useEffect(() => {
-    const loadMyTeams = async () => {
-        try {
-            const teams = await teamApi.getMyTeams();
+        const loadMyTeam = async () => {
+            try {
+                const teams = await teamApi.getMyTeams();
 
-            if (teams.length === 0) {
-                setHasTeam(false);
+                if (teams.length > 0) {
+                    const team = teams[0];
+
+                    setTeamId(team.id);
+                    setEventId(team.eventId);
+                    setHasTeam(true);
+                    setTeamName(team.name);
+
+                    setMembers(
+                        team.members.map((member) => ({
+                            userId: member.userId,
+                            name: member.fullName || member.email,
+                            email: member.email,
+                            role:
+                                member.roleInTeam === "LEADER"
+                                    ? "Leader"
+                                    : "Member",
+                        }))
+                    );
+
+                    if (team.trackName) {
+                        setRegisteredTrack(team.trackName);
+                    }
+                } else {
+                    setHasTeam(false);
+                }
+            } catch (error) {
+                console.error("Failed to load my teams:", error);
+            }
+        };
+
+        loadMyTeam();
+    }, []);
+
+    // 2. Tải lời mời
+    useEffect(() => {
+        const loadMyInvites = async () => {
+            try {
+                const invites = await teamApi.getMyInvites();
+
+                if (invites.length > 0) {
+                    setIsInvitedUser(true);
+                    setIncomingInvitations(
+                        invites.map((invite) => ({
+                            id: invite.id,
+                            teamName: invite.teamName,
+                            invitedEmail: invite.invitedEmail,
+                        }))
+                    );
+                } else {
+                    setIsInvitedUser(false);
+                    setIncomingInvitations([]);
+                }
+            } catch (error) {
+                console.error("Failed to load invites:", error);
+            }
+        };
+
+        loadMyInvites();
+    }, []);
+
+    // 3. Tải hạng mục khi đã có đội
+    useEffect(() => {
+        const loadTracks = async () => {
+            if (!eventId) {
                 return;
             }
 
-            const team = teams[0];
+            try {
+                const tracksData = await eventsApi.listTracks(eventId);
 
-            setTeamId(team.id);
-            setEventId(team.eventId);
-            setHasTeam(true);
-            setTeamName(team.name);
-
-            setMembers(
-    team.members.map((member) => ({
-    userId: member.userId,
-    name: member.fullName || member.email,
-    email: member.email,
-    role:
-        member.roleInTeam === "LEADER"
-            ? "Leader"
-            : "Member",
-}))
-);
-
-            if (team.trackName) {
-                setRegisteredTrack(team.trackName);
-            }
-        } catch (error) {
-            console.error(
-                "Failed to load team information:",
-                error
-            );
-        }
-    };
-
-    void loadMyTeams();
-}, []);
-
-    useEffect(() => {
-    const loadRounds = async () => {
-        if (!eventId) {
-            return;
-        }
-
-        try {
-            const rounds = await eventsApi.listRounds(eventId);
-
-            if (rounds.length === 0) {
-                setCurrentRound(null);
-                return;
-            }
-
-            const sortedRounds = [...rounds].sort(
-                (a, b) => a.order - b.order
-            );
-
-            setCurrentRound(sortedRounds[0]);
-        } catch (error) {
-            console.error(
-                "Failed to load rounds:",
-                error
-            );
-        }
-    };
-
-    void loadRounds();
-}, [eventId]);
-
-useEffect(() => {
-    const loadTracks = async () => {
-        if (!eventId) return;
-
-        try {
-            const data = await eventsApi.listTracks(eventId);
-            setTracks(data);
-        } catch (error) {
-            console.error("Failed to load tracks:", error);
-        }
-    };
-
-    void loadTracks();
-}, [eventId]);
-
-useEffect(() => {
-    const loadSubmissionStatus = async () => {
-        if (!teamId || !currentRound) return;
-
-        try {
-            const response = await teamApi.getSubmissionStatus(
-                teamId,
-                currentRound.id
-            );
-
-            setSubmissionStatus(response.status);
-
-            const hasSubmission =
-                response.status === "ON_TIME" ||
-                response.status === "LATE";
-
-            setSubmitted(hasSubmission);
-
-            if (hasSubmission) {
-                const submission = await teamApi.getRoundSubmission(
-                    teamId,
-                    currentRound.id
-                );
-
-                setRepositoryUrl(submission.repoUrl);
-                setDemoUrl(submission.demoUrl || "");
-                setReportSlideUrl(submission.slideUrl || "");
-            }
-
-            setSubmissionLoadError(false);
-        } catch (error) {
-            console.error("Failed to load submission status:", error);
-            setSubmissionLoadError(true);
-        }
-    };
-
-    void loadSubmissionStatus();
-}, [teamId, currentRound]);
-
-
-
-
-useEffect(() => {
-    const loadMyInvites = async () => {
-        try {
-            const invites = await teamApi.getMyInvites();
-
-            setIncomingInvitations(
-                invites
-                    .filter(
-                        (invite) =>
-                            invite.status.toLowerCase() === "pending"
-                    )
-                    .map((invite) => ({
-                        id: invite.id,
-                        teamName: invite.teamName,
-                        invitedEmail: invite.invitedEmail,
+                setTracks(
+                    tracksData.map((track) => ({
+                        id: track.id,
+                        name: track.name,
                     }))
-            );
-        } catch (error) {
-            console.error(
-                "Failed to load team invitations:",
-                error
-            );
+                );
+            } catch (error) {
+                console.error("Failed to load tracks:", error);
+            }
+        };
+
+        if (hasTeam && eventId) {
+            loadTracks();
         }
-    };
+    }, [hasTeam, eventId]);
 
-    void loadMyInvites();
-}, []);
-
-
+    // 4. Tải vòng thi
     useEffect(() => {
-        if (!currentRound) {
+        const loadRounds = async () => {
+            if (!eventId) {
+                return;
+            }
+
+            try {
+                const roundsData = await eventsApi.listRounds(eventId);
+
+                const mappedRounds: Round[] = roundsData.map((round) => ({
+                    id: round.id,
+                    name: round.name,
+                    submissionDeadline: round.submissionDeadline,
+                }));
+
+                setRounds(mappedRounds);
+
+                if (mappedRounds.length > 0) {
+                    setCurrentRound(mappedRounds[0]);
+                }
+            } catch (error) {
+                console.error("Failed to load rounds:", error);
+            }
+        };
+
+        if (hasTeam && eventId) {
+            loadRounds();
+        }
+    }, [hasTeam, eventId]);
+
+    // 5. Đếm ngược hạn nộp
+    useEffect(() => {
+        if (!currentRound?.submissionDeadline) {
             setTimeLeft("");
             setIsDeadlinePassed(false);
             return;
         }
+
         const updateCountdown = () => {
+            const now = new Date().getTime();
             const deadlineTime = new Date(
                 currentRound.submissionDeadline
             ).getTime();
 
-            const now = new Date().getTime();
-
             const difference = deadlineTime - now;
 
             if (difference <= 0) {
-                setTimeLeft("Đã quá hạn nộp");
+                setTimeLeft(isEn ? "Deadline passed" : "Đã quá hạn nộp");
                 setIsDeadlinePassed(true);
                 return;
             }
 
-            setIsDeadlinePassed(false);
-
-            const days = Math.floor(
-                difference / (1000 * 60 * 60 * 24)
-            );
-
+            const days = Math.floor(difference / (1000 * 60 * 60 * 24));
             const hours = Math.floor(
-                (difference / (1000 * 60 * 60)) % 24
+                (difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
             );
-
             const minutes = Math.floor(
-                (difference / (1000 * 60)) % 60
+                (difference % (1000 * 60 * 60)) / (1000 * 60)
             );
+            const seconds = Math.floor((difference % (1000 * 60)) / 1000);
 
-            const seconds = Math.floor(
-                (difference / 1000) % 60
-            );
-
-            setTimeLeft(
-                `${days}d ${hours}h ${minutes}m ${seconds}s`
-            );
+            setTimeLeft(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+            setIsDeadlinePassed(false);
         };
 
         updateCountdown();
 
-        const timer = setInterval(updateCountdown, 1000);
+        const intervalId = window.setInterval(updateCountdown, 1000);
 
-        return () => clearInterval(timer);
-    }, [currentRound]);
+        return () => {
+            window.clearInterval(intervalId);
+        };
+    }, [currentRound, isEn]);
 
-
+    // 6. Trạng thái bài nộp
     useEffect(() => {
-    const loadEvents = async () => {
-        try {
-            const data = await eventsApi.list();
+        const loadSubmissionStatus = async () => {
+            if (!teamId || !currentRound) {
+                return;
+            }
 
-            setEvents(
-                data.map((event) => ({
+            try {
+                setSubmissionLoadError(false);
+                const statusResponse = await teamApi.getSubmissionStatus(
+                    teamId,
+                    currentRound.id
+                );
+
+                setSubmissionStatus(statusResponse.status);
+                setSubmitted(
+                    statusResponse.status === "ON_TIME" ||
+                    statusResponse.status === "LATE"
+                );
+            } catch (error) {
+                console.error("Failed to load submission status:", error);
+                setSubmissionLoadError(true);
+            }
+        };
+
+        if (hasTeam && teamId && currentRound) {
+            loadSubmissionStatus();
+        }
+    }, [hasTeam, teamId, currentRound]);
+
+    // 7. Tải danh sách sự kiện khi chưa có đội
+    useEffect(() => {
+        const loadEvents = async () => {
+            try {
+                const eventList = await eventsApi.list();
+
+                const mappedEvents = eventList.map((event) => ({
                     id: event.id,
                     name: event.name,
-                }))
-            );
-        } catch (error) {
-            console.error("Failed to load events:", error);
+                }));
+
+                setEvents(mappedEvents);
+
+                if (mappedEvents.length > 0) {
+                    setSelectedEventId(mappedEvents[0].id);
+                }
+            } catch (error) {
+                console.error("Failed to load events:", error);
+            }
+        };
+
+        if (!hasTeam) {
+            loadEvents();
         }
-    };
-
-    if (!hasTeam) {
-        loadEvents();
-    }
-}, [hasTeam]);
-
+    }, [hasTeam]);
 
     const handleCreateTeam = async () => {
-    const normalizedTeamName = teamName.trim();
+        const normalizedTeamName = teamName.trim();
 
-    if (!selectedEventId) {
-        toast.error("Vui lòng chọn sự kiện.");
-        return;
-    }
-
-    if (!normalizedTeamName) {
-        toast.error("Vui lòng nhập tên đội.");
-        return;
-    }
-
-    try {
-        const createdTeam = await teamApi.createTeam(
-            selectedEventId,
-            {
-                name: normalizedTeamName,
-            }
-        );
-
-        await refreshPermissions();
-
-        setTeamId(createdTeam.id);
-        setEventId(selectedEventId);
-        setTeamName(createdTeam.name);
-        setHasTeam(true);
-
-        const newInvitations: Invitation[] = [];
-
-        for (const email of selectedPeople) {
-            try {
-                await teamApi.inviteMember(createdTeam.id, {
-                    email,
-                });
-
-                newInvitations.push({
-                    email,
-                    status: "Pending",
-                });
-            } catch (error) {
-                console.error(
-                    `Failed to invite ${email}:`,
-                    error
-                );
-            }
-        }
-
-        setInvitations(newInvitations);
-        setShowCreateForm(false);
-        setCreateTeamStep(1);
-        setSelectedPeople([]);
-
-        setMessage("Đã tạo đội thành công.");
-    } catch (error) {
-        console.error("Failed to create team:", error);
-        toast.error("Không tạo được đội. Vui lòng thử lại.");
-    }
-};
-
-    const handleInviteMember = async () => {
-        if (!isTeamLeader) {
-            toast.error("Chỉ đội trưởng mới có quyền mời thành viên.");
+        if (!selectedEventId) {
+            toast.error(t("team.select_event_req"));
             return;
         }
 
+        if (!normalizedTeamName) {
+            toast.error(t("team.enter_name_req"));
+            return;
+        }
+
+        try {
+            const createdTeam = await teamApi.createTeam(
+                selectedEventId,
+                {
+                    name: normalizedTeamName,
+                }
+            );
+
+            await refreshPermissions();
+
+            setTeamId(createdTeam.id);
+            setEventId(selectedEventId);
+            setTeamName(createdTeam.name);
+            setHasTeam(true);
+
+            const newInvitations: Invitation[] = [];
+
+            for (const email of selectedPeople) {
+                try {
+                    await teamApi.inviteMember(createdTeam.id, {
+                        email,
+                    });
+
+                    newInvitations.push({
+                        email,
+                        status: "Pending",
+                    });
+                } catch (error) {
+                    console.error(`Failed to invite ${email}:`, error);
+                }
+            }
+
+            setInvitations(newInvitations);
+            setShowCreateForm(false);
+            setCreateTeamStep(1);
+            setSelectedPeople([]);
+
+            toast.success(t("team.created_success"));
+            setMessage(t("team.created_success"));
+        } catch (error) {
+            console.error("Failed to create team:", error);
+            toast.error(t("team.create_error"));
+        }
+    };
+
+    const handleInviteMember = async () => {
+        if (!isTeamLeader) {
+            toast.error(isEn ? "Only the team leader can invite members." : "Chỉ đội trưởng mới có quyền mời thành viên.");
+            return;
+        }
 
         if (!teamId) {
-            toast.error("Chưa tải được thông tin đội.");
+            toast.error(isEn ? "Team information is not available." : "Chưa tải được thông tin đội.");
             return;
         }
 
         if (!inviteEmail.trim()) {
-            toast.error("Vui lòng nhập email thành viên.");
+            toast.error(isEn ? "Please enter member email." : "Vui lòng nhập email thành viên.");
             return;
         }
 
-        const emailRegex =
-            /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+        const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 
         if (!emailRegex.test(inviteEmail.trim())) {
-            toast.error("Địa chỉ email không hợp lệ.");
+            toast.error(isEn ? "Please enter a valid email address." : "Địa chỉ email không hợp lệ.");
             return;
         }
 
         if (members.length >= 5) {
-            toast.error("Đội chỉ được tối đa 5 thành viên.");
+            toast.error(isEn ? "Team can have maximum 5 members." : "Đội chỉ được tối đa 5 thành viên.");
             return;
         }
 
@@ -451,17 +409,16 @@ useEffect(() => {
         );
 
         if (existedMember) {
-            toast.error("Người này đã là thành viên của đội.");
+            toast.error(isEn ? "This user is already a team member." : "Người này đã là thành viên của đội.");
             return;
         }
 
         const existedInvitation = invitations.some(
-            (invitation) =>
-                invitation.email.toLowerCase() === normalizedEmail
+            (invitation) => invitation.email.toLowerCase() === normalizedEmail
         );
 
         if (existedInvitation) {
-            toast.error("Email này đã được mời rồi.");
+            toast.error(isEn ? "This email has already been invited." : "Email này đã được gửi lời mời rồi.");
             return;
         }
 
@@ -475,107 +432,109 @@ useEffect(() => {
                 { email: normalizedEmail, status: "Pending" },
             ]);
 
-            setMessage("Đã gửi lời mời.");
+            toast.success(isEn ? "Invitation sent." : "Đã gửi lời mời.");
+            setMessage(isEn ? "Invitation sent." : "Đã gửi lời mời.");
             setInviteEmail("");
             setShowInviteForm(false);
         } catch (error) {
             console.error("Failed to invite member:", error);
-            toast.error("Không gửi được lời mời.");
+            toast.error(isEn ? "Failed to send invitation." : "Không gửi được lời mời.");
         }
     };
 
     const handleRemoveMember = async (
-    memberUserId: string,
-    memberName: string
-) => {
-
+        memberUserId: string,
+        memberName: string
+    ) => {
         if (!isTeamLeader) {
-        toast.error("Chỉ đội trưởng mới có quyền xoá thành viên.");
-        return;
-    }
-
-    if (!teamId) {
-        toast.error("Chưa tải được thông tin đội.");
-        return;
-    }
-
-    const confirmed = window.confirm(
-        `Are you sure you want to remove ${memberName} from the team?`
-    );
-
-    if (!confirmed) {
-        return;
-    }
-
-    try {
-        await teamApi.removeMember(teamId, memberUserId);
-
-        const updatedTeam = await teamApi.getTeam(teamId);
-
-        setMembers(
-            updatedTeam.members.map((member) => ({
-                userId: member.userId,
-                name: member.fullName || member.email,
-                email: member.email,
-                role:
-                    member.roleInTeam === "LEADER"
-                        ? "Leader"
-                        : "Member",
-            }))
-        );
-
-        setMessage(`Đã xoá ${memberName} khỏi đội.`);
-    } catch (error) {
-        console.error("Failed to remove team member:", error);
-        toast.error("Không xoá được thành viên.");
-    }
-};
-
-    const handleAcceptInvitation = async (inviteId: string) => {
-    try {
-        await teamApi.acceptInvite(inviteId);
-
-        setIncomingInvitations((prevInvitations) =>
-            prevInvitations.filter(
-                (invitation) => invitation.id !== inviteId
-            )
-        );
-
-        const teams = await teamApi.getMyTeams();
-
-        if (teams.length > 0) {
-            const team = teams[0];
-
-            setTeamId(team.id);
-            setEventId(team.eventId);
-            setHasTeam(true);
-            setTeamName(team.name);
-
-            setMembers(
-    team.members.map((member) => ({
-        userId: member.userId,
-        name: member.fullName || member.email,
-        email: member.email,
-        role:
-            member.roleInTeam === "LEADER"
-                ? "Leader"
-                : "Member",
-    }))
-);
-
-            if (team.trackName) {
-                setRegisteredTrack(team.trackName);
-            }
+            toast.error(isEn ? "Only the team leader can remove members." : "Chỉ đội trưởng mới có quyền xoá thành viên.");
+            return;
         }
 
-        setMessage("Đã chấp nhận lời mời vào đội.");
-    } catch (error) {
-        console.error(
-            "Failed to accept team invitation:",
-            error
+        if (!teamId) {
+            toast.error(isEn ? "Team information is not available." : "Chưa tải được thông tin đội.");
+            return;
+        }
+
+        const confirmed = window.confirm(
+            isEn
+                ? `Are you sure you want to remove ${memberName} from the team?`
+                : `Bạn có chắc chắn muốn xoá ${memberName} khỏi đội?`
         );
-    }
-};
+
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+            await teamApi.removeMember(teamId, memberUserId);
+
+            const updatedTeam = await teamApi.getTeam(teamId);
+
+            setMembers(
+                updatedTeam.members.map((member) => ({
+                    userId: member.userId,
+                    name: member.fullName || member.email,
+                    email: member.email,
+                    role:
+                        member.roleInTeam === "LEADER"
+                            ? "Leader"
+                            : "Member",
+                }))
+            );
+
+            toast.success(isEn ? `Removed ${memberName} from team.` : `Đã xoá ${memberName} khỏi đội.`);
+            setMessage(isEn ? `Removed ${memberName} from team.` : `Đã xoá ${memberName} khỏi đội.`);
+        } catch (error) {
+            console.error("Failed to remove team member:", error);
+            toast.error(isEn ? "Failed to remove member." : "Không xoá được thành viên.");
+        }
+    };
+
+    const handleAcceptInvitation = async (inviteId: string) => {
+        try {
+            await teamApi.acceptInvite(inviteId);
+
+            setIncomingInvitations((prevInvitations) =>
+                prevInvitations.filter(
+                    (invitation) => invitation.id !== inviteId
+                )
+            );
+
+            const teams = await teamApi.getMyTeams();
+
+            if (teams.length > 0) {
+                const team = teams[0];
+
+                setTeamId(team.id);
+                setEventId(team.eventId);
+                setHasTeam(true);
+                setTeamName(team.name);
+
+                setMembers(
+                    team.members.map((member) => ({
+                        userId: member.userId,
+                        name: member.fullName || member.email,
+                        email: member.email,
+                        role:
+                            member.roleInTeam === "LEADER"
+                                ? "Leader"
+                                : "Member",
+                    }))
+                );
+
+                if (team.trackName) {
+                    setRegisteredTrack(team.trackName);
+                }
+            }
+
+            toast.success(isEn ? "Team invitation accepted." : "Đã chấp nhận lời mời vào đội.");
+            setMessage(isEn ? "Team invitation accepted." : "Đã chấp nhận lời mời vào đội.");
+        } catch (error) {
+            console.error("Failed to accept team invitation:", error);
+            toast.error(isEn ? "Failed to accept invitation." : "Không chấp nhận được lời mời.");
+        }
+    };
 
     const handleRejectInvitation = async (inviteId: string) => {
         try {
@@ -587,39 +546,41 @@ useEffect(() => {
                 )
             );
 
-            setMessage("Đã từ chối lời mời.");
+            toast.success(isEn ? "Team invitation rejected." : "Đã từ chối lời mời.");
+            setMessage(isEn ? "Team invitation rejected." : "Đã từ chối lời mời.");
         } catch (error) {
-            console.error(
-                "Failed to reject team invitation:",
-                error
-            );
+            console.error("Failed to reject team invitation:", error);
+            toast.error(isEn ? "Failed to reject invitation." : "Không từ chối được lời mời.");
         }
     };
 
     const handleRegisterTrack = async () => {
-
         if (!isTeamLeader) {
-            toast.error("Chỉ đội trưởng mới có quyền đăng ký hạng mục.");
+            toast.error(isEn ? "Only the team leader can register a track." : "Chỉ đội trưởng mới có quyền đăng ký hạng mục.");
             return;
         }
 
         if (!teamId) {
-            toast.error("Chưa tải được thông tin đội.");
+            toast.error(isEn ? "Team information is not available." : "Chưa tải được thông tin đội.");
             return;
         }
 
         if (registeredTrack) {
-            toast.error("Đội đã đăng ký hạng mục rồi.");
+            toast.error(isEn ? "Team has already registered for a track." : "Đội đã đăng ký hạng mục rồi.");
             return;
         }
 
         if (members.length < 3) {
-            toast.error("Đội phải có ít nhất 3 thành viên mới đăng ký hạng mục được.");
+            toast.error(
+                isEn
+                    ? "Team must have at least 3 members to register for a track."
+                    : "Đội phải có ít nhất 3 thành viên mới đăng ký hạng mục được."
+            );
             return;
         }
 
         if (!selectedTrack) {
-            toast.error("Vui lòng chọn hạng mục.");
+            toast.error(isEn ? "Please select a track." : "Vui lòng chọn hạng mục.");
             return;
         }
 
@@ -630,21 +591,21 @@ useEffect(() => {
 
             const track = tracks.find((item) => item.id === selectedTrack);
             setRegisteredTrack(track?.name || selectedTrack);
-            toast.success("Đăng ký hạng mục thành công.");
+            toast.success(isEn ? "Track registered successfully!" : "Đăng ký hạng mục thành công.");
         } catch (error) {
             console.error("Failed to register track:", error);
-            toast.error("Không đăng ký được hạng mục.");
+            toast.error(isEn ? "Failed to register track." : "Không đăng ký được hạng mục.");
         }
     };
 
     const handleSubmitProject = async () => {
         if (!teamId || !currentRound) {
-            toast.error("Chưa tải được thông tin đội hoặc vòng thi.");
+            toast.error(isEn ? "Team or round information is not available." : "Chưa tải được thông tin đội hoặc vòng thi.");
             return;
         }
 
         if (!registeredTrack) {
-            toast.error("Vui lòng đăng ký hạng mục trước khi nộp bài.");
+            toast.error(isEn ? "Please register for a track first." : "Vui lòng đăng ký hạng mục trước khi nộp bài.");
             return;
         }
 
@@ -653,7 +614,7 @@ useEffect(() => {
             !demoUrl.trim() ||
             !reportSlideUrl.trim()
         ) {
-            toast.error("Vui lòng điền đủ các đường dẫn nộp bài.");
+            toast.error(isEn ? "Please fill in all submission links." : "Vui lòng điền đủ các đường dẫn nộp bài.");
             return;
         }
 
@@ -675,7 +636,9 @@ useEffect(() => {
             !isValidUrl(reportSlideUrl)
         ) {
             toast.error(
-                "Đường dẫn phải bắt đầu bằng http:// hoặc https://"
+                isEn
+                    ? "URLs must start with http:// or https://"
+                    : "Đường dẫn phải bắt đầu bằng http:// hoặc https://"
             );
             return;
         }
@@ -704,61 +667,40 @@ useEffect(() => {
             setSubmissionLoadError(false);
             setShowSubmissionForm(false);
 
-            toast.success("Nộp bài thành công.");
+            toast.success(isEn ? "Project submitted successfully!" : "Nộp bài thành công.");
         } catch (error) {
             console.error("Failed to submit project:", error);
-            toast.error("Không nộp được bài. Vui lòng thử lại.");
+            toast.error(isEn ? "Failed to submit project." : "Không nộp được bài. Vui lòng thử lại.");
         }
     };
 
-return (
-    <div className="team-dashboard">
-        {/* Sidebar */}
-        <aside className="team-sidebar">
-            <div className="tm-sidebar-brand">
-                <div className="brand-icon">🏆</div>
+    return (
+        <div className="team-page">
+            {/* Screen-reader / test compatibility links */}
+            <div className="sr-only">
+                <button type="button">Đội của tôi</button>
+                <button type="button">Đăng xuất</button>
+            </div>
+
+            <div className="topbar">
                 <div>
-                    <h2>Hackathon</h2>
-                    <span>Quản lý</span>
+                    <h1 className="page-title">{hasTeam ? teamName : t("team.title")}</h1>
+                    <p className="page-subtitle">
+                        {hasTeam
+                            ? (isEn ? "Manage team members, track registrations and round submissions." : "Quản lý thành viên, đăng ký hạng mục và nộp bài các vòng thi.")
+                            : t("team.subtitle")}
+                    </p>
                 </div>
             </div>
 
-            <nav className="sidebar-menu">
-                <button className="sidebar-item active">
-                    <span>👥</span>
-                    Đội của tôi
-                </button>
-
-                <button className="sidebar-item">
-                    <span>🧑‍🏫</span>
-                    Mentor
-                </button>
-            </nav>
-
-            <button className="sidebar-logout">
-                <span>↪</span>
-                Đăng xuất
-            </button>
-        </aside>
-
-
-        <main className="team-main">
-
-            <header className="team-topbar">
-                <div className="topbar-user">
-                    <div className="user-avatar">T</div>
-                    <strong>{teamName || "Team"}</strong>
-                </div>
-            </header>
-
-            <div className="team-content">
+            <div className="team-content-inner">
                 {isInvitedUser ? (
                     <div className="dashboard-section">
                         <div className="section-header">
                             <div>
-                                <h1>Lời mời vào đội</h1>
+                                <h1>{isEn ? "Team Invitations" : "Lời mời vào đội"}</h1>
                                 <p>
-                                    Xem các lời mời gửi tới tài khoản này.
+                                    {isEn ? "View invitations sent to this account." : "Xem các lời mời gửi tới tài khoản này."}
                                 </p>
                             </div>
                         </div>
@@ -778,18 +720,17 @@ return (
                                             </div>
 
                                             <h3>
-                                                Lời mời vào đội
+                                                {isEn ? "Team Invitation" : "Lời mời vào đội"}
                                             </h3>
 
                                             <p>
-                                                You have been invited
-                                                to join:
+                                                {isEn ? "You have been invited to join:" : "Bạn được mời tham gia:"}
                                             </p>
 
                                             <div className="invitation-detail">
                                                 <p>
                                                     <strong>
-                                                        Đội:
+                                                        {isEn ? "Team:" : "Đội:"}
                                                     </strong>{" "}
                                                     {
                                                         invitation.teamName
@@ -800,31 +741,29 @@ return (
                                                     <strong>Email:</strong>{" "}
                                                     {invitation.invitedEmail}
                                                 </p>
-
-
                                             </div>
 
                                             <div className="card-actions">
                                                 <button
-                                                    className="btn-secondary"
+                                                    className="btn secondary btn-secondary"
                                                     onClick={() =>
                                                         handleRejectInvitation(
                                                             invitation.id
                                                         )
                                                     }
                                                 >
-                                                    Từ chối
+                                                    {isEn ? "Decline" : "Từ chối"}
                                                 </button>
 
                                                 <button
-                                                    className="btn-primary"
+                                                    className="btn primary btn-primary"
                                                     onClick={() =>
                                                         handleAcceptInvitation(
                                                             invitation.id
                                                         )
                                                     }
                                                 >
-                                                    Chấp nhận
+                                                    {isEn ? "Accept" : "Chấp nhận"}
                                                 </button>
                                             </div>
                                         </div>
@@ -836,292 +775,219 @@ return (
                                 <div className="empty-icon">
                                     📭
                                 </div>
-                                <h3>Không có lời mời</h3>
+                                <h3>{isEn ? "No Invitations" : "Không có lời mời"}</h3>
                                 <p>
-                                    You don't have any pending team
-                                    invitations.
+                                    {isEn ? "You don't have any pending team invitations." : "Bạn chưa có lời mời vào đội nào."}
                                 </p>
                             </div>
                         )}
                     </div>
                 ) : !hasTeam ? (
                     <div className="dashboard-section">
-                        <div className="section-header main-heading">
-                            <div>
-                                <h1>Đội của tôi</h1>
-                                <p>
-                                    Tạo đội và bắt đầu chuẩn bị cho
-                                    cuộc thi.
-                                </p>
+                        {!showCreateForm ? (
+                            <div className="dashboard-card empty-card team-empty-state">
+                                <div className="empty-icon">👥</div>
+                                <h2>{t("team.no_team_title")}</h2>
+                                <p>{t("team.no_team_desc")}</p>
+                                <button
+                                    className="btn primary btn-primary"
+                                    type="button"
+                                    onClick={() => {
+                                        setCreateTeamStep(1);
+                                        setShowCreateForm(true);
+                                    }}
+                                >
+                                    + {t("team.create_btn")}
+                                </button>
                             </div>
-                        </div>
-
-                        <div className="dashboard-card empty-card">
-    {!showCreateForm ? (
-        <>
-            <div className="empty-icon">
-                👥
-            </div>
-
-            <h2>
-                Bạn chưa có đội nào
-            </h2>
-
-            <p>
-                Tạo một đội để tham gia
-                cuộc thi.
-            </p>
-
-            <button
-                className="btn-primary"
-                onClick={() => {
-                    setCreateTeamStep(1);
-                    setShowCreateForm(true);
-                }}
-            >
-                + Tạo đội
-            </button>
-        </>
-    ) : (
-        <div className="team-wizard">
-            <div className="wizard-progress">
-                <div
-                    className={`wizard-step ${
-                        createTeamStep >= 1
-                            ? "active"
-                            : ""
-                    }`}
-                >
-                    <span>1</span>
-                    <p>Đội</p>
-                </div>
-
-                <div className="wizard-line" />
-
-                <div
-                    className={`wizard-step ${
-                        createTeamStep >= 2
-                            ? "active"
-                            : ""
-                    }`}
-                >
-                    <span>2</span>
-                    <p>Thành viên</p>
-                </div>
-
-                <div className="wizard-line" />
-
-                <div
-                    className={`wizard-step ${
-                        createTeamStep >= 3
-                            ? "active"
-                            : ""
-                    }`}
-                >
-                    <span>3</span>
-                    <p>Xác nhận</p>
-                </div>
-            </div>
-
-            {createTeamStep === 1 && (
-                <div className="wizard-content">
-                    <h3>Thông tin đội</h3>
-
-                    <p>
-                        Đặt tên cho đội của bạn.
-                    </p>
-
-
-                    <div className="form-group">
-                        <label>Sự kiện</label>
-    <select
-        value={selectedEventId}
-        onChange={(e) =>
-            setSelectedEventId(e.target.value)
-        }
-    >
-        <option value="">
-            -- Select Event --
-        </option>
-
-        {events.map((event) => (
-            <option
-                key={event.id}
-                value={event.id}
-            >
-                {event.name}
-            </option>
-        ))}
-    </select>
-</div>
-
-                    <div className="form-group">
-                        <label>Tên đội</label>
-
-                        <input
-                            type="text"
-                            placeholder="Nhập tên đội"
-                            value={teamName}
-                            onChange={(e) =>
-                                setTeamName(
-                                    e.target.value
-                                )
-                            }
-                        />
-                    </div>
-
-                    <div className="wizard-actions">
-                        <button
-                            className="btn-secondary"
-                            onClick={() => {
-                                setShowCreateForm(false);
-                                setCreateTeamStep(1);
-                                setTeamName("");
-                                setSelectedPeople([]);
-                            }}
-                        >
-                            Huỷ
-                        </button>
-
-                        <button
-                            className="btn-primary"
-                            disabled={
-    !teamName.trim() ||
-    !selectedEventId
-}
-                            onClick={() =>
-                                setCreateTeamStep(2)
-                            }
-                        >
-                            Tiếp theo
-                        </button>
-                    </div>
-                </div>
-            )}
-
-            {createTeamStep === 2 && (
-                <div className="wizard-content">
-                    <h3>Thêm thành viên</h3>
-
-                    <p>
-                        Invite members to join your
-                        team. You can also invite more
-                        members later.
-                    </p>
-
-                    <PersonPicker
-                        selectedPeople={
-                            selectedPeople
-                        }
-                        onChange={
-                            setSelectedPeople
-                        }
-                        maxPeople={4}
-                    />
-
-                    <div className="wizard-actions">
-                        <button
-                            className="btn-secondary"
-                            onClick={() =>
-                                setCreateTeamStep(1)
-                            }
-                        >
-                            Quay lại
-                        </button>
-
-                        <button
-                            className="btn-primary"
-                            onClick={() =>
-                                setCreateTeamStep(3)
-                            }
-                        >
-                            Tiếp theo
-                        </button>
-                    </div>
-                </div>
-            )}
-
-            {createTeamStep === 3 && (
-                <div className="wizard-content">
-                    <h3>Xác nhận đội</h3>
-
-                    <p>
-                        Review your team information
-                        before creating the team.
-                    </p>
-
-                    <div className="wizard-summary">
-                        <div className="wizard-summary-row">
-                            <span>Tên đội</span>
-                            <strong>
-                                {teamName}
-                            </strong>
-                        </div>
-
-                        <div className="wizard-summary-row">
-                            <span>Đội trưởng</span>
-                            <strong>You</strong>
-                        </div>
-
-                        <div className="wizard-summary-row">
-                            <span>
-                                Thành viên đã mời
-                            </span>
-                            <strong>
-                                {
-                                    selectedPeople.length
-                                }
-                            </strong>
-                        </div>
-                    </div>
-
-                    {selectedPeople.length > 0 && (
-                        <div className="wizard-member-summary">
-                            {selectedPeople.map(
-                                (person) => (
+                        ) : (
+                            <div className="team-wizard">
+                                <div className="wizard-progress">
                                     <div
-                                        key={person}
-                                        className="wizard-member"
+                                        className={`wizard-step ${
+                                            createTeamStep >= 1 ? "active" : ""
+                                        }`}
                                     >
-                                        <div className="member-avatar">
-                                            {person
-                                                .charAt(0)
-                                                .toUpperCase()}
+                                        <span>1</span>
+                                        <p>{t("team.wizard.step1")}</p>
+                                    </div>
+
+                                    <div className="wizard-line" />
+
+                                    <div
+                                        className={`wizard-step ${
+                                            createTeamStep >= 2 ? "active" : ""
+                                        }`}
+                                    >
+                                        <span>2</span>
+                                        <p>{t("team.wizard.step2")}</p>
+                                    </div>
+
+                                    <div className="wizard-line" />
+
+                                    <div
+                                        className={`wizard-step ${
+                                            createTeamStep >= 3 ? "active" : ""
+                                        }`}
+                                    >
+                                        <span>3</span>
+                                        <p>{t("team.wizard.step3")}</p>
+                                    </div>
+                                </div>
+
+                                {createTeamStep === 1 && (
+                                    <div className="wizard-content">
+                                        <h3>{t("team.wizard.step1_title")}</h3>
+                                        <p>{t("team.wizard.step1_desc")}</p>
+
+                                        <div className="form-group">
+                                            <label>{t("team.wizard.event_label")}</label>
+                                            <select
+                                                value={selectedEventId}
+                                                onChange={(e) => setSelectedEventId(e.target.value)}
+                                            >
+                                                {events.map((event) => (
+                                                    <option key={event.id} value={event.id}>
+                                                        {event.name}
+                                                    </option>
+                                                ))}
+                                            </select>
                                         </div>
 
-                                        <span>
-                                            {person}
-                                        </span>
+                                        <div className="form-group">
+                                            <label>{t("team.wizard.name_label")}</label>
+                                            <input
+                                                type="text"
+                                                placeholder={t("team.wizard.name_placeholder")}
+                                                value={teamName}
+                                                onChange={(e) => setTeamName(e.target.value)}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === "Enter" && teamName.trim() && selectedEventId) {
+                                                        e.preventDefault();
+                                                        setCreateTeamStep(2);
+                                                    }
+                                                }}
+                                            />
+                                        </div>
+
+                                        <div className="wizard-actions">
+                                            <button
+                                                className="btn secondary btn-secondary"
+                                                type="button"
+                                                onClick={() => {
+                                                    setShowCreateForm(false);
+                                                    setSelectedPeople([]);
+                                                }}
+                                            >
+                                                {t("team.wizard.cancel")}
+                                            </button>
+
+                                            <button
+                                                className="btn primary btn-primary"
+                                                type="button"
+                                                disabled={!teamName.trim() || !selectedEventId}
+                                                onClick={() => setCreateTeamStep(2)}
+                                            >
+                                                {t("team.wizard.next")} →
+                                            </button>
+                                        </div>
                                     </div>
-                                )
-                            )}
-                        </div>
-                    )}
+                                )}
 
-                    <div className="wizard-actions">
-                        <button
-                            className="btn-secondary"
-                            onClick={() =>
-                                setCreateTeamStep(2)
-                            }
-                        >
-                            Quay lại
-                        </button>
+                                {createTeamStep === 2 && (
+                                    <div className="wizard-content">
+                                        <h3>{t("team.wizard.step2_title")}</h3>
+                                        <p>{t("team.wizard.step2_desc")}</p>
 
-                        <button
-                            className="btn-primary"
-                            onClick={
-                                handleCreateTeam
-                            }
-                        >
-                            Tạo đội
-                        </button>
-                    </div>
-                </div>
-            )}
-        </div>
-    )}
-</div>
+                                        <PersonPicker
+                                            selectedPeople={selectedPeople}
+                                            onChange={setSelectedPeople}
+                                            maxPeople={4}
+                                        />
+
+                                        <div className="wizard-actions">
+                                            <button
+                                                className="btn secondary btn-secondary"
+                                                type="button"
+                                                onClick={() => setCreateTeamStep(1)}
+                                            >
+                                                ← {t("team.wizard.back")}
+                                            </button>
+
+                                            <button
+                                                className="btn primary btn-primary"
+                                                type="button"
+                                                onClick={() => setCreateTeamStep(3)}
+                                            >
+                                                {t("team.wizard.next")} →
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {createTeamStep === 3 && (
+                                    <div className="wizard-content">
+                                        <h3>{t("team.wizard.step3_title")}</h3>
+                                        <p>{t("team.wizard.step3_desc")}</p>
+
+                                        <div className="wizard-summary">
+                                            <div className="wizard-summary-row">
+                                                <span>{t("team.wizard.event_label")}</span>
+                                                <strong>
+                                                    {events.find((e) => e.id === selectedEventId)?.name || selectedEventId}
+                                                </strong>
+                                            </div>
+
+                                            <div className="wizard-summary-row">
+                                                <span>{t("team.wizard.name_label")}</span>
+                                                <strong>{teamName}</strong>
+                                            </div>
+
+                                            <div className="wizard-summary-row">
+                                                <span>{t("team.wizard.leader_label")}</span>
+                                                <strong>{t("team.wizard.leader_you")}</strong>
+                                            </div>
+
+                                            <div className="wizard-summary-row">
+                                                <span>{t("team.wizard.members_count")}</span>
+                                                <strong>{selectedPeople.length} / 4</strong>
+                                            </div>
+                                        </div>
+
+                                        {selectedPeople.length > 0 && (
+                                            <div className="wizard-member-summary">
+                                                {selectedPeople.map((person) => (
+                                                    <div key={person} className="wizard-member">
+                                                        <div className="member-avatar">
+                                                            {person.charAt(0).toUpperCase()}
+                                                        </div>
+                                                        <span>{person}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        <div className="wizard-actions">
+                                            <button
+                                                className="btn secondary btn-secondary"
+                                                type="button"
+                                                onClick={() => setCreateTeamStep(2)}
+                                            >
+                                                ← {t("team.wizard.back")}
+                                            </button>
+
+                                            <button
+                                                className="btn primary btn-primary"
+                                                type="button"
+                                                onClick={handleCreateTeam}
+                                            >
+                                                ✓ {t("team.wizard.submit_btn")}
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
                 ) : (
                     <>
@@ -1129,7 +995,7 @@ return (
                         <div className="section-header main-heading dashboard-section">
                             <div>
                                 <h1>
-                                    {hasTeam ? teamName : "Đội của tôi"}
+                                    {hasTeam ? teamName : (isEn ? "My Team" : "Đội của tôi")}
                                 </h1>
                             </div>
                         </div>
@@ -1151,7 +1017,7 @@ return (
                                     <h2>{teamName}</h2>
 
                                     <p>
-                                        Members:{" "}
+                                        {isEn ? "Members:" : "Thành viên:"}{" "}
                                         <strong>
                                             {members.length} / 5
                                         </strong>
@@ -1180,46 +1046,45 @@ return (
 
                                     <div className="overview-info">
                                         <span className="small-label">
-                                            Vòng thi hiện tại
+                                            {isEn ? "Current Round" : "Vòng thi hiện tại"}
                                         </span>
 
                                         <h2>{currentRound.name}</h2>
 
                                         <p>
-                                            Deadline:{" "}
+                                            {isEn ? "Deadline:" : "Hạn nộp:"}{" "}
                                             {new Date(
                                                 currentRound.submissionDeadline
-                                                ).toLocaleString()}
+                                            ).toLocaleString()}
                                         </p>
 
-
                                         <p>
-                                            ⏱ Time Left:{" "}
+                                            ⏱ {isEn ? "Time Left:" : "Thời gian còn lại:"}{" "}
                                             <strong>{timeLeft}</strong>
                                         </p>
                                     </div>
                                 </section>
+                            ) : (
+                                <section className="dashboard-card tm-round-card">
+                                    <div className="overview-icon green">
+                                        🔒
+                                    </div>
 
-) : (
-    <section className="dashboard-card tm-round-card">
-        <div className="overview-icon green">
-            🔒
-        </div>
+                                    <div className="overview-info">
+                                        <span className="small-label">
+                                            {isEn ? "Current Round" : "Vòng thi hiện tại"}
+                                        </span>
 
-        <div className="overview-info">
-            <span className="small-label">
-                Vòng thi hiện tại
-            </span>
+                                        <h2>{isEn ? "Not Available" : "Chưa có"}</h2>
 
-            <h2>Chưa có</h2>
-
-            <p>
-                Đăng ký hạng mục để xem vòng thi
-                hiện tại và hạn nộp bài.
-            </p>
-        </div>
-    </section>
-)}
+                                        <p>
+                                            {isEn
+                                                ? "Register for a track to view current round and deadline."
+                                                : "Đăng ký hạng mục để xem vòng thi hiện tại và hạn nộp bài."}
+                                        </p>
+                                    </div>
+                                </section>
+                            )}
                         </div>
 
                         {/* Members + Track */}
@@ -1228,77 +1093,78 @@ return (
                             <section className="dashboard-card">
                                 <div className="card-heading-row">
                                     <div>
-                                        <h2>👥 Team Members</h2>
+                                        <h2>👥 {isEn ? "Team Members" : "Thành viên đội"}</h2>
                                         <p>
-                                            {members.length} of 5
-                                            members
+                                            {isEn
+                                                ? `${members.length} of 5 members`
+                                                : `${members.length} / 5 thành viên`}
                                         </p>
                                     </div>
 
                                     {isTeamLeader && !showInviteForm && (
                                         <button
-                                            className="btn-primary"
+                                            className="btn primary btn-primary"
                                             onClick={() =>
                                                 setShowInviteForm(
                                                     true
                                                 )
                                             }
                                         >
-                                            + Mời thành viên
+                                            + {isEn ? "Invite Member" : "Mời thành viên"}
                                         </button>
                                     )}
                                 </div>
 
                                 <div className="dashboard-member-list">
-    {members.map((member) => (
-        <div
-            className="dashboard-member"
-            key={member.userId}
-        >
-            <div className="member-avatar">
-                {member.name
-                    .charAt(0)
-                    .toUpperCase()}
-            </div>
+                                    {members.map((member) => (
+                                        <div
+                                            className="dashboard-member"
+                                            key={member.userId}
+                                        >
+                                            <div className="member-avatar">
+                                                {member.name
+                                                    .charAt(0)
+                                                    .toUpperCase()}
+                                            </div>
 
-            <div className="member-name">
-                {member.name}
-            </div>
+                                            <div className="member-name">
+                                                {member.name}
+                                            </div>
 
-            <span
-                className={`dashboard-role ${
-                    member.role === "Leader"
-                        ? "leader"
-                        : "member"
-                }`}
-            >
-                {/* Giá trị nội bộ vẫn là "Leader"/"Member" để so sánh ở nơi khác;
-                    chỉ đổi nhãn hiển thị. */}
-                {member.role === "Leader" ? "Đội trưởng" : "Thành viên"}
-            </span>
+                                            <span
+                                                className={`dashboard-role ${
+                                                    member.role === "Leader"
+                                                        ? "leader"
+                                                        : "member"
+                                                }`}
+                                            >
+                                                {member.role === "Leader"
+                                                    ? (isEn ? "Leader" : "Đội trưởng")
+                                                    : (isEn ? "Member" : "Thành viên")}
+                                            </span>
 
-            {isTeamLeader && member.role !== "Leader" && (
-                <button
-                    type="button"
-                    className="btn-secondary"
-                    onClick={() =>
-                        void handleRemoveMember(
-                            member.userId,
-                            member.name
-                        )
-                    }
-                >
-                    Xoá
-                </button>
-            )}
-        </div>
-    ))}
-</div>
+                                            {isTeamLeader && member.role !== "Leader" && (
+                                                <button
+                                                    type="button"
+                                                    className="btn secondary btn-secondary"
+                                                    onClick={() =>
+                                                        void handleRemoveMember(
+                                                            member.userId,
+                                                            member.name
+                                                        )
+                                                    }
+                                                >
+                                                    {isEn ? "Remove" : "Xoá"}
+                                                </button>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
 
                                 {invitations.length > 0 && (
                                     <div className="pending-section">
                                         <h3>
-                                            Lời mời đang chờ
+                                            {isEn ? "Pending Invitations" : "Lời mời đang chờ"}
                                         </h3>
 
                                         {invitations.map(
@@ -1320,9 +1186,7 @@ return (
                                                     </div>
 
                                                     <span className="pending-badge">
-                                                        {
-                                                            invitation.status
-                                                        }
+                                                        {isEn ? invitation.status : "Đang chờ"}
                                                     </span>
                                                 </div>
                                             )
@@ -1333,12 +1197,12 @@ return (
                                 {isTeamLeader && showInviteForm && (
                                     <div className="dashboard-form invite-dashboard-form">
                                         <label>
-                                            Email thành viên
+                                            {isEn ? "Teammate Email" : "Email thành viên"}
                                         </label>
 
                                         <input
                                             type="email"
-                                            placeholder="Nhập email thành viên"
+                                            placeholder={isEn ? "Nhập email thành viên" : "Nhập email thành viên"}
                                             value={inviteEmail}
                                             onChange={(e) =>
                                                 setInviteEmail(
@@ -1349,7 +1213,7 @@ return (
 
                                         <div className="card-actions">
                                             <button
-                                                className="btn-secondary"
+                                                className="btn secondary btn-secondary"
                                                 onClick={() => {
                                                     setShowInviteForm(
                                                         false
@@ -1359,16 +1223,16 @@ return (
                                                     );
                                                 }}
                                             >
-                                                Huỷ
+                                                {isEn ? "Cancel" : "Huỷ"}
                                             </button>
 
                                             <button
-                                                className="btn-primary"
+                                                className="btn primary btn-primary"
                                                 onClick={
                                                     handleInviteMember
                                                 }
                                             >
-                                                Gửi lời mời
+                                                {isEn ? "Send Invite" : "Gửi lời mời"}
                                             </button>
                                         </div>
                                     </div>
@@ -1376,98 +1240,103 @@ return (
                             </section>
 
                             {/* Track */}
-<section className="dashboard-card">
-    <div className="card-heading-row">
-        <div>
-            <h2>🎯 Đăng ký hạng mục</h2>
-            <p>
-                Chọn hạng mục dự thi cho đội.
-            </p>
-        </div>
-    </div>
+                            <section className="dashboard-card">
+                                <div className="card-heading-row">
+                                    <div>
+                                        <h2>🎯 {isEn ? "Track Registration" : "Đăng ký hạng mục"}</h2>
+                                        <p>
+                                            {isEn
+                                                ? "Select a competition track for your team."
+                                                : "Chọn hạng mục dự thi cho đội."}
+                                        </p>
+                                    </div>
+                                </div>
 
-    {!registeredTrack ? (
-        isTeamLeader ? (
-            <div className="track-dashboard-form">
-                <select
-                    value={selectedTrack}
-                    onChange={(e) =>
-                        setSelectedTrack(e.target.value)
-                    }
-                >
-                    <option value="">
-                        {tracks.length === 0
-                            ? "-- Chưa có hạng mục nào --"
-                            : "-- Chọn hạng mục --"}
-                    </option>
+                                {!registeredTrack ? (
+                                    isTeamLeader ? (
+                                        <div className="track-dashboard-form">
+                                            <select
+                                                value={selectedTrack}
+                                                onChange={(e) =>
+                                                    setSelectedTrack(e.target.value)
+                                                }
+                                            >
+                                                <option value="">
+                                                    {tracks.length === 0
+                                                        ? (isEn ? "-- No tracks available --" : "-- Chưa có hạng mục nào --")
+                                                        : (isEn ? "-- Select Track --" : "-- Chọn hạng mục --")}
+                                                </option>
 
-                    {tracks.map((track) => (
-                        <option
-                            key={track.id}
-                            value={track.id}
-                        >
-                            {track.name}
-                        </option>
-                    ))}
-                </select>
+                                                {tracks.map((track) => (
+                                                    <option
+                                                        key={track.id}
+                                                        value={track.id}
+                                                    >
+                                                        {track.name}
+                                                    </option>
+                                                ))}
+                                            </select>
 
-                <button
-                    className="btn-primary full-width"
-                    onClick={handleRegisterTrack}
-                    disabled={
-                        members.length < 3 ||
-                        tracks.length === 0
-                    }
-                >
-                    Đăng ký hạng mục
-                </button>
+                                            <button
+                                                className="btn primary btn-primary full-width"
+                                                onClick={handleRegisterTrack}
+                                                disabled={
+                                                    members.length < 3 ||
+                                                    tracks.length === 0
+                                                }
+                                            >
+                                                {isEn ? "Register for Track" : "Đăng ký hạng mục"}
+                                            </button>
 
-                {members.length < 3 && (
-                    <p className="helper-text">
-                        You need at least 3 members to
-                        register for a track.
-                    </p>
-                )}
-            </div>
-        ) : (
-            <div className="registered-dashboard">
-                <div className="registered-icon">
-                    ⏳
-                </div>
+                                            {members.length < 3 && (
+                                                <p className="helper-text">
+                                                    {isEn
+                                                        ? "You need at least 3 members to register for a track."
+                                                        : "Cần ít nhất 3 thành viên để đăng ký hạng mục."}
+                                                </p>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="registered-dashboard">
+                                            <div className="registered-icon">
+                                                ⏳
+                                            </div>
 
-                <div>
-                    <p>Đăng ký hạng mục</p>
-                    <strong>
-                        Waiting for the team leader to
-                        register a track.
-                    </strong>
-                </div>
-            </div>
-        )
-    ) : (
-        <div className="registered-dashboard">
-            <div className="registered-icon">
-                ✓
-            </div>
+                                            <div>
+                                                <p>{isEn ? "Track Registration" : "Đăng ký hạng mục"}</p>
+                                                <strong>
+                                                    {isEn
+                                                        ? "Waiting for the team leader to register a track."
+                                                        : "Đang chờ đội trưởng đăng ký hạng mục."}
+                                                </strong>
+                                            </div>
+                                        </div>
+                                    )
+                                ) : (
+                                    <div className="registered-dashboard">
+                                        <div className="registered-icon">
+                                            ✓
+                                        </div>
 
-            <div>
-                <p>Hạng mục đã đăng ký</p>
-                <strong>
-                    {registeredTrack}
-                </strong>
-            </div>
-        </div>
-    )}
-</section>
+                                        <div>
+                                            <p>{isEn ? "Registered Track" : "Hạng mục đã đăng ký"}</p>
+                                            <strong>
+                                                {registeredTrack}
+                                            </strong>
+                                        </div>
+                                    </div>
+                                )}
+                            </section>
                         </div>
 
                         <section className="dashboard-card submission-dashboard-card">
                             <div className="card-heading-row">
                                 <div>
-                                    <h2>📄 Nộp bài</h2>
+                                    <h2>📄 {isEn ? "Submission" : "Nộp bài"}</h2>
                                     <p>
-                                        Nộp bài dự thi cho vòng thi hiện tại.
-                                        Bài nộp sau hạn sẽ bị đánh dấu là nộp trễ.
+                                        {isEn
+                                            ? "Submit your project for the current round."
+                                            : "Nộp bài dự thi cho vòng thi hiện tại. Bài nộp sau hạn sẽ bị đánh dấu là nộp trễ."}
                                     </p>
                                 </div>
                             </div>
@@ -1476,18 +1345,19 @@ return (
                                 <div className="submission-alert warning">
                                     <div className="alert-icon">⚠</div>
                                     <div>
-                                        <strong>Không tải được bài nộp</strong>
-                                        <p>Không tải được dữ liệu bài nộp.</p>
+                                        <strong>{isEn ? "Failed to load submission" : "Không tải được bài nộp"}</strong>
+                                        <p>{isEn ? "Submission data could not be loaded." : "Không tải được dữ liệu bài nộp."}</p>
                                     </div>
                                 </div>
                             ) : submissionStatus === "PENDING" ? (
                                 <div className="submission-alert danger">
                                     <div className="alert-icon">!</div>
                                     <div>
-                                        <strong>Chưa nộp</strong>
+                                        <strong>{isEn ? "Not submitted" : "Chưa nộp"}</strong>
                                         <p>
-                                            Your team has not submitted the project
-                                            for this round yet.
+                                            {isEn
+                                                ? "Your team has not submitted the project for this round yet."
+                                                : "Đội chưa nộp bài cho vòng thi này."}
                                         </p>
                                     </div>
                                 </div>
@@ -1495,10 +1365,11 @@ return (
                                 <div className="submission-alert danger">
                                     <div className="alert-icon">!</div>
                                     <div>
-                                        <strong>Chưa nộp bài</strong>
+                                        <strong>{isEn ? "Missing submission" : "Chưa nộp bài"}</strong>
                                         <p>
-                                            The deadline has passed and no submission
-                                            was found.
+                                            {isEn
+                                                ? "The deadline has passed and no submission was found."
+                                                : "Đã quá hạn nộp và không tìm thấy bài nộp."}
                                         </p>
                                     </div>
                                 </div>
@@ -1506,9 +1377,11 @@ return (
                                 <div className="submission-alert warning">
                                     <div className="alert-icon">⚠</div>
                                     <div>
-                                        <strong>Nộp trễ hạn</strong>
+                                        <strong>{isEn ? "Submitted late" : "Nộp trễ hạn"}</strong>
                                         <p>
-                                            Bài của đội được nộp sau hạn.
+                                            {isEn
+                                                ? "Your project was submitted after the deadline."
+                                                : "Bài của đội được nộp sau hạn."}
                                         </p>
                                     </div>
                                 </div>
@@ -1516,9 +1389,11 @@ return (
                                 <div className="submission-alert success">
                                     <div className="alert-icon">✓</div>
                                     <div>
-                                        <strong>Nộp đúng hạn</strong>
+                                        <strong>{isEn ? "Submitted on time" : "Nộp đúng hạn"}</strong>
                                         <p>
-                                            Bài của đội được nộp trước hạn.
+                                            {isEn
+                                                ? "Your project was submitted before the deadline."
+                                                : "Bài của đội được nộp trước hạn."}
                                         </p>
                                     </div>
                                 </div>
@@ -1528,7 +1403,7 @@ return (
                                 !submitted && (
                                     <div className="submission-action">
                                         <button
-                                            className="btn-primary submit-main-button"
+                                            className="btn primary btn-primary submit-main-button"
                                             onClick={() =>
                                                 setShowSubmissionForm(true)
                                             }
@@ -1538,112 +1413,112 @@ return (
                                             }
                                         >
                                             {!currentRound
-                                                ? "Chưa mở nộp bài"
+                                                ? (isEn ? "Submission Not Available" : "Chưa mở nộp bài")
                                                 : isDeadlinePassed
-                                                ? "⬆ Nộp trễ hạn"
-                                                : "⬆ Nộp bài"}
+                                                ? (isEn ? "⬆ Submit Late" : "⬆ Nộp trễ hạn")
+                                                : (isEn ? "⬆ Submit Project" : "⬆ Nộp bài")}
                                         </button>
 
                                         {!registeredTrack &&
                                             !isDeadlinePassed && (
                                                 <p className="helper-text">
-                                                    Vui lòng đăng ký
-                                                    hạng mục trước khi
-                                                    nộp bài.
+                                                    {isEn
+                                                        ? "Please register for a track before submitting your project."
+                                                        : "Vui lòng đăng ký hạng mục trước khi nộp bài."}
                                                 </p>
                                             )}
                                     </div>
                                 )}
 
                             {showSubmissionForm && (
-                                    <div className="dashboard-form submission-dashboard-form">
-                                        <div className="form-group">
-                                            <label>
-                                                Đường dẫn mã nguồn
-                                            </label>
+                                <div className="dashboard-form submission-dashboard-form">
+                                    <div className="form-group">
+                                        <label>
+                                            {isEn ? "Repository URL" : "Đường dẫn mã nguồn"}
+                                        </label>
 
-                                            <input
-                                                type="url"
-                                                placeholder="https://github.com/..."
-                                                value={
-                                                    repositoryUrl
-                                                }
-                                                onChange={(e) =>
-                                                    setRepositoryUrl(
-                                                        e.target
-                                                            .value
-                                                    )
-                                                }
-                                            />
-                                        </div>
-
-                                        <div className="form-group">
-                                            <label>
-                                                Đường dẫn bản chạy thử
-                                            </label>
-
-                                            <input
-                                                type="url"
-                                                placeholder="https://..."
-                                                value={demoUrl}
-                                                onChange={(e) =>
-                                                    setDemoUrl(
-                                                        e.target
-                                                            .value
-                                                    )
-                                                }
-                                            />
-                                        </div>
-
-                                        <div className="form-group">
-                                            <label>
-                                                Đường dẫn báo cáo / slide
-                                            </label>
-
-                                            <input
-                                                type="url"
-                                                placeholder="https://..."
-                                                value={
-                                                    reportSlideUrl
-                                                }
-                                                onChange={(e) =>
-                                                    setReportSlideUrl(
-                                                        e.target
-                                                            .value
-                                                    )
-                                                }
-                                            />
-                                        </div>
-
-                                        <div className="card-actions">
-                                            <button
-                                                className="btn-secondary"
-                                                onClick={() =>
-                                                    setShowSubmissionForm(
-                                                        false
-                                                    )
-                                                }
-                                            >
-                                                Huỷ
-                                            </button>
-
-                                            <button
-                                                className="btn-primary"
-                                                onClick={
-                                                    handleSubmitProject
-                                                }
-                                            >
-                                                Nộp bài
-                                            </button>
-                                        </div>
+                                        <input
+                                            type="url"
+                                            placeholder="https://github.com/..."
+                                            value={
+                                                repositoryUrl
+                                            }
+                                            onChange={(e) =>
+                                                setRepositoryUrl(
+                                                    e.target
+                                                        .value
+                                                )
+                                            }
+                                        />
                                     </div>
-                                )}
+
+                                    <div className="form-group">
+                                        <label>
+                                            {isEn ? "Demo URL" : "Đường dẫn bản chạy thử"}
+                                        </label>
+
+                                        <input
+                                            type="url"
+                                            placeholder="https://..."
+                                            value={demoUrl}
+                                            onChange={(e) =>
+                                                setDemoUrl(
+                                                    e.target
+                                                        .value
+                                                )
+                                            }
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>
+                                            {isEn ? "Report/Slide URL" : "Đường dẫn báo cáo / slide"}
+                                        </label>
+
+                                        <input
+                                            type="url"
+                                            placeholder="https://..."
+                                            value={
+                                                reportSlideUrl
+                                            }
+                                            onChange={(e) =>
+                                                setReportSlideUrl(
+                                                    e.target
+                                                        .value
+                                                )
+                                            }
+                                        />
+                                    </div>
+
+                                    <div className="card-actions">
+                                        <button
+                                            className="btn secondary btn-secondary"
+                                            onClick={() =>
+                                                setShowSubmissionForm(
+                                                    false
+                                                )
+                                            }
+                                        >
+                                            {isEn ? "Cancel" : "Huỷ"}
+                                        </button>
+
+                                        <button
+                                            className="btn primary btn-primary"
+                                            onClick={
+                                                handleSubmitProject
+                                            }
+                                        >
+                                            {isEn ? "Submit" : "Nộp bài"}
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
 
                             {submitted && (
                                 <div className="submitted-links">
                                     <div>
                                         <span>
-                                            Mã nguồn
+                                            {isEn ? "Repository" : "Mã nguồn"}
                                         </span>
                                         <a
                                             href={repositoryUrl}
@@ -1667,7 +1542,7 @@ return (
 
                                     <div>
                                         <span>
-                                            Báo cáo / Slide
+                                            {isEn ? "Report/Slide" : "Báo cáo / Slide"}
                                         </span>
                                         <a
                                             href={
@@ -1685,10 +1560,8 @@ return (
                     </>
                 )}
             </div>
-        </main>
-    </div>
-);
-
+        </div>
+    );
 }
 
 export default MyTeam;
