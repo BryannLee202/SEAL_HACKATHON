@@ -1,0 +1,13 @@
+# Chuoi khong dau duoc phep hien tren giao dien tieng Viet.
+#
+# Phep quet bao moi cum tu >= 3 tu ASCII khong co dau tieng Viet. Phan lon la
+# tieng Anh con sot that, nhung mot so la ten rieng hoac thuat ngu giu nguyen.
+# Them dong o day de tat bao nham — MOT DONG mot chuoi, so khop chinh xac,
+# khong phan biet hoa thuong.
+SEAL Hackathon Management System
+SEAL Hackathon Management
+Research-Based Learning
+name@example.com
+# Ten to chuc tren trang chu — giu nguyen vi la ten rieng.
+SEAL Research Lab
+Google Developer Student Clubs

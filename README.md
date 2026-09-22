@@ -234,6 +234,42 @@ cd ../backend
 ./mvnw test
 ```
 
+### Kiểm tra toàn diện — chạy thật rồi mới kết luận
+
+Ba lệnh ở trên chỉ **biên dịch** và chạy unit test. Chúng không khởi động hệ
+thống, nên có cả một lớp lỗi chúng không bao giờ thấy: Ban tổ chức không tạo
+nổi sự kiện, đội trưởng không mời nổi thành viên, `GET /api/rounds/{id}/rbl/export.csv`
+trả 500. Mọi lỗi đó đều xanh hết ở CI.
+
+`scripts/kiem-tra-toan-dien.sh` bịt đúng khoảng trống ấy. Một lệnh, tự dựng
+tự dọn, thoát mã khác 0 nếu có bất kỳ vấn đề nào:
+
+```bash
+bash scripts/kiem-tra-toan-dien.sh
+```
+
+| Khối | Kiểm gì | Chặn loại lỗi nào |
+|---|---|---|
+| 1 | Biên dịch sạch cả ba tầng từ thư mục `target/` rỗng | Lỗi chỉ lộ khi build lại từ đầu |
+| 2 | Chạy **mọi** lệnh npm được khai báo ở cả hai tầng Node | Lệnh không ai gọi bao giờ (`npm run lint` của BFF) |
+| 3 | Flyway V001–V008 trên **Postgres thật** + đăng nhập đủ tài khoản | Cú pháp riêng của Postgres, sai checksum, dữ liệu mẫu lệch giữa H2 và Postgres |
+| 4 | Khởi động thật ở profile `demo`, đăng nhập từng tài khoản README công bố | Tài khoản có trong tài liệu nhưng không có trong dữ liệu |
+| 5 | Quét **toàn bộ 88 endpoint** (danh sách sinh từ mã nguồn), không cái nào được trả 5xx | Lỗi 500 ở endpoint không ai nghĩ tới |
+| 6 | Đối chiếu từng ô với ma trận phân quyền kỳ vọng `scripts/ma-tran-quyen.txt` | Endpoint quên `@PreAuthorize`, hoặc đổi quyền mà quên cập nhật kỳ vọng |
+| 7 | Mở Chromium thật, đi hết mọi trang của mọi vai | Lỗi JavaScript lúc chạy, chuỗi tiếng Anh còn sót, khoá dịch chưa dịch |
+| 8 | Con số trong README phải khớp số test thật | Huy hiệu ghi 98 test trong khi thực tế là 424 |
+
+Điểm quan trọng: **danh sách endpoint được sinh từ mã nguồn** bằng
+`scripts/liet-ke-endpoint.py`, không gõ tay. Thêm controller mới là nó tự vào
+danh sách quét; thêm endpoint mà quên khai quyền kỳ vọng thì khối 6 báo thiếu
+dòng. Nhờ vậy bộ kiểm không cũ đi theo thời gian.
+
+Workflow `.github/workflows/e2e-ci.yml` chạy đúng script này trên mỗi PR, kèm
+một service Postgres 16 thật.
+
+Biến môi trường để chạy nhanh khi cần: `BO_QUA_POSTGRES=1` (bỏ khối 3),
+`BO_QUA_TRINH_DUYET=1` (bỏ khối 7).
+
 ---
 
 ## 📁 Cấu Trúc Thư Mục Dự Án (Monorepo)
