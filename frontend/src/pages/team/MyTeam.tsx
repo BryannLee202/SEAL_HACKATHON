@@ -354,6 +354,27 @@ function MyTeam() {
             setTeamName(createdTeam.name);
             setHasTeam(true);
 
+            /**
+             * Nếu không cập nhật `members` ở đây, biến này vẫn giữ giá trị
+             * khởi tạo `[]` cho tới khi trang được tải lại. `isTeamLeader`
+             * đọc từ `members` nên sẽ luôn là `false` ngay sau khi tạo đội,
+             * khiến `handleInviteMember` chặn chính đội trưởng vừa tạo đội
+             * với lỗi "Chỉ đội trưởng mới có quyền mời thành viên" — request
+             * mời chưa từng tới backend nên phía người được mời cũng không
+             * thấy gì.
+             */
+            setMembers(
+                createdTeam.members.map((member) => ({
+                    userId: member.userId,
+                    name: member.fullName || member.email,
+                    email: member.email,
+                    role:
+                        member.roleInTeam === "LEADER"
+                            ? "Leader"
+                            : "Member",
+                }))
+            );
+
             const newInvitations: Invitation[] = [];
 
             for (const email of selectedPeople) {

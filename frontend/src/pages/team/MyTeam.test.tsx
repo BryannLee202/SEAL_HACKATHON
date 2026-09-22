@@ -182,4 +182,48 @@ describe("MyTeam — trang đội thi", () => {
     expect(chu).toContain("Đội trưởng");
     expect(chu).toContain("Thành viên");
   });
+
+  // -----------------------------------------------------------------
+  // Bug thật: sau khi vừa tạo đội, `members` không được cập nhật ngay nên
+  // vẫn là mảng rỗng ban đầu -> isTeamLeader = false -> handleInviteMember
+  // chặn chính đội trưởng vừa tạo đội với lỗi "Chỉ đội trưởng mới có quyền
+  // mời thành viên", và vì bị chặn ở phía client nên request mời chưa từng
+  // tới backend -> người được mời không thấy gì cả.
+  // -----------------------------------------------------------------
+  it("doi truong thay ngay nut moi thanh vien sau khi tao doi, khong can tai lai trang", async () => {
+    vi.mocked(eventsApi.list).mockResolvedValue([
+      { id: "e1", name: "Hackathon Demo" } as never,
+    ]);
+    vi.mocked(teamApi.createTeam).mockResolvedValue({
+      id: "t1",
+      eventId: "e1",
+      name: "Doi Moi",
+      trackId: null,
+      trackName: null,
+      status: "REGISTERED",
+      members: [
+        { userId: "u1", fullName: "Doi Truong", email: "leader@demo.local", roleInTeam: "LEADER" },
+      ],
+    } as never);
+
+    const { container } = moTrang();
+    await waitFor(() => expect(teamApi.getMyTeams).toHaveBeenCalled());
+
+    await userEvent.click(screen.getByRole("button", { name: /Tạo đội/ }));
+
+    const chonSuKien = container.querySelector(".wizard-content select") as HTMLSelectElement;
+    await userEvent.selectOptions(chonSuKien, "e1");
+    await userEvent.type(
+      screen.getByPlaceholderText("Nhập tên đội thi của bạn..."),
+      "Doi Moi",
+    );
+    await userEvent.click(screen.getByRole("button", { name: /Tiếp tục/ }));
+    await userEvent.click(screen.getByRole("button", { name: /Tiếp tục/ }));
+    await userEvent.click(screen.getByRole("button", { name: /Xác nhận tạo đội/ }));
+
+    await waitFor(() => expect(teamApi.createTeam).toHaveBeenCalled());
+
+    // Không cần tải lại trang / gọi lại getMyTeams: nút mời phải hiện ra ngay.
+    expect(screen.getByRole("button", { name: /Mời thành viên/ })).toBeInTheDocument();
+  });
 });
