@@ -28,6 +28,20 @@ declare -A TOKEN_CUA=()
 dat()      { printf '  \033[32m✓\033[0m %s\n' "$*"; SO_DAT=$((SO_DAT+1)); }
 hong()     { printf '  \033[31m✗\033[0m %s\n' "$*"; SO_LOI=$((SO_LOI+1)); DANH_SACH_LOI+=("$*"); }
 bo_qua()   { printf '  \033[33m-\033[0m %s\n' "$*"; }
+
+# Bo qua vi THIEU CONG CU, khac han voi bo qua vi nguoi chay chu dong tat.
+#
+# Tren may ca nhan, thieu Postgres hay thieu trinh duyet la chuyen binh
+# thuong: bao mot dong roi di tiep. Tren CI thi khong: moi cong cu deu do
+# workflow cai dat, thieu cai nao nghia la workflow sai, va khoi do khong
+# chay. Lan chay CI thu hai xanh tron ven trong khi khoi 7 — khoi dat gia
+# nhat — khong he chay, chi vi playwright khong duoc khai trong package.json
+# nen `npm ci` khong cai. Mot phep kiem tu lang di roi bao xanh con te hon
+# la khong co phep kiem nao.
+thieu() {
+  if [ -n "${CI:-}" ]; then hong "$* (tren CI thi day la loi: workflow phai cai san)"
+  else bo_qua "$*"; fi
+}
 khoi()     { printf '\n\033[1m%s\033[0m\n' "$*"; }
 
 # Cong va tien trinh
@@ -281,7 +295,7 @@ elif command -v /usr/lib/postgresql/16/bin/initdb >/dev/null 2>&1 && [ "$(id -u)
   fi
   pkill -9 -f "spring-boot:run" 2>/dev/null; giai_phong_cong $CONG_BE
 else
-  bo_qua "Flyway: khong co Postgres cuc bo, bo qua (dat BO_QUA_POSTGRES=1 de im lang)"
+  thieu "Flyway: khong co Postgres nao dung duoc"
 fi
 
 # ==========================================================================
@@ -481,7 +495,7 @@ if [ "${BE_SONG:-0}" != "1" ]; then
 elif [ "${BO_QUA_TRINH_DUYET:-0}" = "1" ]; then
   bo_qua "Trinh duyet: bo qua theo BO_QUA_TRINH_DUYET=1"
 elif ! (cd frontend && node -e "require.resolve('playwright')") >/dev/null 2>&1; then
-  bo_qua "Trinh duyet: chua cai playwright o frontend/"
+  thieu "Trinh duyet: chua cai playwright o frontend/"
 else
   (cd bff && node dist/main.js >"$TMP/bff-run.log" 2>&1) &
   PID+=($!)
