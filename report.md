@@ -7,6 +7,22 @@
 
 ---
 
+## 📖 BẢNG TRA CỨU THUẬT NGỮ CHUYÊN MÔN (GLOSSARY)
+*(Dùng để tự tin giải thích mở ngoặc khi Hội đồng phản biện hỏi về các từ viết tắt)*
+
+* **CSRF** *(Cross-Site Request Forgery — Tấn công giả mạo yêu cầu từ trang web khác)*: Kẻ tấn công lừa trình duyệt của người dùng gửi lệnh trái phép đến hệ thống mà người dùng đã đăng nhập trước đó.
+* **XSS** *(Cross-Site Scripting — Tấn công tiêm mã kịch bản độc hại)*: Kẻ xấu chèn mã JavaScript độc hại vào trang web để đánh cắp dữ liệu lưu ở trình duyệt (như `localStorage`).
+* **BFF** *(Backend-For-Frontend — Tầng máy chủ trung gian phục vụ riêng cho giao diện)*: Tầng trung chuyển viết bằng NestJS nằm giữa React (Frontend) và Spring Boot (Backend), chuyên quản lý phiên đăng nhập an toàn, cấp phát CSRF Token và định dạng dữ liệu cho giao diện.
+* **JWT** *(JSON Web Token — Chuỗi mã hóa xác thực phiên làm việc)*: Chuỗi ký số an toàn chứa định danh và quyền hạn của người dùng, được hệ thống lưu trong Cookie `httpOnly` để chống lộ token.
+* **RBL** *(Rubric-Based Learning — Đánh giá năng lực dựa trên bảng tiêu chí chuẩn hóa Rubric)*: Phương pháp phân rã bài thi thành nhiều tiêu chí rõ ràng (Kỹ thuật, UX, Sáng tạo, Thuyết trình) kèm trọng số cụ thể để chấm điểm công bằng.
+* **IRR** *(Inter-Rater Reliability — Độ tin cậy và tính nhất quán giữa các giám khảo)*: Chỉ số đo lường mức độ đồng thuận giữa các giám khảo khi chấm cùng một bài thi, giúp phát hiện giám khảo chấm quá chặt hoặc quá lỏng.
+* **UUID** *(Universally Unique Identifier — Chuỗi định danh duy nhất toàn cầu 128-bit)*: Chuỗi mã hóa 36 ký tự (ví dụ: `baaae0ae-e0bd-45f7-87bb-ce328a40cd30`) thay thế cho ID tự tăng (1, 2, 3) để chống tấn công quét ID tuần tự.
+* **CORS** *(Cross-Origin Resource Sharing — Cơ chế kiểm soát chia sẻ tài nguyên chéo nguồn)*: Quy tắc bảo mật của trình duyệt quy định cổng hoặc tên miền nào được phép gọi API vào hệ thống.
+* **API** *(Application Programming Interface — Giao diện lập trình ứng dụng / Cổng trao đổi dữ liệu)*: Giao thức cho phép Frontend và Backend gửi nhận thông tin dạng JSON thông qua HTTP methods (`GET`, `POST`, `PUT`, `DELETE`).
+* **SQL** *(Structured Query Language — Ngôn ngữ truy vấn dữ liệu có cấu trúc)*: Ngôn ngữ chuẩn dùng để đọc, ghi, cập nhật dữ liệu trong hệ quản trị cơ sở dữ liệu PostgreSQL.
+
+---
+
 ## MỤC LỤC
 
 1. [Tổng Hợp Các Câu Hỏi & Lời Giải Thích Kỹ Thuật (Q&A)](#1-t%E1%BB%95ng-h%E1%BB%A3p-c%C3%A1c-c%C3%A2u-h%E1%BB%8Fi--l%E1%BB%9Di-gi%E1%BA%A3i-th%C3%ADch-k%E1%BB%B9-thu%E1%BA%ADt-qa)
@@ -17,6 +33,7 @@
    - [Câu 5: Vấn đề thời gian và tại sao cờ is_late lại bằng true (t)?](#c%C3%A2u-5-v%E1%BA%A5n-%C4%91%E1%BB%81-th%E1%BB%9Di-gian-v%C3%A0-t%E1%BA%A1i-sao-c%E1%BB%9D-is_late-l%E1%BA%A1i-b%E1%BA%B1ng-true-t)
    - [Câu 6: Vòng hiệu chuẩn (Calibration) và bảng calibration_score dùng để làm gì?](#c%C3%A2u-6-v%C3%B2ng-hi%E1%BB%87u-chu%E1%BA%A9n-calibration-v%C3%A0-b%E1%BA%A3ng-calibration_score-d%C3%B9ng-%C4%91%E1%BB%83-l%C3%A0m-g%C3%AC)
    - [Câu 7: Tại sao chấm điểm xong chưa thấy Bảng xếp hạng (Ranking)?](#c%C3%A2u-7-t%E1%BA%A1i-sao-ch%E1%BA%A5m-%C4%91i%E1%BB%83m-xong-ch%C6%B0a-th%E1%BA%A5y-b%E1%BA%A3ng-x%E1%BA%BFp-h%E1%BA%A1ng-ranking)
+   - [Câu 8: CSRF là gì? Cơ chế phòng thủ CSRF (Double-Submit Cookie) trong hệ thống hoạt động như thế nào?](#c%C3%A2u-8-csrf-l%C3%A0-g%C3%AC-c%C6%A1-ch%E1%BA%BF-ph%C3%B2ng-th%E1%BB%A7-csrf-double-submit-cookie-trong-h%E1%BB%87-th%E1%BB%91ng-ho%E1%BA%A1t-%C4%91%E1%BB%99ng-nh%C6%B0-th%E1%BA%BF-n%C3%A0o)
 2. [Checklist Quy Trình Kiểm Thử Chuẩn Từng Bước](#2-checklist-quy-tr%C3%ACnh-ki%E1%BB%83m-th%E1%BB%AD-chu%E1%BA%A9n-t%E1%BB%ABng-b%C6%B0%E1%BB%9Bc)
 3. [Tập Lệnh SQL Đối Chiếu Trực Tiếp Trên Cơ Sở Dữ Liệu](#3-t%E1%BA%ADp-l%E1%BB%87nh-sql-%C4%91%E1%BB%91i-chi%E1%BA%BFu-tr%E1%BB%B1c-ti%E1%BA%BFp-tr%C3%AAn-c%C6%A1-s%E1%BB%9F-d%E1%BB%AF-li%E1%BB%87u)
 4. [Tổng Kết Thay Đổi Mã Nguồn & Trạng Thái Git](#4-t%E1%BB%95ng-k%E1%BA%BFt-thay-%C4%91%E1%BB%95i-m%C3%A3-ngu%E1%BB%93n--tr%E1%BA%A1ng-th%C3%A1i-git)
@@ -30,10 +47,10 @@
 * **Nguyên nhân kỹ thuật:**
   1. File `frontend/src/api/events.ts` có cờ `USE_MOCK = true`, khiến hàm `eventsApi.list()` nạp sự kiện mẫu mang mã giả lập là chuỗi `"evt-1"` thay vì lấy sự kiện thật trong database.
   2. Khi bấm xác nhận, giao diện gọi API thật: `POST /api/events/evt-1/teams`.
-  3. Controller Spring Boot (`TeamController.java`) khai báo tham số đường dẫn là `@PathVariable UUID eventId`. Do `"evt-1"` không phải định dạng UUID 36 ký tự hex hợp lệ, Spring Boot ném ngoại lệ `MethodArgumentTypeMismatchException` và trả về mã lỗi **HTTP 400 Bad Request**.
+  3. Controller Spring Boot (`TeamController.java`) khai báo tham số đường dẫn là `@PathVariable UUID eventId`. Do `"evt-1"` không phải định dạng UUID *(Universally Unique Identifier — Chuỗi định danh duy nhất 36 ký tự)* hợp lệ, Spring Boot ném ngoại lệ `MethodArgumentTypeMismatchException` và trả về mã lỗi **HTTP 400 Bad Request**.
   4. Lệnh tạo đội thất bại ngay tại bước 1, dẫn đến lời mời gửi tới thí sinh thứ hai chưa từng được gọi.
 * **Giải pháp đã thực hiện:**
-  - Cập nhật `frontend/src/api/events.ts`: Chuyển hàm `list()`, `listTracks()`, `listRounds()` sang dùng Axios Client (`api`) kết nối thẳng tới backend thật trên cổng 4000.
+  - Cập nhật `frontend/src/api/events.ts`: Chuyển hàm `list()`, `listTracks()`, `listRounds()` sang dùng Axios Client (`api`) kết nối thẳng tới backend thật trên cổng 4000 (tầng BFF).
   - Khi người dùng tạo đội, mã sự kiện gửi lên là UUID thật: `baaae0ae-e0bd-45f7-87bb-ce328a40cd30`.
 
 ---
@@ -93,7 +110,7 @@
 
 ### Câu 6: Vòng hiệu chuẩn (Calibration) và bảng calibration_score dùng để làm gì?
 * **Ý nghĩa khoa học trong đề tài tốt nghiệp:**
-  - Đề tài nghiên cứu tính nhất quán và độ tin cậy liên đánh giá viên (**Inter-Rater Reliability — IRR**) trong chấm thi kỹ thuật phần mềm bằng phương pháp Rubric-Based Learning (**RBL**).
+  - Đề tài nghiên cứu tính nhất quán và độ tin cậy liên đánh giá viên (**IRR** — *Inter-Rater Reliability*) trong chấm thi kỹ thuật phần mềm bằng phương pháp Rubric-Based Learning (**RBL** — *Đánh giá học tập và năng lực dựa trên bảng tiêu chí Rubric chuẩn hóa*).
   - Trước khi chấm bài thật, mỗi giám khảo thường có độ khắt khe/dễ dãi chủ quan khác nhau.
 * **Cơ chế hoạt động:**
   - Ban tổ chức đưa ra **1 bài thi mẫu chuẩn (Sample Submission)** (trong database là bài của `Team Rocket`).
@@ -117,6 +134,31 @@
 
 ---
 
+### Câu 8: CSRF là gì? Cơ chế phòng thủ CSRF (Double-Submit Cookie) trong hệ thống hoạt động như thế nào?
+* **CSRF là gì?**
+  - **CSRF** viết tắt của **Cross-Site Request Forgery** *(dịch nghĩa: Tấn công giả mạo yêu cầu từ trang web khác)*.
+  - Đây là kỹ thuật tấn công mà kẻ xấu lợi dụng cơ chế của trình duyệt: **Trình duyệt luôn tự động gửi kèm cookie phiên của trang web mục tiêu trong mọi request**, kể cả khi request đó xuất phát từ một trang web độc hại khác mà nạn nhân vô tình truy cập.
+* **Ví dụ kịch bản tấn công thực tế (nếu không có phòng thủ):**
+  1. Giám khảo đang đăng nhập vào hệ thống SEAL Hackathon tại `http://localhost:3000`. Trình duyệt đang lưu cookie đăng nhập `shms_at`.
+  2. Giám khảo mở một tab khác và vô tình bấm vào liên kết trúng thưởng giả mạo `http://web-doc-hai.vn/nhan-qua.html`.
+  3. Trang web độc hại ngầm chạy một đoạn mã:
+     `fetch('http://localhost:4000/api/scores/chot-diem', { method: 'POST', body: '...' })`
+  4. Trình duyệt tự động đính kèm cookie `shms_at` của Giám khảo gửi kèm theo request! Nếu máy chủ chỉ kiểm tra cookie, hệ thống sẽ tin đây là yêu cầu do chính Giám khảo gửi và cho phép thay đổi điểm số bài thi của thí sinh.
+* **Tại sao SEAL Hackathon lại cần phòng thủ CSRF?**
+  - Để triệt tiêu hoàn toàn nguy cơ tấn công **XSS** *(Cross-Site Scripting — Tấn công tiêm mã JavaScript độc hại vào trình duyệt để đọc `localStorage`)*, hệ thống SEAL quyết định **không lưu Access Token trong `localStorage`**, mà lưu trong Cookie bảo mật `httpOnly` (`shms_at`, `shms_rt`).
+  - Tuy nhiên, khi dùng Cookie thì trình duyệt lại có nguy cơ bị **CSRF**. Do đó, hệ thống bắt buộc phải triển khai cơ chế phòng thủ CSRF hai lớp.
+* **Cơ chế phòng thủ của hệ thống: Double-Submit CSRF Cookie tại tầng BFF:**
+  1. **Bước 1 (Cấp phát token):** Khi người dùng đăng nhập thành công hoặc truy vấn phiên (`/auth/me`), tầng **BFF** *(Backend-For-Frontend)* tạo ra một chuỗi token ngẫu nhiên an toàn và gửi về trình duyệt qua cookie mang tên `XSRF-TOKEN` (cho phép JavaScript đọc được, không dùng `httpOnly`).
+  2. **Bước 2 (Gửi kèm Header):** Khi Frontend (`frontend/src/api/http.ts`) thực hiện các thao tác làm thay đổi dữ liệu (`POST`, `PUT`, `PATCH`, `DELETE`), mã nguồn TypeScript sẽ tự động đọc giá trị trong cookie `XSRF-TOKEN` và đính kèm vào một HTTP Header riêng biệt có tên là `X-XSRF-TOKEN`.
+  3. **Bước 3 (Kiểm tra tại BFF Guard):** Bộ lọc kiểm soát `CsrfGuard.ts` của BFF sẽ chặn request và đối soát:
+     $$\text{Cookie } \texttt{XSRF-TOKEN} == \text{Header } \texttt{X-XSRF-TOKEN} \text{ ?}$$
+     - **Nếu trùng khớp:** BFF xác thực yêu cầu hợp lệ và chuyển tiếp xuống Core Backend (Spring Boot).
+     - **Nếu không khớp hoặc thiếu Header:** BFF lập tức từ chối với mã lỗi **HTTP 403 Forbidden** (*"Thiếu hoặc sai CSRF token"*).
+* **Tại sao kẻ tấn công không thể vượt qua?**
+  - Dựa trên chính sách **SOP** *(Same-Origin Policy — Chính sách cùng nguồn gốc của trình duyệt web)*: Trang web độc hại ở domain khác **tuyệt đối không thể đọc được nội dung Cookie của trang SEAL Hackathon**, vì vậy kẻ tấn công không thể biết chuỗi token bí mật là gì để gắn vào Header `X-XSRF-TOKEN`. Kẻ tấn công bị chặn đứng 100%.
+
+---
+
 ## 2. CHECKLIST QUY TRÌNH KIỂM THỬ CHUẨN TỪNG BƯỚC
 
 Dưới đây là kịch bản hoàn chỉnh để bạn tự kiểm tra hoặc demo trực tiếp cho thầy cô:
@@ -124,10 +166,10 @@ Dưới đây là kịch bản hoàn chỉnh để bạn tự kiểm tra hoặc 
 | Bước | Thao tác trên Giao diện Web | Tài khoản sử dụng | Kỳ vọng trên Giao diện | Kỳ vọng trong PostgreSQL |
 | :---: | :--- | :--- | :--- | :--- |
 | **1** | Đăng ký & Duyệt tài khoản | Khách vãng lai ➔ `coordinator@demo.local` | Thí sinh đăng ký xong, BTC vào `/coordinator/users` bấm **Duyệt**. | Cột `account_status = 'APPROVED'` trong bảng `app_user`. |
-| **2** | Tạo đội thi mới | Thí sinh (`svfpt@gmail.com`) | Vào `/my-team`, bấm **Tạo đội**, đặt tên `AI CHAMPIONS`, chọn sự kiện thật. | Bản ghi mới xuất hiện trong `team` với trạng thái `status = 'FORMING'`. |
-| **3** | Mời thành viên | Đội trưởng (`mtai@gmail.com`) | Nhập email thành viên vào form mời và bấm gửi. | Bản ghi mới trong `team_invite` với trạng thái `PENDING`. |
+| **2** | Tạo đội thi mới | Thí sinh (`svfpt@gmail.com`) | Vào `/my-team`, bấm **Tạo đội**, đặt tên `AI CHAMPIONS`, chọn sự kiện thật. | Bản ghi mới xuất hiện trong `team` với trạng thái `status = 'FORMING'` *(Đang thành lập)*. |
+| **3** | Mời thành viên | Đội trưởng (`mtai@gmail.com`) | Nhập email thành viên vào form mời và bấm gửi. | Bản ghi mới trong `team_invite` với trạng thái `PENDING` *(Chờ chấp nhận)*. |
 | **4** | Thành viên chấp nhận vào đội | Thí sinh được mời (`minhtai@gmail.com`) | Đăng nhập, vào `/my-team`, thấy thẻ lời mời, bấm **Chấp nhận**. | `team_invite.status = 'ACCEPTED'`, `team_member` thêm dòng mới vai trò `MEMBER`. |
-| **5** | Đăng ký Hạng mục thi đấu | Đội trưởng (khi đội đủ $\ge 3$ người) | Chọn track `Mobile Application`, bấm **Đăng ký Hạng mục**. | `team.status` chuyển thành `REGISTERED`, cột `track_id` được gán UUID. |
+| **5** | Đăng ký Hạng mục thi đấu | Đội trưởng (khi đội đủ $\ge 3$ người) | Chọn track `Mobile Application`, bấm **Đăng ký Hạng mục**. | `team.status` chuyển thành `REGISTERED` *(Đã đăng ký hợp lệ)*, cột `track_id` được gán UUID. |
 | **6** | Nộp bài dự thi | Đội trưởng | Điền Repo URL, Demo URL, Doc URL và bấm **Nộp bài**. | Dữ liệu lưu vào bảng `submission`, ghi nhận `submitted_at` và `is_late`. |
 | **7** | Chấm điểm Hiệu chuẩn (RBL) | Giám khảo (`judge1@demo.local`) | Vào `/judge`, kéo slider chấm bài mẫu và bấm **Gửi điểm hiệu chuẩn**. | Bản ghi được lưu vào bảng `calibration_score`. |
 | **8** | Chấm điểm bài thi chính thức | Giám khảo (`judge1@demo.local`) | Mở bài thi đội `AI CHAMPIONS`, kéo 4 tiêu chí, tích **Chốt điểm**, bấm **Lưu**. | Điểm lưu vào bảng `score` với `finalized = true`. |
@@ -220,3 +262,5 @@ Tất cả các sửa đổi phục vụ bài kiểm tra trên đã được bi�
 2. **Commit `ced3d01`**:
    - `backend/src/main/java/com/seal/hackathon/service/ScoreService.java`: Tích hợp tự động gọi `RankingService.compute()` ngay khi giám khảo bấm lưu điểm, đảm bảo bảng xếp hạng cập nhật Realtime 100%.
    - `backend/src/test/java/com/seal/hackathon/service/ScoreServiceTest.java`: Cập nhật mock test đảm bảo toàn bộ bộ kiểm thử backend vượt qua.
+3. **Commit cập nhật tài liệu kiểm thử**:
+   - `report.md`: Bổ sung bảng chú giải thuật ngữ (Glossary) với mở ngoặc chú thích rõ ràng, chi tiết cơ chế bảo mật CSRF và hướng dẫn kiểm thử toàn diện.
