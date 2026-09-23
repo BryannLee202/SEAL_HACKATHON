@@ -111,7 +111,7 @@
   
   /* Headings */
   h1 {
-    font-size: 19px;
+    font-size: 18px;
     color: #0369a1;
     border-bottom: 2px solid #0284c7;
     padding-bottom: 6px;
@@ -121,7 +121,7 @@
     page-break-after: avoid;
   }
   h2 {
-    font-size: 15px;
+    font-size: 14.5px;
     color: #0f172a;
     margin-top: 18px;
     margin-bottom: 8px;
@@ -241,7 +241,7 @@
 <div class="cover-page">
   <div>
     <div class="school-header">BỘ GIÁO DỤC VÀ ĐÀO TẠO — TRƯỜNG ĐẠI HỌC CÔNG NGHỆ</div>
-    <div class="school-sub">KHOA CÔNG NGHỆ THÔNG TIN & KỸ THUẬT PHẦN MỀM</div>
+    <div class="school-sub">KHOA CÔNG NGHỆ THÔNG TIN &amp; KỸ THUẬT PHẦN MỀM</div>
     <br>
     <div class="badge-thesis">BÁO CÁO TỔNG HỢP BẢO VỆ KHÓA LUẬN TỐT NGHIỆP</div>
     
@@ -334,7 +334,7 @@
   Đề tài xây dựng <strong>Hệ thống Quản lý Cuộc thi Hackathon và Nghiên cứu Độ tin cậy Đánh giá viên (SEAL Hackathon Management System - SHMS)</strong>. Hệ thống giải quyết hai bài toán lớn trong thực tế:
 </p>
 <ul>
-  <li><strong>Về mặt kỹ thuật phần mềm:</strong> Chuyển đổi số toàn diện công tác tổ chức Hackathon đa vòng đấu (tạo đội thi, mời thành viên, đăng ký bảng đấu, nộp bài dự thi có đối soát giờ nộp, bình chọn cộng đồng trực tiếp và bảng xếp hạng Realtime).</li>
+  <li><strong>Về mặt kỹ thuật phần mềm:</strong> Chuyển đổi số toàn diện công tác tổ chức Hackathon đa vòng đấu (tạo cuộc thi, chia bảng đấu, lập đội thi, nộp bài dự thi có đối soát hạn nộp, bình chọn cộng đồng trực tiếp và bảng xếp hạng Realtime).</li>
   <li><strong>Về mặt nghiên cứu khoa học:</strong> Ứng dụng phương pháp <strong>Rubric-Based Learning (RBL)</strong> và đo lường <strong>Inter-Rater Reliability (IRR)</strong> thông qua Vòng hiệu chuẩn (Calibration Round) nhằm chuẩn hóa thước đo, loại bỏ sự thiên vị hoặc độ lệch chủ quan giữa các giám khảo.</li>
 </ul>
 
@@ -356,6 +356,7 @@
     <tr>
       <td>
         &bull; Xác thực bảo mật đa tầng: Cookie <code>httpOnly</code> + Chống CSRF Double-Submit.<br>
+        &bull; Quản trị sự kiện đa vòng: Khởi tạo, chia Tracks, tạo Rounds, gán Giám khảo.<br>
         &bull; Vòng đời đội thi hoàn chỉnh: <code>FORMING</code> &rarr; Mời thành viên &rarr; <code>REGISTERED</code>.<br>
         &bull; Quản lý bài nộp đa dạng (Git, Demo, Slide) + cờ trễ hạn tự động <code>is_late</code>.<br>
         &bull; Vòng chấm điểm Hiệu chuẩn (Calibration Round) lưu bảng riêng <code>calibration_score</code>.<br>
@@ -383,7 +384,7 @@
 <ul>
   <li><strong>Hệ quản trị CSDL:</strong> PostgreSQL phiên bản <strong>16.14</strong> (nền tảng tối ưu Alpine Linux 64-bit).</li>
   <li><strong>Container vận hành:</strong> Chạy độc lập trong Docker Container có tên là <code>seal-postgres</code>.</li>
-  <li><strong>Lưu trữ vật lý bền vững (Persistent Storage):</strong> Sử dụng Docker Volume có tên là <code>postgres_data</code>. Đường dẫn lưu trữ bên trong container: <code>/var/lib/postgresql/data</code>. Đảm bảo dữ liệu <strong>không bao giờ bị mất</strong> khi tắt máy hoặc restart Docker.</li>
+  <li><strong>Lưu trữ vật lý bền vững (Persistent Storage):</strong> Sử dụng Docker Volume có tên là <code>seal_hackathon_postgres_data</code>. Đường dẫn lưu trữ bên trong container: <code>/var/lib/postgresql/data</code>. Đảm bảo dữ liệu <strong>không bao giờ bị mất</strong> khi tắt máy hoặc restart Docker.</li>
   <li><strong>Cổng kết nối (Port):</strong>
     <ul>
       <li>Cổng nội bộ container: <code>5432</code>.</li>
@@ -391,12 +392,42 @@
     </ul>
   </li>
   <li><strong>Dung lượng cơ sở dữ liệu:</strong> <code>8.8 MB</code> (đã nạp đầy đủ cấu trúc bảng, seed data và audit log).</li>
+  <li><strong>Tài khoản &amp; Mật khẩu:</strong> Username: <code>seal_admin</code> | Password: <code>seal_password</code> (dùng cho Spring Boot JDBC Connection Pool và đăng nhập pgAdmin 4).</li>
 </ul>
 
-<h2>2. Mật khẩu Database là gì? Để làm gì?</h2>
+<h2>2. 📊 Bảng Tổng Hợp 3 Cấp Độ Đường Dẫn Chi Tiết Để Trả Lời Thầy Cô</h2>
+<table>
+  <thead>
+    <tr>
+      <th style="width: 22%;">Cấp độ môi trường</th>
+      <th style="width: 25%;">Vị trí lưu trữ thực tế</th>
+      <th style="width: 53%;">Đường dẫn đầy đủ (Full Path)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>1. Trong Container</strong></td>
+      <td>Linux Container (seal-postgres)</td>
+      <td><code>/var/lib/postgresql/data</code></td>
+    </tr>
+    <tr>
+      <td><strong>2. Windows Explorer</strong></td>
+      <td>WSL2 Network Share (Mở trực tiếp)</td>
+      <td><code>\\wsl.localhost\docker-desktop\tmp\docker-desktop-root\var\lib\docker\volumes\seal_hackathon_postgres_data\_data</code></td>
+    </tr>
+    <tr>
+      <td><strong>3. Ổ đĩa cứng vật lý</strong></td>
+      <td>Ổ cứng Windows C: (Tệp đĩa ảo VHDX)</td>
+      <td><code>C:\Users\tai\AppData\Local\Docker\wsl\disk\docker_data.vhdx</code> (Dung lượng: ~37.5 GB)</td>
+    </tr>
+  </tbody>
+</table>
+
 <div class="callout callout-info">
-  &bull; <strong>Username:</strong> <code>seal_admin</code> &nbsp;&nbsp;|&nbsp;&nbsp; <strong>Password:</strong> <code>seal_password</code><br>
-  &bull; <strong>Mục đích:</strong> Phục vụ xác thực bảo mật giữa tầng Spring Boot Backend với PostgreSQL thông qua JDBC Connection Pool (HikariCP), đồng thời dùng để Ban Quản Trị đăng nhập vào pgAdmin 4 quản lý dữ liệu.
+  <strong>💡 Hướng dẫn mở trực tiếp thư mục CSDL trên máy tính Windows cho Thầy xem:</strong><br>
+  1. Nhấn tổ hợp phím <strong><code>Windows + E</code></strong> (mở File Explorer).<br>
+  2. Dán đường dẫn sau vào thanh địa chỉ: <code>\\wsl.localhost\docker-desktop\tmp\docker-desktop-root\var\lib\docker\volumes\seal_hackathon_postgres_data\_data</code> và nhấn <strong>Enter</strong>.<br>
+  3. Thầy Cô sẽ thấy trực tiếp toàn bộ các tệp cấu trúc nhị phân của PostgreSQL (<code>base/</code>, <code>global/</code>, <code>pg_wal/</code>, <code>postgresql.conf</code>, <code>PG_VERSION</code>...).
 </div>
 
 <h2>3. Hướng Dẫn Từng Bước Cách Show Database Cho Thầy Cô Xem</h2>
@@ -425,37 +456,69 @@ ORDER BY rk.rank_overall ASC;</code></pre>
   Lệnh trên sẽ in ra toàn bộ danh sách 21 bảng vật lý đang hoạt động trực tiếp trong database!
 </div>
 
-<h2>4. Danh Sách 21 Bảng Dữ Liệu Cốt Lõi Trong Hệ Thống</h2>
-<table>
-  <thead>
-    <tr>
-      <th style="width: 25%;">Tên Bảng (Table Name)</th>
-      <th style="width: 75%;">Mục đích lưu trữ &amp; Ý nghĩa nghiệp vụ</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr><td><code>app_user</code></td><td>Tài khoản người dùng (Họ tên, email, mật khẩu băm BCrypt, trạng thái duyệt tài khoản <code>APPROVED</code>).</td></tr>
-    <tr><td><code>user_role_assignment</code></td><td>Phân quyền vai trò động theo ngữ cảnh (Coordinator, Judge, Mentor, Participant).</td></tr>
-    <tr><td><code>team</code></td><td>Thông tin đội thi (Tên đội, trạng thái <code>FORMING</code>, <code>REGISTERED</code>, hạng mục <code>track_id</code>).</td></tr>
-    <tr><td><code>team_member</code></td><td>Danh sách thành viên thuộc từng đội và vai trò (Trưởng nhóm <code>LEADER</code> hoặc Thành viên <code>MEMBER</code>).</td></tr>
-    <tr><td><code>team_invite</code></td><td>Lời mời gia nhập đội thi gửi qua email, trạng thái <code>PENDING</code> hoặc <code>ACCEPTED</code>.</td></tr>
-    <tr><td><code>submission</code></td><td>Bài nộp dự thi (Repo GitHub, Demo URL, Doc URL, thời gian nộp <code>submitted_at</code> và cờ trễ <code>is_late</code>).</td></tr>
-    <tr><td><code>calibration_round</code></td><td>Vòng thi Hiệu chuẩn đánh giá viên phục vụ nghiên cứu khoa học RBL/IRR.</td></tr>
-    <tr><td><code>calibration_score</code></td><td>Điểm chấm bài mẫu của các giám khảo trong vòng hiệu chuẩn (tách biệt hoàn toàn với điểm thật).</td></tr>
-    <tr><td><code>criterion</code> &amp; <code>criteria_template</code></td><td>Ma trận tiêu chí chấm điểm và bảng trọng số (Kỹ thuật, UX, Sáng tạo, Thuyết trình).</td></tr>
-    <tr><td><code>score</code></td><td>Điểm chấm chính thức của giám khảo cho từng bài thi thật, cờ chốt điểm <code>finalized</code>.</td></tr>
-    <tr><td><code>ranking</code></td><td>Bảng xếp hạng tổng hợp tính toán tự động qua trọng số đa tiêu chí.</td></tr>
-    <tr><td><code>audit_log</code></td><td>Nhật ký kiểm toán bất biến lưu vết lịch sử mọi thao tác nhạy cảm (Ai làm gì, vào thời điểm nào).</td></tr>
-    <tr><td><code>flyway_schema_history</code></td><td>Nhật ký kiểm soát phiên bản database của Flyway (checksum, trạng thái chạy thành công).</td></tr>
-    <tr><td><code>vote</code></td><td>Lưu trữ lượt bình chọn trực tiếp của khán giả cho từng đội thi tại trang sự kiện.</td></tr>
-    <tr><td><code>mentor_feedback_message</code></td><td>Lưu trữ góp ý, nhận xét chuyên môn của Mentor gửi cho các đội thi theo bảng đấu.</td></tr>
-  </tbody>
-</table>
+<div class="page-break"></div>
+
+<!-- CHỦ ĐỀ 3: QUY TRÌNH TẠO & CẤU HÌNH CUỘC THI (EVENT WORKFLOW) -->
+<h1>PHẦN 3: QUY TRÌNH KHỞI TẠO &amp; CẤU HÌNH CUỘC THI HACKATHON</h1>
+
+<h2>1. Ai có quyền tạo sự kiện trong hệ thống?</h2>
+<p>
+  Chỉ có tài khoản mang vai trò <strong>Ban Tổ Chức (Coordinator)</strong> mới được cấp quyền tạo và điều phối các mùa giải Hackathon (bảo vệ bởi Spring Security: <code>@PreAuthorize("hasRole('COORDINATOR')")</code>).
+</p>
+<div class="callout callout-info">
+  &bull; <strong>Tài khoản điều phối mẫu:</strong> <code>coordinator@demo.local</code> &nbsp;&nbsp;|&nbsp;&nbsp; <strong>Mật khẩu:</strong> <code>Demo@123456</code>
+</div>
+
+<h2>2. Hướng Dẫn Từng Bước Tạo Sự Kiện Trên Giao Diện Web</h2>
+<ol>
+  <li><strong>Đăng nhập Ban Tổ Chức:</strong> Truy cập <code>http://localhost:3000/login</code>, đăng nhập tài khoản <code>coordinator@demo.local</code>.</li>
+  <li><strong>Mở trang Sự kiện:</strong> Nhấp vào mục <strong>"Sự kiện"</strong> trên thanh điều hướng hoặc truy cập <code>http://localhost:3000/coordinator/events</code>.</li>
+  <li><strong>Bấm nút "+ Tạo sự kiện":</strong> Nhấp vào nút màu xanh ở góc phải trên. Cửa sổ Modal hiển thị gồm các trường:
+    <ul>
+      <li><strong>Tên sự kiện:</strong> Nhập tên giải đấu (Ví dụ: <em>SEAL Hackathon AI Challenge 2026</em>).</li>
+      <li><strong>Mô tả:</strong> Nhập thông điệp, quy chế và mục tiêu cuộc thi.</li>
+      <li><strong>Ngày bắt đầu &amp; Ngày kết thúc:</strong> Chọn mốc thời gian diễn ra giải đấu (Ví dụ: <code>01/10/2026</code> &rarr; <code>30/10/2026</code>).</li>
+    </ul>
+  </li>
+  <li><strong>Lưu sự kiện:</strong> Nhấn nút <strong>"Lưu"</strong>. Sự kiện mới xuất hiện tức thì trong danh sách với trạng thái ban đầu là <strong><code>Bản nháp (DRAFT)</code></strong>.</li>
+</ol>
+
+<h2>3. Cấu Hình 3 Phân Hệ Nghiệp Vụ Của Sự Kiện (Event Detail Tabs)</h2>
+<p>Nhấp vào thẻ sự kiện vừa tạo để chuyển sang trang chi tiết (<code>/coordinator/events/:eventId</code>):</p>
+<ul>
+  <li><strong>Tab 1: Hạng mục (Tracks):</strong> Bấm <em>"+ Thêm hạng mục"</em> để chia bảng đấu cho thí sinh (Ví dụ: Bảng <em>Trí tuệ nhân tạo (AI)</em>, Bảng <em>Ứng dụng di động (Mobile)</em>, Bảng <em>Nền tảng Web</em>).</li>
+  <li><strong>Tab 2: Vòng thi (Rounds):</strong> Bấm <em>"+ Thêm vòng thi"</em> để tạo lộ trình:
+    <ul>
+      <li><strong>Vòng 1 (Vòng Sơ Loại):</strong> Đặt hạn chót nộp bài, chọn bộ tiêu chí đánh giá Rubric (Kỹ thuật 40%, Sáng tạo 30%, UX 30%).</li>
+      <li><strong>Vòng 2 (Vòng Chung Kết):</strong> Đặt thời gian thuyết trình và chấm điểm trực tiếp.</li>
+    </ul>
+  </li>
+  <li><strong>Tab 3: Giám khảo &amp; Mentor:</strong> Phân công danh sách giám khảo vào từng vòng thi để họ có thẩm quyền chấm bài.</li>
+  <li><strong>Công bố sự kiện (Publish):</strong> Tại trang danh sách sự kiện, nhấn nút <strong>"Chuyển sang Đã công bố (Published)"</strong> hoặc <strong>"Đang diễn ra (Ongoing)"</strong>. Cổng đăng ký sẽ chính thức mở cho toàn thể sinh viên vào tạo đội!</li>
+</ul>
+
+<h2>4. Cách Tạo Sự Kiện Qua API Swagger UI &amp; Đối Chiếu PostgreSQL</h2>
+<ul>
+  <li><strong>Mở Swagger UI:</strong> Truy cập <code>http://localhost:8080/swagger-ui.html</code> &rarr; Mục <code>event-controller</code> &rarr; Chọn <code>POST /api/events</code>.</li>
+  <li><strong>Dữ liệu truyền lên (Payload JSON):</strong>
+    <pre><code>{
+  "name": "SEAL Hackathon AI Innovation 2026",
+  "description": "Đấu trường công nghệ trí tuệ nhân tạo dành cho sinh viên",
+  "startDate": "2026-10-01",
+  "endDate": "2026-10-30",
+  "rblEnabled": true
+}</code></pre>
+  </li>
+  <li><strong>Truy vấn kiểm tra trong PostgreSQL (pgAdmin 4):</strong>
+    <pre><code>SELECT id, name, description, start_date, end_date, status, rbl_enabled, created_at 
+FROM hackathon_event ORDER BY created_at DESC;</code></pre>
+  </li>
+</ul>
 
 <div class="page-break"></div>
 
-<!-- CHỦ ĐỀ 3: CÔNG CỤ QUẢN LÝ DATABASE - FLYWAY MIGRATION -->
-<h1>PHẦN 3: CÔNG CỤ QUẢN LÝ DATABASE — FLYWAY MIGRATION</h1>
+<!-- CHỦ ĐỀ 4: CÔNG CỤ QUẢN LÝ DATABASE - FLYWAY MIGRATION -->
+<h1>PHẦN 4: CÔNG CỤ QUẢN LÝ DATABASE — FLYWAY MIGRATION</h1>
 
 <h2>1. Flyway Migration là gì &amp; có chức năng gì?</h2>
 <ul>
@@ -504,8 +567,8 @@ FROM flyway_schema_history ORDER BY installed_rank ASC;</code></pre>
 
 <div class="page-break"></div>
 
-<!-- CHỦ ĐỀ 4: GIAO TIẾP DỮ LIỆU & KIẾN TRÚC API -->
-<h1>PHẦN 4: GIAO TIẾP DỮ LIỆU &amp; KIẾN TRÚC API</h1>
+<!-- CHỦ ĐỀ 5: GIAO TIẾP DỮ LIỆU & KIẾN TRÚC API -->
+<h1>PHẦN 5: GIAO TIẾP DỮ LIỆU &amp; KIẾN TRÚC API</h1>
 
 <h2>1. API là gì? Lấy API ở đâu?</h2>
 <ul>
@@ -555,8 +618,8 @@ FROM flyway_schema_history ORDER BY installed_rank ASC;</code></pre>
 
 <div class="page-break"></div>
 
-<!-- CHỦ ĐỀ 5: BẢO MẬT HỆ THỐNG - CSRF & XSS -->
-<h1>PHẦN 5: BẢO MẬT HỆ THỐNG — PHÒNG THỦ CSRF &amp; XSS</h1>
+<!-- CHỦ ĐỀ 6: BẢO MẬT HỆ THỐNG - CSRF & XSS -->
+<h1>PHẦN 6: BẢO MẬT HỆ THỐNG — PHÒNG THỦ CSRF &amp; XSS</h1>
 
 <h2>1. CSRF là gì? (Có mở ngoặc chú thích rõ ràng)</h2>
 <p>
@@ -584,8 +647,8 @@ FROM flyway_schema_history ORDER BY installed_rank ASC;</code></pre>
 
 <div class="page-break"></div>
 
-<!-- CHỦ ĐỀ 6: KỊCH BẢN DEMO THỰC TẾ & ĐỐI CHIẾU PGADMIN 4 -->
-<h1>PHẦN 6: KỊCH BẢN DEMO THỰC TẾ &amp; ĐỐI CHIẾU PGADMIN 4</h1>
+<!-- CHỦ ĐỀ 7: KỊCH BẢN DEMO THỰC TẾ & ĐỐI CHIẾU PGADMIN 4 -->
+<h1>PHẦN 7: KỊCH BẢN DEMO THỰC TẾ &amp; ĐỐI CHIẾU PGADMIN 4</h1>
 
 <h2>1. Checklist 9 Bước Demo Toàn Diện Hệ Thống</h2>
 <table>
@@ -637,8 +700,8 @@ FROM audit_log ORDER BY timestamp DESC LIMIT 10;</code></pre>
 
 <div class="page-break"></div>
 
-<!-- CHỦ ĐỀ 7: BỘ CÂU HỎI QUAN TRỌNG HỘI ĐỒNG PHẢN BIỆN CHẮC CHẮN SẼ HỎI -->
-<h1>PHẦN 7: BỘ CÂU HỎI TRỌNG YẾU HỘI ĐỒNG CHẮC CHẮN SẼ HỎI</h1>
+<!-- CHỦ ĐỀ 8: BỘ CÂU HỎI QUAN TRỌNG HỘI ĐỒNG PHẢN BIỆN CHẮC CHẮN SẼ HỎI -->
+<h1>PHẦN 8: BỘ CÂU HỎI TRỌNG YẾU HỘI ĐỒNG CHẮC CHẮN SẼ HỎI</h1>
 
 <div class="callout callout-info">
   <strong>Câu 1: Điểm hiệu chuẩn (Calibration Score) và Điểm thi thật (Score) khác nhau thế nào? Tại sao phải tách thành 2 bảng?</strong><br>
