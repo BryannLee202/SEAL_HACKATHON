@@ -51,6 +51,8 @@ class ScoreServiceTest {
     private JudgeAssignmentService judgeAssignmentService;
     @Mock
     private AuditService auditService;
+    @Mock
+    private RankingService rankingService;
 
     @InjectMocks
     private ScoreService scoreService;

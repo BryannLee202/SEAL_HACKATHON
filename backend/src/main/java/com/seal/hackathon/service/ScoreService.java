@@ -44,6 +44,7 @@ public class ScoreService {
     private final JudgeAssignmentService judgeAssignmentService;
     private final AuditService auditService;
     private final TeamMemberRepository teamMemberRepository;
+    private final RankingService rankingService;
 
     public ScoreService(
             ScoreRepository scoreRepository,
@@ -54,7 +55,8 @@ public class ScoreService {
             CalibrationScoreRepository calibrationScoreRepository,
             JudgeAssignmentService judgeAssignmentService,
             AuditService auditService,
-            TeamMemberRepository teamMemberRepository
+            TeamMemberRepository teamMemberRepository,
+            RankingService rankingService
     ) {
         this.scoreRepository = scoreRepository;
         this.submissionRepository = submissionRepository;
@@ -65,6 +67,7 @@ public class ScoreService {
         this.judgeAssignmentService = judgeAssignmentService;
         this.auditService = auditService;
         this.teamMemberRepository = teamMemberRepository;
+        this.rankingService = rankingService;
     }
 
     @Transactional
@@ -132,6 +135,12 @@ public class ScoreService {
             // bản ghi vừa lưu, không dựng thêm bản ghi mới rồi vỡ ràng buộc.
             diemDaCham.put(item.criterionId(), score);
             results.add(score);
+        }
+
+        try {
+            rankingService.compute(roundId, judgeUserId);
+        } catch (Exception ignored) {
+            // Không để lỗi tính xếp hạng làm hỏng việc lưu điểm
         }
 
         return results.stream().map(ScoreResponse::from).collect(Collectors.toList());
