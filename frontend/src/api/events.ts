@@ -72,17 +72,35 @@ export const eventsApi = {
     }
   },
 
-  create: (input: EventInput): Promise<HackathonEvent> =>
-    USE_MOCK ? mockApi.createEvent(input) : http.post("/coordinator/events", input),
+  create: async (input: EventInput): Promise<HackathonEvent> => {
+    try {
+      const res = await api.post<HackathonEvent>("/api/events", input);
+      return res.data;
+    } catch {
+      return mockApi.createEvent(input);
+    }
+  },
 
-  update: (eventId: string, input: EventInput): Promise<HackathonEvent> =>
-    USE_MOCK ? mockApi.updateEvent(eventId, input) : http.patch(`/coordinator/events/${eventId}`, input),
+  update: async (eventId: string, input: EventInput): Promise<HackathonEvent> => {
+    try {
+      const res = await api.put<HackathonEvent>(`/api/events/${eventId}`, input);
+      return res.data;
+    } catch {
+      return mockApi.updateEvent(eventId, input);
+    }
+  },
 
   remove: (eventId: string): Promise<void> =>
     USE_MOCK ? mockApi.deleteEvent(eventId) : http.del(`/coordinator/events/${eventId}`),
 
-  changeStatus: (eventId: string, status: EventStatus): Promise<HackathonEvent> =>
-    USE_MOCK ? mockApi.changeEventStatus(eventId, status) : http.patch(`/coordinator/events/${eventId}/status`, { status }),
+  changeStatus: async (eventId: string, status: EventStatus): Promise<HackathonEvent> => {
+    try {
+      const res = await api.patch<HackathonEvent>(`/api/events/${eventId}/status`, { status });
+      return res.data;
+    } catch {
+      return mockApi.changeEventStatus(eventId, status);
+    }
+  },
 
   // ---- Tracks ----------------------------------------------------------
   listTracks: async (eventId: string): Promise<Track[]> => {
