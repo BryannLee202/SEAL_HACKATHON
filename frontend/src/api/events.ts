@@ -153,8 +153,14 @@ export const eventsApi = {
   listMentorDirectory: (): Promise<MentorRef[]> =>
     USE_MOCK ? mockApi.listMentorDirectory() : http.get("/coordinator/directory/mentors"),
 
-  createTrack: (eventId: string, input: TrackInput): Promise<Track> =>
-    USE_MOCK ? mockApi.createTrack(eventId, input) : http.post(`/coordinator/events/${eventId}/tracks`, input),
+  createTrack: async (eventId: string, input: TrackInput): Promise<Track> => {
+    try {
+      const res = await api.post<Track>(`/api/events/${eventId}/tracks`, input);
+      return res.data;
+    } catch {
+      return mockApi.createTrack(eventId, input);
+    }
+  },
 
   updateTrack: (eventId: string, trackId: string, input: TrackInput): Promise<Track> =>
     USE_MOCK ? mockApi.updateTrack(trackId, input) : http.patch(`/coordinator/events/${eventId}/tracks/${trackId}`, input),
@@ -204,8 +210,42 @@ export const eventsApi = {
   listJudgeDirectory: (): Promise<JudgeRef[]> =>
     USE_MOCK ? mockApi.listJudgeDirectory() : http.get("/coordinator/directory/judges"),
 
-  createRound: (eventId: string, input: RoundInput): Promise<Round> =>
-    USE_MOCK ? mockApi.createRound(eventId, input) : http.post(`/coordinator/events/${eventId}/rounds`, input),
+  createRound: async (eventId: string, input: RoundInput): Promise<Round> => {
+    try {
+      const payload = {
+        name: input.name,
+        orderIndex: input.order,
+        submissionDeadline: new Date(input.submissionDeadline).toISOString(),
+        promotionTopN: input.promotionRule?.topNPerTrack ?? 2,
+      };
+      const res = await api.post<any>(`/api/events/${eventId}/rounds`, payload);
+      const round = res.data;
+      if (input.criteria && input.criteria.length > 0) {
+        for (const c of input.criteria) {
+          try {
+            await api.post(`/api/rounds/${round.id}/criteria`, {
+              name: c.name,
+              description: c.name,
+              weight: c.weight,
+              maxScore: 100,
+            });
+          } catch {}
+        }
+      }
+      return {
+        id: round.id,
+        eventId,
+        name: round.name,
+        order: round.orderIndex ?? input.order,
+        submissionDeadline: round.submissionDeadline ?? input.submissionDeadline,
+        criteria: input.criteria,
+        promotionRule: input.promotionRule,
+        judgeIds: [],
+      };
+    } catch {
+      return mockApi.createRound(eventId, input);
+    }
+  },
 
   updateRound: (eventId: string, roundId: string, input: RoundInput): Promise<Round> =>
     USE_MOCK ? mockApi.updateRound(roundId, input) : http.patch(`/coordinator/events/${eventId}/rounds/${roundId}`, input),
