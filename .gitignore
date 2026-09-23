@@ -35,3 +35,9 @@ __pycache__/
 # sinh loi cu phap giua chung. Vi vay khi can vua chay vua sua, ta chay mot
 # ban sao va giu ban goc de chinh.
 scripts/.chay-thu.sh
+
+# Local generated defense reports and PDFs (stored locally, not pushed to git)
+docs/reports/
+BAO_CAO_*.pdf
+BAO_CAO_*.html
+

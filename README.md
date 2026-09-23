@@ -323,7 +323,6 @@ SEAL_HACKATHON/
 ├── scripts/                         # Bộ kiểm tra toàn diện, ma trận quyền, truy xuất
 ├── docker-compose.yml               # File cấu hình triển khai 4 container
 ├── DEMO_GUIDE.md                    # Cẩm nang hướng dẫn chạy demo cho nhóm
-├── DEFENSE_REPORT_AND_PITCH.md      # Báo cáo chức năng & Chiến lược bảo vệ đồ án A+
 └── README.md                        # Tài liệu dự án chính
 ```
 
@@ -344,6 +343,4 @@ SEAL_HACKATHON/
 
 ## 📜 Tài Liệu Tham Khảo Thêm
 - [Cẩm Nang Hướng Dẫn Chạy Demo Cho Nhóm](./DEMO_GUIDE.md)
-- [Báo Cáo Chức Năng & Chiến Lược Bảo Vệ Đồ Án Điểm A+](./DEFENSE_REPORT_AND_PITCH.md)
 - [Hồ sơ Quyết định Kiến trúc (ADRs)](./docs/adr/README.md)
-- [Quy trình đóng góp (Contributing Guidelines)](./CONTRIBUTING.md)

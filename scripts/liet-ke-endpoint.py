@@ -10,8 +10,8 @@ hoac "-" neu khong co.
 """
 import re, sys, glob, os, signal
 
-# Cho phep `| head` khong sinh BrokenPipeError.
-signal.signal(signal.SIGPIPE, signal.SIG_DFL)
+if hasattr(signal, "SIGPIPE"):
+    signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
 GOC = os.path.join(os.path.dirname(__file__), "..",
                    "backend/src/main/java/com/seal/hackathon/controller")
