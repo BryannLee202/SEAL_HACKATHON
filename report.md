@@ -20,6 +20,7 @@
 * **CORS** *(Cross-Origin Resource Sharing — Cơ chế kiểm soát chia sẻ tài nguyên chéo nguồn)*: Quy tắc bảo mật của trình duyệt quy định cổng hoặc tên miền nào được phép gọi API vào hệ thống.
 * **API** *(Application Programming Interface — Giao diện lập trình ứng dụng / Cổng trao đổi dữ liệu)*: Giao thức cho phép Frontend và Backend gửi nhận thông tin dạng JSON thông qua HTTP methods (`GET`, `POST`, `PUT`, `DELETE`).
 * **SQL** *(Structured Query Language — Ngôn ngữ truy vấn dữ liệu có cấu trúc)*: Ngôn ngữ chuẩn dùng để đọc, ghi, cập nhật dữ liệu trong hệ quản trị cơ sở dữ liệu PostgreSQL.
+* **Flyway Migration** *(Cơ chế quản lý phiên bản cơ sở dữ liệu tự động / Database Version Control)*: Công cụ tự động chạy các script SQL theo thứ tự phiên bản (`V001` -> `V009`), đảm bảo cấu trúc database của mọi thành viên và máy chủ production luôn đồng bộ 100%.
 
 ---
 
@@ -34,6 +35,7 @@
    - [Câu 6: Vòng hiệu chuẩn (Calibration) và bảng calibration_score dùng để làm gì?](#c%C3%A2u-6-v%C3%B2ng-hi%E1%BB%87u-chu%E1%BA%A9n-calibration-v%C3%A0-b%E1%BA%A3ng-calibration_score-d%C3%B9ng-%C4%91%E1%BB%83-l%C3%A0m-g%C3%AC)
    - [Câu 7: Tại sao chấm điểm xong chưa thấy Bảng xếp hạng (Ranking)?](#c%C3%A2u-7-t%E1%BA%A1i-sao-ch%E1%BA%A5m-%C4%91i%E1%BB%83m-xong-ch%C6%B0a-th%E1%BA%A5y-b%E1%BA%A3ng-x%E1%BA%BFp-h%E1%BA%A1ng-ranking)
    - [Câu 8: CSRF là gì? Cơ chế phòng thủ CSRF (Double-Submit Cookie) trong hệ thống hoạt động như thế nào?](#c%C3%A2u-8-csrf-l%C3%A0-g%C3%AC-c%C6%A1-ch%E1%BA%BF-ph%C3%B2ng-th%E1%BB%A7-csrf-double-submit-cookie-trong-h%E1%BB%87-th%E1%BB%91ng-ho%E1%BA%A1t-%C4%91%E1%BB%99ng-nh%C6%B0-th%E1%BA%BF-n%C3%A0o)
+   - [Câu 9: Flyway Migration là gì? Cách vận hành, cấu trúc file và cách show code cho Thầy Cô](#c%C3%A2u-9-flyway-migration-l%C3%A0-g%C3%AC-c%C3%A1ch-v%E1%BA%ADn-h%C3%A0nh-c%E1%BA%A5u-tr%C3%BAc-file-v%C3%A0-c%C3%A1ch-show-code-cho-th%E1%BA%A7y-c%C3%B4)
 2. [Checklist Quy Trình Kiểm Thử Chuẩn Từng Bước](#2-checklist-quy-tr%C3%ACnh-ki%E1%BB%83m-th%E1%BB%AD-chu%E1%BA%A9n-t%E1%BB%ABng-b%C6%B0%E1%BB%9Bc)
 3. [Tập Lệnh SQL Đối Chiếu Trực Tiếp Trên Cơ Sở Dữ Liệu](#3-t%E1%BA%ADp-l%E1%BB%87nh-sql-%C4%91%E1%BB%91i-chi%E1%BA%BFu-tr%E1%BB%B1c-ti%E1%BA%BFp-tr%C3%AAn-c%C6%A1-s%E1%BB%9F-d%E1%BB%AF-li%E1%BB%87u)
 4. [Tổng Kết Thay Đổi Mã Nguồn & Trạng Thái Git](#4-t%E1%BB%95ng-k%E1%BA%BFt-thay-%C4%91%E1%BB%95i-m%C3%A3-ngu%E1%BB%93n--tr%E1%BA%A1ng-th%C3%A1i-git)
@@ -159,6 +161,31 @@
 
 ---
 
+### Câu 9: Flyway Migration là gì? Cách vận hành, cấu trúc file và cách show code cho Thầy Cô
+* **Flyway Migration là gì?**
+  - **Flyway** là một công cụ **Database Version Control** *(Quản lý phiên bản mã nguồn cho cơ sở dữ liệu)* mã nguồn mở.
+  - Tương tự như **Git** quản lý lịch sử commit của code Java/TypeScript, **Flyway** quản lý lịch sử tiến hóa của schema cơ sở dữ liệu (tạo bảng, thêm cột, tạo khóa ngoại, nạp dữ liệu mẫu seed data).
+* **Flyway có chức năng gì trong dự án SEAL Hackathon?**
+  1. **Tự động hóa 100%:** Khi container Spring Boot khởi động, Flyway tự động quét các file script SQL và thực thi lần lượt vào PostgreSQL mà lập trình viên không cần chạy SQL thủ công.
+  2. **Đồng bộ hóa môi trường:** Đảm bảo toàn bộ 6 thành viên trong nhóm và máy chủ production đều có đúng 1 cấu trúc database y hệt nhau.
+  3. **Kiểm toán toàn vẹn dữ liệu (Checksum Validation):** Ngăn chặn việc ai đó sửa lén các file migration cũ, bảo vệ an toàn cho cơ sở dữ liệu.
+* **Cấu trúc đặt tên file bắt buộc của Flyway:**
+  - Định dạng chuẩn: `V<Version>__<Mo_ta_ngan_gon>.sql` (Ví dụ: `V001__init_schema.sql`, `V002__seed_data.sql`).
+  - **Lưu ý quan trọng:** Giữa số phiên bản và tên mô tả bắt buộc phải có **2 dấu gạch dưới liên tiếp (`__`)**. Nếu chỉ có 1 dấu gạch, Flyway sẽ bỏ qua và không nhận diện được file!
+* **Bảng thần thánh `flyway_schema_history` dưới PostgreSQL:**
+  - Flyway tự động tạo bảng này để ghi nhận: `installed_rank`, `version`, `description`, `script`, `checksum` (mã băm nội dung file), `installed_on` (thời gian chạy), `success` (`t/f`).
+* **Quy trình vận hành 4 bước khi khởi động:**
+  1. **Scan:** Quét thư mục `src/main/resources/db/migration/`.
+  2. **Check:** Đọc bảng `flyway_schema_history` dưới database.
+  3. **Validate:** Tính toán lại mã băm Checksum của các file cũ. Nếu mã băm khác với giá trị đã lưu trong bảng `flyway_schema_history` (do ai đó sửa file cũ), Flyway lập tức dừng khởi động để bảo vệ dữ liệu.
+  4. **Migrate:** Thực thi các file mới hơn (chưa có trong bảng) theo thứ tự tăng dần.
+* **Cách Show Code và Chỉ Cho Thầy Cô Xem:**
+  - **Thư mục script SQL:** `backend/src/main/resources/db/migration/` (Hiển thị 9 file từ `V001` đến `V009`).
+  - **Cấu hình Spring Boot:** `backend/src/main/resources/application.yml` (chỉ dòng `flyway.enabled: true`, `locations: classpath:db/migration` và `jpa.hibernate.ddl-auto: validate`).
+  - **Bảng dữ liệu thực tế trên pgAdmin 4:** Chạy truy vấn bảng `flyway_schema_history`.
+
+---
+
 ## 2. CHECKLIST QUY TRÌNH KIỂM THỬ CHUẨN TỪNG BƯỚC
 
 Dưới đây là kịch bản hoàn chỉnh để bạn tự kiểm tra hoặc demo trực tiếp cho thầy cô:
@@ -248,6 +275,15 @@ SELECT id, action, entity_type, timestamp AT TIME ZONE 'Asia/Ho_Chi_Minh' AS tho
 FROM audit_log 
 ORDER BY timestamp DESC 
 LIMIT 10;
+```
+
+### 3.8. Kiểm tra lịch sử nạp phiên bản Flyway (flyway_schema_history)
+```sql
+SELECT installed_rank, version, description, script, checksum, 
+       installed_on AT TIME ZONE 'Asia/Ho_Chi_Minh' AS thoi_gian_chay, 
+       success AS thanh_cong
+FROM flyway_schema_history 
+ORDER BY installed_rank ASC;
 ```
 
 ---
