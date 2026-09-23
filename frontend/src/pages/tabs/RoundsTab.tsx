@@ -305,7 +305,7 @@ function RoundFormModal({
           <div className="field__label-row">
             <span>Tiêu chí chấm điểm</span>
             <span className={weightSum === 100 ? "weight-sum weight-sum--ok" : "weight-sum weight-sum--bad"}>
-              Tổng trọng số: {weightSum}%
+              Tổng trọng số: {weightSum}% {weightSum !== 100 ? `(Cần đủ 100%, còn thiếu ${100 - weightSum}%)` : "✓ Hợp lệ"}
             </span>
           </div>
           <div className="criteria-editor">
