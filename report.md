@@ -150,7 +150,7 @@
   - Để triệt tiêu hoàn toàn nguy cơ tấn công **XSS** *(Cross-Site Scripting — Tấn công tiêm mã JavaScript độc hại vào trình duyệt để đọc `localStorage`)*, hệ thống SEAL quyết định **không lưu Access Token trong `localStorage`**, mà lưu trong Cookie bảo mật `httpOnly` (`shms_at`, `shms_rt`).
   - Tuy nhiên, khi dùng Cookie thì trình duyệt lại có nguy cơ bị **CSRF**. Do đó, hệ thống bắt buộc phải triển khai cơ chế phòng thủ CSRF hai lớp.
 * **Cơ chế phòng thủ của hệ thống: Double-Submit CSRF Cookie tại tầng BFF:**
-  1. **Bước 1 (Cấp phát token):** Khi người dùng đăng nhập thành công hoặc truy vấn phiên (`/auth/me`), tầng **BFF** *(Backend-For-Frontend)* tạo ra một chuỗi token ngẫu nhiên an toàn và gửi về trình duyệt qua cookie mang tên `XSRF-TOKEN` (cho phép JavaScript đọc được, không dùng `httpOnly`).
+  1. **Bước 1 (Cấp phát token):** Khi người dùng đăng nhập thành công hoặc truy vấn phiên (`/api/auth/me`), tầng **BFF** *(Backend-For-Frontend)* tạo ra một chuỗi token ngẫu nhiên an toàn và gửi về trình duyệt qua cookie mang tên `XSRF-TOKEN` (cho phép JavaScript đọc được, không dùng `httpOnly`).
   2. **Bước 2 (Gửi kèm Header):** Khi Frontend (`frontend/src/api/http.ts`) thực hiện các thao tác làm thay đổi dữ liệu (`POST`, `PUT`, `PATCH`, `DELETE`), mã nguồn TypeScript sẽ tự động đọc giá trị trong cookie `XSRF-TOKEN` và đính kèm vào một HTTP Header riêng biệt có tên là `X-XSRF-TOKEN`.
   3. **Bước 3 (Kiểm tra tại BFF Guard):** Bộ lọc kiểm soát `CsrfGuard.ts` của BFF sẽ chặn request và đối soát:
      $$\text{Cookie } \texttt{XSRF-TOKEN} == \text{Header } \texttt{X-XSRF-TOKEN} \text{ ?}$$
@@ -193,9 +193,9 @@ Dưới đây là kịch bản hoàn chỉnh để bạn tự kiểm tra hoặc 
 | Bước | Thao tác trên Giao diện Web | Tài khoản sử dụng | Kỳ vọng trên Giao diện | Kỳ vọng trong PostgreSQL |
 | :---: | :--- | :--- | :--- | :--- |
 | **1** | Đăng ký & Duyệt tài khoản | Khách vãng lai ➔ `coordinator@demo.local` | Thí sinh đăng ký xong, BTC vào `/coordinator/users` bấm **Duyệt**. | Cột `account_status = 'APPROVED'` trong bảng `app_user`. |
-| **2** | Tạo đội thi mới | Thí sinh (`svfpt@gmail.com`) | Vào `/my-team`, bấm **Tạo đội**, đặt tên `AI CHAMPIONS`, chọn sự kiện thật. | Bản ghi mới xuất hiện trong `team` với trạng thái `status = 'FORMING'` *(Đang thành lập)*. |
+| **2** | Tạo đội thi mới | Thí sinh (`svfpt@gmail.com`) | Vào `/team`, bấm **Tạo đội**, đặt tên `AI CHAMPIONS`, chọn sự kiện thật. | Bản ghi mới xuất hiện trong `team` với trạng thái `status = 'FORMING'` *(Đang thành lập)*. |
 | **3** | Mời thành viên | Đội trưởng (`mtai@gmail.com`) | Nhập email thành viên vào form mời và bấm gửi. | Bản ghi mới trong `team_invite` với trạng thái `PENDING` *(Chờ chấp nhận)*. |
-| **4** | Thành viên chấp nhận vào đội | Thí sinh được mời (`minhtai@gmail.com`) | Đăng nhập, vào `/my-team`, thấy thẻ lời mời, bấm **Chấp nhận**. | `team_invite.status = 'ACCEPTED'`, `team_member` thêm dòng mới vai trò `MEMBER`. |
+| **4** | Thành viên chấp nhận vào đội | Thí sinh được mời (`minhtai@gmail.com`) | Đăng nhập, vào `/team`, thấy thẻ lời mời, bấm **Chấp nhận**. | `team_invite.status = 'ACCEPTED'`, `team_member` thêm dòng mới vai trò `MEMBER`. |
 | **5** | Đăng ký Hạng mục thi đấu | Đội trưởng (khi đội đủ $\ge 3$ người) | Chọn track `Mobile Application`, bấm **Đăng ký Hạng mục**. | `team.status` chuyển thành `REGISTERED` *(Đã đăng ký hợp lệ)*, cột `track_id` được gán UUID. |
 | **6** | Nộp bài dự thi | Đội trưởng | Điền Repo URL, Demo URL, Doc URL và bấm **Nộp bài**. | Dữ liệu lưu vào bảng `submission`, ghi nhận `submitted_at` và `is_late`. |
 | **7** | Chấm điểm Hiệu chuẩn (RBL) | Giám khảo (`judge1@demo.local`) | Vào `/judge`, kéo slider chấm bài mẫu và bấm **Gửi điểm hiệu chuẩn**. | Bản ghi được lưu vào bảng `calibration_score`. |
