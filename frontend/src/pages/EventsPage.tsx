@@ -143,7 +143,7 @@ function EventCard({
   onDelete: () => void;
   onStatusChange: (status: EventStatus) => void;
 }) {
-  const nextStatuses = EVENT_STATUS_TRANSITIONS[event.status];
+  const nextStatuses = EVENT_STATUS_TRANSITIONS[event.status] ?? [];
 
   return (
     <article className="event-card">
@@ -303,8 +303,15 @@ function DeleteEventDialog({
   );
 }
 
-function formatDateRange(start: string, end: string) {
-  const fmt = (d: string) =>
-    new Date(d).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
+function formatDateRange(start?: string, end?: string) {
+  if (!start || !end) return "Chưa đặt thời gian";
+  const fmt = (d: string) => {
+    try {
+      const dt = new Date(d);
+      return isNaN(dt.getTime()) ? d : dt.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
+    } catch {
+      return d;
+    }
+  };
   return `${fmt(start)} – ${fmt(end)}`;
 }

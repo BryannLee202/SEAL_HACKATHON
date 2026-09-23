@@ -52,12 +52,49 @@ import type {
 
 const USE_MOCK = import.meta.env.VITE_USE_MOCK !== "false";
 
+function toBackendStatus(status: string): string {
+  const s = status.toLowerCase();
+  if (s === "published") return "OPEN";
+  if (s === "ongoing") return "ONGOING";
+  if (s === "completed") return "CLOSED";
+  if (s === "cancelled") return "CANCELLED";
+  if (s === "draft") return "DRAFT";
+  return status.toUpperCase();
+}
+
+function normalizeEvent(e: any): HackathonEvent {
+  if (!e) return e;
+  const raw = String(e.status || "draft").toUpperCase();
+  let status: EventStatus = "draft";
+  if (raw === "DRAFT") status = "draft";
+  else if (raw === "OPEN" || raw === "PUBLISHED") status = "published";
+  else if (raw === "ACTIVE" || raw === "ONGOING") status = "ongoing";
+  else if (raw === "CLOSED" || raw === "COMPLETED") status = "completed";
+  else if (raw === "CANCELLED") status = "cancelled";
+  else status = (raw.toLowerCase() as EventStatus);
+
+  return {
+    ...e,
+    id: String(e.id),
+    name: e.name || "Sự kiện chưa đặt tên",
+    description: e.description || "",
+    status,
+    startDate: e.startDate ? String(e.startDate).substring(0, 10) : "",
+    endDate: e.endDate ? String(e.endDate).substring(0, 10) : "",
+    trackCount: Number(e.trackCount ?? 0),
+    roundCount: Number(e.roundCount ?? 0),
+    teamCount: Number(e.teamCount ?? 0),
+    createdAt: e.createdAt || "",
+    updatedAt: e.updatedAt || "",
+  };
+}
+
 export const eventsApi = {
   // ---- Events --------------------------------------------------------
   list: async (): Promise<HackathonEvent[]> => {
     try {
-      const res = await api.get<HackathonEvent[]>("/api/events");
-      return res.data;
+      const res = await api.get<any[]>("/api/events");
+      return (res.data || []).map(normalizeEvent);
     } catch {
       return USE_MOCK ? mockApi.listEvents() : [];
     }
@@ -65,8 +102,8 @@ export const eventsApi = {
 
   get: async (eventId: string): Promise<HackathonEvent> => {
     try {
-      const res = await api.get<HackathonEvent>(`/api/events/${eventId}`);
-      return res.data;
+      const res = await api.get<any>(`/api/events/${eventId}`);
+      return normalizeEvent(res.data);
     } catch {
       return mockApi.getEvent(eventId);
     }
@@ -74,8 +111,8 @@ export const eventsApi = {
 
   create: async (input: EventInput): Promise<HackathonEvent> => {
     try {
-      const res = await api.post<HackathonEvent>("/api/events", input);
-      return res.data;
+      const res = await api.post<any>("/api/events", input);
+      return normalizeEvent(res.data);
     } catch {
       return mockApi.createEvent(input);
     }
@@ -83,8 +120,8 @@ export const eventsApi = {
 
   update: async (eventId: string, input: EventInput): Promise<HackathonEvent> => {
     try {
-      const res = await api.put<HackathonEvent>(`/api/events/${eventId}`, input);
-      return res.data;
+      const res = await api.put<any>(`/api/events/${eventId}`, input);
+      return normalizeEvent(res.data);
     } catch {
       return mockApi.updateEvent(eventId, input);
     }
@@ -95,8 +132,9 @@ export const eventsApi = {
 
   changeStatus: async (eventId: string, status: EventStatus): Promise<HackathonEvent> => {
     try {
-      const res = await api.patch<HackathonEvent>(`/api/events/${eventId}/status`, { status });
-      return res.data;
+      const backendStatus = toBackendStatus(status);
+      const res = await api.patch<any>(`/api/events/${eventId}/status`, { status: backendStatus });
+      return normalizeEvent(res.data);
     } catch {
       return mockApi.changeEventStatus(eventId, status);
     }

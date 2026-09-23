@@ -2,23 +2,59 @@
 // These mirror the business entities in the SEAL Hackathon spec:
 // Hackathon Event, Track, Round, Team, Judge, Mentor, Submission.
 
-export type EventStatus = "draft" | "published" | "ongoing" | "completed" | "cancelled";
+export type EventStatus =
+  | "draft"
+  | "published"
+  | "ongoing"
+  | "completed"
+  | "cancelled"
+  | "active"
+  | "open"
+  | "closed"
+  | "DRAFT"
+  | "OPEN"
+  | "ACTIVE"
+  | "ONGOING"
+  | "CLOSED"
+  | "CANCELLED";
 
-export const EVENT_STATUS_LABEL: Record<EventStatus, string> = {
+export const EVENT_STATUS_LABEL: Record<string, string> = {
   draft: "Nháp",
+  DRAFT: "Nháp",
   published: "Đã công bố",
+  PUBLISHED: "Đã công bố",
+  open: "Đã công bố",
+  OPEN: "Đã công bố",
   ongoing: "Đang diễn ra",
+  ONGOING: "Đang diễn ra",
+  active: "Đang diễn ra",
+  ACTIVE: "Đang diễn ra",
   completed: "Đã kết thúc",
+  COMPLETED: "Đã kết thúc",
+  closed: "Đã kết thúc",
+  CLOSED: "Đã kết thúc",
   cancelled: "Đã hủy",
+  CANCELLED: "Đã hủy",
 };
 
 // Statuses a coordinator is allowed to move an event to from a given status.
-export const EVENT_STATUS_TRANSITIONS: Record<EventStatus, EventStatus[]> = {
+export const EVENT_STATUS_TRANSITIONS: Record<string, EventStatus[]> = {
   draft: ["published", "cancelled"],
+  DRAFT: ["published", "cancelled"],
   published: ["ongoing", "cancelled"],
+  PUBLISHED: ["ongoing", "cancelled"],
+  open: ["ongoing", "cancelled"],
+  OPEN: ["ongoing", "cancelled"],
   ongoing: ["completed", "cancelled"],
+  ONGOING: ["completed", "cancelled"],
+  active: ["completed", "cancelled"],
+  ACTIVE: ["completed", "cancelled"],
   completed: [],
+  COMPLETED: [],
+  closed: [],
+  CLOSED: [],
   cancelled: [],
+  CANCELLED: [],
 };
 
 export interface HackathonEvent {
